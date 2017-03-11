@@ -12,62 +12,75 @@ namespace unet
         const int Channel::KNoneEvent = 0;
         const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
         const int Channel::KWriteEvent = EPOLLOUT;
-
-        Channel::Channel(EventLoop* loop_):loop(loop_),
-           fd(socket::socket()),index(-1),event(0),revent(0),
-           isnewchannel(true),addinepoller(false),fdclose(true),
-           handleeventing(false)
-        {};
+        
+        Channel::Channel(int fd_,bool hasconnection) : fd(fd_),index(-1),event(0),revent(0),isnewchannel(true),isinepoll(false),handleeventing(false),hasconnection(hasconnection_)
+        {
+            if(hasconnection_)
+                connectionptr(new TcpConnection);
+        };
 
         Channel::~Channel()
         {
-            assert(!addinpoller);
-            if(!fdclose)
-                socket::close(fd);
-        }
-
-        void Channel::update()
-        {
-            addinepoller = true;
-            loop->updateChannel(this);
-        }
-
-        void Channel::remove()
-        {
-            assert(isNoneEvent());
-            addinepoller = false;
-            loop->removeChannel(this);
+            assert(handleeventing);
+            assert(!isinepoll);
         }
 
         void Channel::handleEvent()
         {
-            handleeventing = true;
-            if((revent & EPOLLHUP) && !(revent & POLLIN))
-                if(CloseCallBack)
-                    CloseCallBack();
-
-            if(revent & (EPOLLERR | EPOLLNVAL))
-            {
-                if(ErrorCallBack)
-                    ErrorCallBack();
+            if(hasconnection)
+            {//have connectionptr handle ways
+                handleeventing = true;
+                if((revent & EPOLLHUP) && !(revent & POLLIN))
+                {
+                    connectionptr->handleClose();
+                }
+                if(revent & (EPOLLERR | EPOLLNVAL))
+                {   
+                    connectionptr->handleError();
+                }
+                if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
+                {
+                        connectionptr->handleRead();
+                }
+                if(revent & EPOLLOUT)
+                {
+                        connecionptr->handleWrite();
+                }
+                handleeventing = false;
             }
+            else
+            {//timefd and listenfd handle ways
+                handleeventing = true;
+                if((revent & EPOLLHUP) && !(revent & POLLIN))
+                {
+                    if(closecallback)
+                        closecallback();
+                }
+                if(revent & (EPOLLERR | EPOLLNVAL))
+                {   
+                    if(errorcallback)
+                        errorcallback();
+                }
 
-            if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
-            {
-                if(ReadCallBack)
-                    ReadCalBack();
-            }
+                if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
+                {
+                    if(readcallback)
+                        readcallback();
+                }
 
-            if(revent & EPOLLOUT)
-            {
-                if(WriteCallBack)
-                    WriteCallBack();
+                if(revent & EPOLLOUT)
+                {
+                    if(writecallback)
+                        writecallback();
+                }
+                handleeventing = false;
             }
-            handleeventing = false;
         }
-
-        ChannelCon::ChannelCon(EventLoop* loop_) : Channel(loop_)
-        {};
+        
+        void Channel::remove()
+        {   
+            removecallback(this);
+        }
     }
 }
 

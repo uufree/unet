@@ -27,48 +27,26 @@ namespace unet
                 ~Epoller();
 
 //public interface 
-                Timestamp epoll(int timeoutMs,ChannelList&);
+                void epoll(ChannelList* channels);
                 bool hasChannle(Channel* channel_);
                 void removeChannel(Channel* channel_);
-                void updateChannel(Channel* channel_); 
-                                
+//                void updateChannel(Channel* channel_); 
+                void addInChannelMap(Channel* channel_);
+
             private:
                 typedef std::vector<struct epoll_event> EventList;
                 typedef std::map<int,Channel*> ChannelMap;
                 typedef std::vector<Channel*> ChannelList;
 
                 void update(int operation,Channel* channel_);
-                void getActiveEvents(ChannelList&);
+                void getActiveEvents(ChannelList* channels);
 
-                EventLoop* loop;
                 EventList eventlist;
                 int epollfd;
                 ChannelMap channelmap;
         };    
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #endif

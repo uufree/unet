@@ -15,28 +15,32 @@ namespace unet
         class Channel
         {
             public:
-                Channel();
-                ~Channel();
-                Channel(const Channel&) = delete;
-                Channel& operator=(const Channel&)  =delete;
+                Channel(int fd_,bool hasconnection);
+                ~Channel() {};
+                Channel(const Channel& lhs) = delete;
+                Channel& operator=(const Channel& lhs)  = delete;
                 
 //public interface
                 void handleEvent();
-                void update();
                 void remove();
 
                 void setReadCallBack(const ReadCallBack& cb)
-                {ReadCallBack = cb;};
+                {readcallback = cb;};
 
                 void setWriteCallBack(const WriteCallBack& cb)
-                {WriteCallBack = cb;};
+                {writecallback = cb;};
 
                 void setErrorCallBack(const ErrorCallBack& cb)
-                {ErrorCallBack = cb;};
+                {errorcallback = cb;};
 
                 void setCloseCallBack(const CloseCallBack& cb)
-                {CloseCallBack = cb;};
+                {closecallback = cb;};
 
+                void setUpdateCallBack(const UpdateCallBack& cb)
+                {updatecallback = cb;};
+
+                void setRemoveCallBack(const RemoveCallBack& cb)
+                {removecallback = cb;};
 
                 bool isNewChannel() const {return isnewchannel;};
                 int getIndex() const {return index;};
@@ -50,48 +54,58 @@ namespace unet
                 bool isReading() const {return event == KReadEvent;};
                 bool isWriting() const {return event == KWirteEvent;};
 
-                void enableReading() {event|=KReadEvent;update();};
-                void enableWriting() {event|=KWriteEvent;update();};
-                void disableReading() {event|=~KReadEvent;update();};
-                void disableWriting() {event|=~KWriteEvent;update();};
+                void enableReading() 
+                {
+                    event|=KReadEvent;
+                    updatecallback(this);
+                };
+
+                void enableWriting() 
+                {
+                    event|=KWriteEvent;
+                    updatecallback(this);
+                };
+
+                void disableReading() 
+                {
+                    event|=~KReadEvent;
+                    updatecallback(this);
+                };
+
+                void disableWriting() 
+                {
+                    event|=~KWriteEvent;
+                    updatecallback(this);
+                };
             
             private:
                 typedef std::shared_ptr<Connection> ConnectionPtr;
                 typedef std::function<void()> EventCallBack; 
-                    
-                EventLoop* loop;
+                typedef std::function<void(Channel* channel_)> UpdateCallBack;
+                typedef std::function<void(Channel* channel_)> RemoveCallBack;
+
                 const int fd;
                 int index;
                 int event;
                 int revent;
                 bool isnewchannel;
-                bool addinepoller;
-                bool fdclose;
+                bool isinepoll;
                 bool handleeventing;
-                
+                bool hasconnection;
+                ConnectionPtr connectionptr;
+
                 static const int KNoneEvent;
                 static const int KReadEvent;
                 static const int KWriteEvent;
 
-                EventCallBack ReadCallBack;
-                EventCallBack WriteCallBack;
-                EventCallBack ErrorCallBack;
-                EventCallBack CloseCallBack;
+                EventCallBack readcallback;
+                EventCallBack writecallback;
+                EventCallBack errorcallback;
+                EventCallBack closecallback;
+                UpdateCallBack updatecallback;
+                RemoveCallBack removecallback;
         };
 
-        class ChannelCon : public Channel final
-        {
-            public:
-                ChannelCon(EventLoop* loop_);
-                ~ChannelCon();
-                ChannelCon(const ChannelCon&) = delete;
-                ChannelCon& operator(const ChannleCon&) = delete;
-
-            private:
-                typedef shared_ptr<Connection> ConnectionPtr;
-        
-                ConnectionPtr Connection;
-        };
     }
 }
 

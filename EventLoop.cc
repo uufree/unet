@@ -9,13 +9,45 @@ namespace unet
 {
     namespace net
     {
-        EventLoop::EventLoop() : 
-            looping(false),quit(false),eventHandling(false),
-            threadId(current::tid())
+        EventLoop::EventLoop() : looping(false),quit(false),evnethandling(false)
         {};
-    
-        void loop()
+
+        void EventLoop::loop()
         {
-            
+            looping = true;
+            quit = false;
+            while(!quit)
+            {
+                activecallback();
+                if(!activechannels.empty())
+                {
+                    eventhandling = true;
+                    for(ChannelList::iterator iter=activechannels.begin();itre!=activechannels.end();++iter)
+                    {
+                        *it->handleEvent();
+                    }
+                    eventhandling = false;
+                }
+                else
+                {
+                    std::cout << "nothing happend!" << std::endl;
+                }
+            }
+            looping = false;
+        }
+
+        void EventLoop::quit()
+        {
+            quit = true;
+        }
+
+        ChannelList* EventLoop::getChannelList()
+        {
+            activechannels.clear();
+            return &activeChannels;
+        }
+    }
+}
+        
         
 

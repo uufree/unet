@@ -13,18 +13,13 @@
 #include<memory>
 
 
-//这个loop只认Channel，loop中不阻塞。如果有事件处理事件，没有事件空转
 namespace unet
 {
     namespace net
     {
-        class Channel;
         class EventLoop final
         {
             public:
-//                typedef std::function<void()> Functor;
-                typedef std::vector<Channel*> ChannelList;
-
                 EventLoop();
                 EventLoop(const EventLoop&) = delete;
                 EventLoop& operator=(const EventLoop&) = delete;
@@ -33,22 +28,19 @@ namespace unet
 //punlic interface
                 void loop();
                 void quit();
-                void assertInLoopThread();
-                void writeInLoop();
+                ChannelList* getChannelList();
+                void setActiveCallBack(const ActiveCallBack& cb)
+                {acticecallback = cb;};
 
             private:
-                void abortNotInLoopThread();
-//                void doPendingFunctors();
+                typedef std::vector<Channel*> ChannelList;
+                typedef std::function<void()> Functor;
                 
                 bool looping;
                 bool quit;
-                bool eventHandling;
-//                bool callingPendingFunctor;
-                const pid_t threadId;
-                ChannelList activeChanels;//其他部分向loop中写东西
-                
-//                mutable MutexLock mutex;
-//                std::vector<Functor> pendingFunctor;
+                bool eventhandling;
+                ChannelList activechannels;
+                Functor activecallback;
         };
     }
 }

@@ -15,23 +15,24 @@ namespace unet
             epoller(loop_),listening(false)
         {
             socket::bind(listenfd.getSocket(),addr_);
-            listenchannel->setReadCallBack(std::bind(&handleRead,this); 
+            loop->setActiveCallBack(std::bind(&getActiveChannels,this));
+            listenchannel->setReadCallBack(std::bind(&handleRead,this)); 
         }
 
-        void listen()
+        void Acceptor::listen()
         {
             listening = true;
             socket::listen(listenfd.getSocket());
-            epoller->addInChannelList(&listenchannel);
+            epoller->addInChannelMap(&listenchannel);
         }
 
-        void getActiveChannels()
+        void Acceptor::getActiveChannels()
         {
-            ChannelList* channels = loop->getChannelList;
-            epoller->epoller(&activechannels);
+            ChannelList* channels = loop->getActiveChannels();
+            epoller->epoll(channels);
         }
         
-        void handleRead()
+        void Acceptor::handleRead()
         {
             InetAddr clientaddr;
             int confd = sockfd::accept(listenfd.getSocket(),clientaddr);
