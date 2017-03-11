@@ -15,21 +15,35 @@ namespace unet
         class Acceptor final
         {
             public:
+                Acceptor(EventLoop* loop_,const& InetAddress& addr_);
+                Acceptor(const Acceptor& lhs) = delete;
+                Acceptor& operator(const Acceptor& lhs) = delete;
+                ~Acceptor() {};
 
+                void listen();
+                bool listening() {return listening};
+                void getActiveChannels();
 
-
+                void setNewConnectionCallBack(const newConnectionCallBack& cb)
+                {newconnectioncallback = cb;};
 
 
             private:
-                typedef std::unique_ptr<EventLoop> EventLoopUptr;
-                typedef std::unique_ptr<Epoller> EpollerLoopUptr;
-                typedef std::unique_ptr<Channel> ChannelUptr;
-                
-                EventLoopUptr eventloopuptr;
-                EpollerLoopUptr epollerloopuptr;
-                ChannelUptr listenchanneluptr;
+                typedef std::vector<Channel*> ChannelList;
+                typedef std::function<void (int sockfd,const InetAddr& lhs)> newConnectionCallBack;
 
+                void handleRead();
+
+                EventLoop* loop;
+                Socket listenfd;
+                Channel listenchannel;
+                Epoller epoller;
                 bool listening;
+                newConnectionCallBack newconnectioncallback;
+        };
+
+    }
+}
 
 
 
