@@ -77,9 +77,12 @@ namespace unet
                     event|=~KWriteEvent;
                     updatecallback(this);
                 };
+
+                TcpConnectionPtr getTcpConnectionPtr()
+                {return tcpConnectionptr;};
             
             private:
-                typedef std::shared_ptr<Connection> ConnectionPtr;
+                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
                 typedef std::function<void()> EventCallBack; 
                 typedef std::function<void(Channel* channel_)> UpdateCallBack;
                 typedef std::function<void(Channel* channel_)> RemoveCallBack;
@@ -92,7 +95,7 @@ namespace unet
                 bool isinepoll;
                 bool handleeventing;
                 bool hasconnection;
-                ConnectionPtr connectionptr;
+                TcpConnectionPtr tcpconnectionptr;
 
                 static const int KNoneEvent;
                 static const int KReadEvent;

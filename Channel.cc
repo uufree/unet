@@ -16,7 +16,7 @@ namespace unet
         Channel::Channel(int fd_,bool hasconnection) : fd(fd_),index(-1),event(0),revent(0),isnewchannel(true),isinepoll(false),handleeventing(false),hasconnection(hasconnection_)
         {
             if(hasconnection_)
-                connectionptr(new TcpConnection);
+                connectionptr(new TcpConnection());
         };
 
         Channel::~Channel()

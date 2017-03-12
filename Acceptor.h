@@ -30,7 +30,7 @@ namespace unet
 
             private:
                 typedef std::vector<Channel*> ChannelList;
-                typedef std::function<void (int sockfd,const InetAddr& lhs)> newConnectionCallBack;
+                typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> newConnectionCallBack;
 
                 void handleRead();
 
