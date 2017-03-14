@@ -15,7 +15,7 @@ namespace unet
             epoller(loop_),listening(false)
         {
             socket::bind(listenfd.getSocket(),addr_);
-            loop->setActiveCallBack(std::bind(&getActiveChannels,this));
+            loop->setGetActiveChannelsCallBack(std::bind(&getActiveChannels,this,std::placeholders::_1));
             listenchannel->setReadCallBack(std::bind(&handleRead,this)); 
         }
 
@@ -26,9 +26,8 @@ namespace unet
             epoller->addInChannelMap(&listenchannel);
         }
 
-        void Acceptor::getActiveChannels()
+        void Acceptor::getActiveChannels(ChannelList* channels)
         {
-            ChannelList* channels = loop->getActiveChannels();
             epoller->epoll(channels);
         }
         
@@ -38,8 +37,8 @@ namespace unet
             int confd = sockfd::accept(listenfd.getSocket(),clientaddr);
             assert(confd >= 0);
             
-            newconnectioncallback(confd,clientaddr);//将connection加入TcpServer
-            epoller->addInChannelList(Channel(loop,confd));//主动将channel加入channelList
+            Channel* channel = newconnectioncallback(confd,clientaddr);//add TcpConnection in TcpServer
+            epoller->addInChannelList(channel);//add channel in channelList
         }
     }
 }

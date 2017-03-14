@@ -8,11 +8,14 @@
 #ifndef _CHANNEL_H
 #define _CHANNEL_H
 
+//确信讨论一点，当一个连接建立起来之后，关注的事件应该不会再变了
+//confd关注可写和可读事件，listenfd关注可读事件,timefd关注可读事件
+
 namespace unet
 {
     namespace net
     {
-        class Channel
+        class Channel final
         {
             public:
                 Channel(int fd_,bool hasconnection);
@@ -22,7 +25,8 @@ namespace unet
                 
 //public interface
                 void handleEvent();
-                void remove();
+                void handleClose();
+                void handleError();
 
                 void setReadCallBack(const ReadCallBack& cb)
                 {readcallback = cb;};
@@ -42,29 +46,18 @@ namespace unet
                 void setRemoveCallBack(const RemoveCallBack& cb)
                 {removecallback = cb;};
 
-                bool isNewChannel() const {return isnewchannel;};
                 int getIndex() const {return index;};
                 int getFd() const {return fd;};
                 void setIndex(int index_) {index = index_};
                 
+                void setEvent() {evnet |= KReadEvent & KWriteEvent;};
+
                 int getEvent() const {return event;};
                 void setRevent(int revent_) {revent = revent_;};
 
                 bool isNoneEvent() const {return event == KNoneEvent;};
                 bool isReading() const {return event == KReadEvent;};
                 bool isWriting() const {return event == KWirteEvent;};
-
-                void enableReading() 
-                {
-                    event|=KReadEvent;
-                    updatecallback(this);
-                };
-
-                void enableWriting() 
-                {
-                    event|=KWriteEvent;
-                    updatecallback(this);
-                };
 
                 void disableReading() 
                 {
@@ -78,23 +71,32 @@ namespace unet
                     updatecallback(this);
                 };
 
+                void disableAll()
+                {
+                    event = KNoneEvent;
+                    updatecallback(this);
+                }
+
                 TcpConnectionPtr getTcpConnectionPtr()
-                {return tcpConnectionptr;};
+                {return tcpConnectionptr.release();};//放掐强指针的控制权
             
             private:
-                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+                typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
                 typedef std::function<void()> EventCallBack; 
                 typedef std::function<void(Channel* channel_)> UpdateCallBack;
                 typedef std::function<void(Channel* channel_)> RemoveCallBack;
+                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+                
+                void handleError();
+                void handleClose();
 
                 const int fd;
                 int index;
-                int event;
-                int revent;
-                bool isnewchannel;
-                bool isinepoll;
+                int event;//关注的事件
+                int revent;//正在发生的事件
                 bool handleeventing;
                 bool hasconnection;
+                TcpConnectionWptr tcpconnectionwptr;
                 TcpConnectionPtr tcpconnectionptr;
 
                 static const int KNoneEvent;
@@ -108,7 +110,6 @@ namespace unet
                 UpdateCallBack updatecallback;
                 RemoveCallBack removecallback;
         };
-
     }
 }
 

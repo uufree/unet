@@ -13,10 +13,13 @@ namespace unet
         const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
         const int Channel::KWriteEvent = EPOLLOUT;
         
-        Channel::Channel(int fd_,bool hasconnection) : fd(fd_),index(-1),event(0),revent(0),isnewchannel(true),isinepoll(false),handleeventing(false),hasconnection(hasconnection_)
+        Channel::Channel(int fd_,bool hasconnection) : fd(fd_),index(-1),event(0),revent(0),handleeventing(false),hasconnection(hasconnection_)
         {
             if(hasconnection_)
-                connectionptr(new TcpConnection());
+            {
+                tcpconnectionptr(new TcpConnection());//can't confirm TcpConnection's parametre
+                tcpconnectionwptr(tcpconnectionptr);
+            }
         };
 
         Channel::~Channel()
@@ -30,13 +33,13 @@ namespace unet
             if(hasconnection)
             {//have connectionptr handle ways
                 handleeventing = true;
-                if((revent & EPOLLHUP) && !(revent & POLLIN))
+                if((revent & EPOLLHUP) && !(revent & EPOLLIN))
                 {
-                    connectionptr->handleClose();
+                    handleClose();
                 }
                 if(revent & (EPOLLERR | EPOLLNVAL))
                 {   
-                    connectionptr->handleError();
+                    handleError();
                 }
                 if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
                 {
@@ -53,13 +56,11 @@ namespace unet
                 handleeventing = true;
                 if((revent & EPOLLHUP) && !(revent & POLLIN))
                 {
-                    if(closecallback)
-                        closecallback();
+                        handleClose();
                 }
                 if(revent & (EPOLLERR | EPOLLNVAL))
-                {   
-                    if(errorcallback)
-                        errorcallback();
+                {      
+                        handleError();
                 }
 
                 if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
@@ -77,10 +78,18 @@ namespace unet
             }
         }
         
-        void Channel::remove()
-        {   
-            removecallback(this);
+        void Channel::handleClose()
+        {
+            //先处理TcpConnection中的缓冲区
+
+            disableAll();
         }
+
+        void Channel::handleError()
+        {       
+            disableAll();
+        }
+
     }
 }
 

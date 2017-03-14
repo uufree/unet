@@ -25,12 +25,11 @@ namespace unet
                 Epoller(const Epoller&) = delete;
                 Epoller operator(const Epoller&) = delete;
                 ~Epoller();
-
 //public interface 
                 void epoll(ChannelList* channels);
                 bool hasChannle(Channel* channel_);
                 void removeChannel(Channel* channel_);
-//                void updateChannel(Channel* channel_); 
+                void updateChannel(Channel* channel_); 
                 void addInChannelMap(Channel* channel_);
 
             private:

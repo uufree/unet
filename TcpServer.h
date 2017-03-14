@@ -22,16 +22,22 @@ namespace unet
 //public interface
                 EventLoop* getEventLoop() {return loop;};
                 void start();
+                void setMessageCallBack(const MessageCallBack& cb)
+                {
+                    messagecallback = cb;
+                }
 
             private:
-                typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
+                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+                typedef std::function<void()> MessageCallBack;//can't confirm MessageCallBack's parameter
 
                 Channel* newConnectionCallBack(int fd_,InetAddr& clientaddr);
 
-                std::map<int,TcpConnectionWptr> connectionwptrmap;
+                std::map<int,TcpConnectionPtr> connectionptrmap;
                 std::unique<Acceptor> acceptoruptr;
                 EventLoop* loop;
                 InetAddr* serveraddr;
+                MessageCallBack messagecallback;
         };
 
     }

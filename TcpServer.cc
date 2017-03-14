@@ -11,31 +11,27 @@ namespace unet
     {
         TcpServer::TcpServer(EventLoop* loop_,const InetAddr* serveraddr_) : loop(loop_),serveraddr(serveraddr_),acceptor(loop_,serveraddr)
         {
-            acceptoruptr->setNewConnection(std::bind(&newconnectionCallBack,this,_1,_2));
+            acceptoruptr->setNewConnectionCallBack(std::bind(&newconnectionCallBack,this,_1,_2));
         };
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//put TcpConnection in conwptr and return Channel*
+//put TcpConnection in conptr and return Channel*
         Channel* newConnectionCallBack(int fd_,InetAddr& clientaddr)
         {
               Channel* channel = new Channel(fd_,true);
-              TcpConnectionWptr wptr = channel->getTcpConnectionPtr();
-              connectionwptrlist.insert(fd_,wptr);
+              TcpConnectionPtr ptr = channel->getTcpConnectionPtr();
+              ptr->setMessageCallBack(messagecallback);
+              connectionptrlist.insert(fd_,ptr);
               return channel;
         }
+
+        void start()
+        {
+
+
+        }
+
+    }
+}
         
 
 

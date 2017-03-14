@@ -62,47 +62,36 @@ namespace unet
         }
         
         void Epoller::addInChannelMap(Channel* channel_)
-        {
+        {//增加参数,在加入epoll时就确定关注的事件
             const int fd = channel_->getFd();
             assert(channelmap.find(fd) == channelmap.end());
             channelmap[fd] = channel_;
-            channel_->setIsNewChannel(false);
             channel_->setIndex(fd);
+            channel_->setEvent();
+            channel_->setRemoveCallBck(std::bind(&removeChannle,this,std::placeholders::_1));
+            channel_->setUpdateCallBack(std::bind(&updateChannle,this,std::placeholders::_1));
             update(EPOLL_CTL_ADD,channel_);
         }
 
 
-/*
+
         void Epoller::updateChannel(Channel* channel_)
         {//only change channel in events
-            loop->assertInLoopThread();
             const int index = channel_->getIndex();
             const int fd = channel_->getFd();
 
-            if(channel_->isNewChannel())//new
+            assert(channels.find(fd) != channels.end());
+            assert(channels[fd] == channel);
+            assert(fd == index);
+            update(EPOLL_CTL_MOD,channel_);
+            
+            if(channel_->getEvent() == KNoneEvent)
             {
-                assert(channels.find(fd) == channels.end());
-                channels[fd] = channel;
-                channel_->setIsNewChannel(false);
-                channel_->setIndex(fd);
-                update(EPOLL_CTL_ADD,channel_);
-            }
-            else//change mode or delete
-            {
-                assert(channels.find(fd) != channels.end());
-                assert(channels[fd] == channel);
-                if(fd == index)//change mode
-                {
-                    update(EPOLL_CTL_MOD,channel_);
-                }
-                else//delete
-                {
-                    assert(fd == -index);
-                    update(EPOLL_CTL_DEL,channel_)
-                }
+                channel_->//处理TcpConnection的buffer
+                removeChannel(channel_);
             }
         }
-*/
+
         void Epoller::update(int operation,Channel* channel_)
         {
             struct epoll_event event;
@@ -134,7 +123,6 @@ namespace unet
             assert(channelmap[fd] != channelmap.end());
             assert(channelmap[fd] == channel_);
             assert(channel_->getEvent() == KNoneEvent);
-            assert(index == )
 
 //remove in epollfd
             update(EPOLL_CTL_DEL,channel_);
@@ -142,7 +130,7 @@ namespace unet
             channelmap.erase(fd);
 //remove in eventlist
 //取决于channel的实现
-            eventlist
+            eventlist.erase(index);//从vector中删除一个元素
         }
 
     }

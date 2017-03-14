@@ -24,23 +24,22 @@ namespace unet
                 EventLoop(const EventLoop&) = delete;
                 EventLoop& operator=(const EventLoop&) = delete;
                 ~EventLoop();
-
 //punlic interface
                 void loop();
                 void quit();
                 ChannelList* getChannelList();
-                void setActiveCallBack(const ActiveCallBack& cb)
+                void setGetActiveChannelsCallBack(const ActiveCallBack& cb)
                 {acticecallback = cb;};
 
             private:
                 typedef std::vector<Channel*> ChannelList;
-                typedef std::function<void()> Functor;
+                typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
                 
                 bool looping;
                 bool quit;
                 bool eventhandling;
                 ChannelList activechannels;
-                Functor activecallback;
+                GetActiveChannelsCallBack activecallback;
         };
     }
 }

@@ -19,7 +19,7 @@ namespace unet
                 Acceptor(const Acceptor& lhs) = delete;
                 Acceptor& operator(const Acceptor& lhs) = delete;
                 ~Acceptor() {};
-
+//public interface
                 void listen();
                 bool listening() {return listening};
                 void getActiveChannels();
@@ -31,6 +31,7 @@ namespace unet
             private:
                 typedef std::vector<Channel*> ChannelList;
                 typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> newConnectionCallBack;
+                typedef std::vector<Channel*> ChannelList;
 
                 void handleRead();
 

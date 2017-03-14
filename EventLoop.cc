@@ -18,7 +18,7 @@ namespace unet
             quit = false;
             while(!quit)
             {
-                activecallback();
+                activecallback(&activechannels);
                 if(!activechannels.empty())
                 {
                     eventhandling = true;

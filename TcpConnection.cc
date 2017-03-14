@@ -22,17 +22,10 @@ namespace unet
 
         void TcpConnection::handleWrite()
         {
-        }
 
-        void TcpConnection::handleError()
-        {
 
         }
-
-        void TcpConnection::handleClose()
-        {
-
-        }
+        
     }
 }
 
