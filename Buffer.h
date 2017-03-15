@@ -9,8 +9,9 @@
 #define _BUFFER_H
 
 #include<string.h>
+#include<sys/uio.h>
 
-//选取固定大小的数据传输
+//目前版本只支持固定大小的数据传输
 
 namespace unet
 {
@@ -19,14 +20,14 @@ namespace unet
         class Buffer final
         {
             public:
-                Buffer(int KBufferSize_ = 1024) : index(0),KBufferSize(KBufferSize_),level(KBufferSize/2),indextohead(0)
+                Buffer() : buffer(nullptr),KBufferSize(4),level(KBufferSize/2),headindex(0),tailindex(0)
                 {
-                    buffer = malloc(KBufferSize);
-                    bzero(buffer);
+                    buffer = static_cast<char*>(malloc(KBufferSize));
+                    bzero(buffer,KBufferSize);
                 };
 
                 Buffer(const Buffer& lhs) = delete;
-                Buffer& Buffer(const Buffer& lhs) = delete;
+                Buffer& operator=(const Buffer& lhs) = delete;
 
                 ~Buffer()
                 {
@@ -39,7 +40,6 @@ namespace unet
                 void appendInBuffer(const void* message);
                 void* getInBuffer();
                 
-            private:
                 int getDataSize()
                 {return tailindex - headindex;};
 
@@ -48,13 +48,23 @@ namespace unet
 
                 bool needMove()
                 {return headindex >= level;};
+       
+                int getHeadIndex()
+                {return headindex;};
 
-                char buffer[KBufferSize];
-                int tailindex;
-                int level;
+                int getTailIndex()
+                {return tailindex;};
+        
+                int getBufferSize()
+                {return KBufferSize;};
+
+            private:
+                char* buffer;
                 int KBufferSize;
+                int level;
                 int headindex;
-        };
+                int tailindex;
+        };        
     }
 }
 

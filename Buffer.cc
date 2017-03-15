@@ -5,6 +5,8 @@
 	> Created Time: 2017年03月14日 星期二 19时28分46秒
  ************************************************************************/
 
+#include"Buffer.h"
+
 namespace unet
 {
     namespace net
@@ -15,48 +17,47 @@ namespace unet
             bzero(extrabuf,65536);
             struct iovec vec[2];
             vec[0].iov_base = buffer + tailindex;
-            vev[0].iov_len = getFreeSize();
+            vec[0].iov_len = getFreeSize();
             vec[1].iov_base = extrabuf;
             vec[1].iov_len = 65536;
 
             int n = ::readv(fd,vec,2);
             int freesize = getFreeSize();
-            
+    
             if(n < 0)
             {
                 std::cerr << "readv error!" << endl;
             }
             else if(n < freesize && n > 0)
             {
-                tailindex += (n-1);
+                tailindex += n;
             }
             else
-            {
+            {   
+                tailindex += getFreeSize();
                 int size = n - freesize;
-                while(size > freesize)
+                while(size > getFreeSize())
                 {
                     KBufferSize *= 2;
                     level = KBufferSize / 2;
-                    realloc(buffer,KBufferSize);
+                    buffer = static_cast<char*>(realloc(static_cast<char*>(buffer),static_cast<size_t>(KBufferSize)));
                 }
-                memcpy(buffer+tailindex,extrabuf,size);
-                tailindex += (n-1);
+                strcpy(buffer+tailindex,extrabuf);
+                tailindex += size;
             }
         }
 
         void Buffer::writeInSocket(int fd)
         {
-            int n = ::write(fd,buffer+headindex,getDataSize());
+            int n = ::write(fd,buffer+headindex,9);
             if(n > 0)
             {
                 headindex += n;
                 if(needMove())
                 {
-                    char* buffer_;
-                    memcpy(buffer_,buffer+headindex,getDataSize());
-                    memcpy(buffer,buffer_,getDataSize());
+                    strcpy(buffer,buffer+headindex);
                     headindex = 0;
-                    tailidex -= n;
+                    tailindex -= n;
                 }
             }
             else
@@ -67,10 +68,10 @@ namespace unet
 
         void Buffer::appendInBuffer(const void* message)
         {
-            int n = sizeof(message) - 1;
+            int n = strlen(static_cast<const char*>(message));
             if(n < getFreeSize())
             {
-                memcpy(buffer+index,const_cast<void*>(message),n);
+                memcpy(buffer+tailindex,const_cast<void*>(message),static_cast<size_t>(n));
                 tailindex += n;
             }
             else
@@ -79,19 +80,20 @@ namespace unet
                 {
                     KBufferSize *= 2;
                     level  = KBufferSize / 2;
-                    realloc(buffer,KBufferSize);
+                    buffer = static_cast<char*>(realloc(static_cast<void*>(buffer),static_cast<size_t>(KBufferSize)));
                 }
-                memcpy(buffer+tailindex,const_cast<void*>(message),n);
+                memcpy(static_cast<void*>(buffer+tailindex),const_cast<void*>(message),static_cast<size_t>(n));
                 tailindex += n;
             }
         }
-
+    
         void* Buffer::getInBuffer()
         {   
             int datasize = getDataSize();
-            char charlist[datasize];
-            memcpy(charlist,buffer+headindex,datasize);
-            return charlist;
+            void* chlist = malloc(datasize);
+            bzero(chlist,datasize);
+            memcpy(chlist,static_cast<vdoi*>(buffer+headindex),datasize);
+            return chlist;
         }
     }
 }
