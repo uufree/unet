@@ -11,19 +11,123 @@ namespace unet
     {
         void Buffer::readInSocket(int fd)
         {
-            std::iterator<Buffer> iter = buffer.end();
-            int n = ::read(fd,&*iter,level);
-            index += n;
+            char extrabuf[65536];
+            bzero(extrabuf,65536);
+            struct iovec vec[2];
+            vec[0].iov_base = buffer + tailindex;
+            vev[0].iov_len = getFreeSize();
+            vec[1].iov_base = extrabuf;
+            vec[1].iov_len = 65536;
+
+            int n = ::readv(fd,vec,2);
+            int freesize = getFreeSize();
+            
+            if(n < 0)
+            {
+                std::cerr << "readv error!" << endl;
+            }
+            else if(n < freesize && n > 0)
+            {
+                tailindex += (n-1);
+            }
+            else
+            {
+                int size = n - freesize;
+                while(size > freesize)
+                {
+                    KBufferSize *= 2;
+                    level = KBufferSize / 2;
+                    realloc(buffer,KBufferSize);
+                }
+                memcpy(buffer+tailindex,extrabuf,size);
+                tailindex += (n-1);
+            }
         }
 
         void Buffer::writeInSocket(int fd)
         {
-            std::iterator<Buffer> iter = buffer.begin();
-            void* buf = memcpy()
-            int n = ::write(fd,&*iter,index);
-            index = buffer.size();
+            int n = ::write(fd,buffer+headindex,getDataSize());
+            if(n > 0)
+            {
+                headindex += n;
+                if(needMove())
+                {
+                    char* buffer_;
+                    memcpy(buffer_,buffer+headindex,getDataSize());
+                    memcpy(buffer,buffer_,getDataSize());
+                    headindex = 0;
+                    tailidex -= n;
+                }
+            }
+            else
+            {
+                std::cerr << "write error!" << std::endl;
+            }
         }
 
         void Buffer::appendInBuffer(const void* message)
         {
-            buffer.push_back(*(static_cast<const char*>(message)),)
+            int n = sizeof(message) - 1;
+            if(n < getFreeSize())
+            {
+                memcpy(buffer+index,const_cast<void*>(message),n);
+                tailindex += n;
+            }
+            else
+            {
+                while(n > getFreeSize())
+                {
+                    KBufferSize *= 2;
+                    level  = KBufferSize / 2;
+                    realloc(buffer,KBufferSize);
+                }
+                memcpy(buffer+tailindex,const_cast<void*>(message),n);
+                tailindex += n;
+            }
+        }
+
+        void* Buffer::getInBuffer()
+        {   
+            int datasize = getDataSize();
+            char charlist[datasize];
+            memcpy(charlist,buffer+headindex,datasize);
+            return charlist;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
