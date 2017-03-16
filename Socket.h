@@ -75,13 +75,19 @@ namespace unet
                 assert(n >= 0);
             }
 
-            void shutDownWrite()
+            void shutdownWrite(int sockfd)
             {
                 int n = ::shutdown(sockfd,SHUT_WR);
                 assert(n >= 0);
             }
 
-            void close()
+            void shutdownRead(int sockfd)
+            {
+                int n = ::shutdown(sockfd,SHUT_RD);
+                assert(n >= 0);
+            }
+
+            void close(int sockfd)
             {
                 int n = ::close(sockfd);
                 assert(n >= 0);

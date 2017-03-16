@@ -31,20 +31,8 @@ namespace unet
                 void setReadCallBack(const ReadCallBack& cb)
                 {readcallback = cb;};
 
-                void setWriteCallBack(const WriteCallBack& cb)
-                {writecallback = cb;};
-
-                void setErrorCallBack(const ErrorCallBack& cb)
-                {errorcallback = cb;};
-
-                void setCloseCallBack(const CloseCallBack& cb)
-                {closecallback = cb;};
-
                 void setUpdateCallBack(const UpdateCallBack& cb)
                 {updatecallback = cb;};
-
-                void setRemoveCallBack(const RemoveCallBack& cb)
-                {removecallback = cb;};
 
                 int getIndex() const {return index;};
                 int getFd() const {return fd;};
@@ -78,18 +66,19 @@ namespace unet
                 }
 
                 TcpConnectionPtr getTcpConnectionPtr()
-                {return tcpConnectionptr.release();};//放掐强指针的控制权
+                {return tcpconnectionptr;};
+            
+                void resetChannelPtr()
+                {tcpconnectionptr.reset();};
             
             private:
                 typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
                 typedef std::function<void()> EventCallBack; 
                 typedef std::function<void(Channel* channel_)> UpdateCallBack;
-                typedef std::function<void(Channel* channel_)> RemoveCallBack;
                 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
                 
-                void handleError();
-                void handleClose();
 
+                EventLoop* loop;
                 const int fd;
                 int index;
                 int event;//关注的事件
@@ -104,11 +93,7 @@ namespace unet
                 static const int KWriteEvent;
 
                 EventCallBack readcallback;
-                EventCallBack writecallback;
-                EventCallBack errorcallback;
-                EventCallBack closecallback;
                 UpdateCallBack updatecallback;
-                RemoveCallBack removecallback;
         };
     }
 }

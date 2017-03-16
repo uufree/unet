@@ -15,20 +15,36 @@ namespace unet
         };
     
 //put TcpConnection in conptr and return Channel*
-        Channel* newConnectionCallBack(int fd_,InetAddr& clientaddr)
+        Channel* TcpServer::newConnectionCallBack(int fd_,InetAddr& clientaddr)
         {
               Channel* channel = new Channel(fd_,true);
-              TcpConnectionPtr ptr = channel->getTcpConnectionPtr();
-              ptr->setMessageCallBack(messagecallback);
-              connectionptrlist.insert(fd_,ptr);
+              TcpConnectionPtr ptr(channel->getTcpConnectionPtr());
+              ptr->resetChannelPtr();
+              ptr->setReadCallBack(readcallback);
+              ptr->setWriteCallBack(writecallback);
+              ptr->setChangeTcpMapIndex(std::bind(&TcpServer::changeTcpMapIndex,this,std::placeholders::_1));
+              connectionptrmap.insert(make_pair(fd_,ptr));
               return channel;
         }
 
-        void start()
+        void TcpServer::start()
         {
-
-
+            loop.loop();
         }
+
+        
+        void checkMapIndex()
+        {
+            for(auto iter : connectionptrmap)
+            {
+                if(iter->first < 0)
+                {
+                    if(iter->second->handleWriteForTcpServer())
+                        connectionptrmap.erase(iter);
+                }
+            }
+        }
+
 
     }
 }

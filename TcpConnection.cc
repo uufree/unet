@@ -9,23 +9,48 @@ namespace unet
 {
     namespace net
     {
-        TcpConnection::TcpConnection(EventLoop* loop_,int fd_,const InetAddr& serveraddr_,const InetAddr& clientaddr_) :
-            loop(loop_),consocket(fd_),serveraddr(serveraddr_),     clientaddr(clientaddr_)
+        TcpConnection::TcpConnection(EventLoop* loop_,int fd_) :
+            loop(loop_),confd(fd_)
         {};
 
 //if inputbuffer over highwater,handle it and put it in outputbuffer,otherwize,update inputbuffer and outputbuffer
         void TcpConnection::handleRead()
         {   
-            
-
+            inputbuffer.readInSocket(confd.getFd());
+            messagecallback(&inputbuffer,&outputbuffer);
         }
 
         void TcpConnection::handleWrite()
         {
-
-
+            outputbuffer.writeInSocket(confd.getFd());
+            messagecallback(&inputbuffer,&outputbuffer);
         }
-        
+
+        bool TcpConnection::handleWriteForTcpServer()
+        {
+            outputbuffer.writeInSocket(confd.getFd());
+            return outputbuffer.getDataSize == 0;
+        }
+
+        void TcpConnection::handleClose()
+        {
+            int fd = confd.getFd();
+
+            if(outputbuffer.getDataSize() != 0)
+            {
+                outputbuffer.writeInSocket(fd);    
+                if(outputbuffer.getDataSize() != 0)
+                {
+                    socket::shutdownRead(fd);
+                    changetcpmapindex(fd);
+                }
+                else
+                {
+                    socket::close(fd);
+                }
+            }
+        }
+
     }
 }
 

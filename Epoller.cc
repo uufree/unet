@@ -87,7 +87,6 @@ namespace unet
             
             if(channel_->getEvent() == KNoneEvent)
             {
-                channel_->//处理TcpConnection的buffer
                 removeChannel(channel_);
             }
         }

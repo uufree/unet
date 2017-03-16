@@ -38,7 +38,7 @@ namespace unet
             assert(confd >= 0);
             
             Channel* channel = newconnectioncallback(confd,clientaddr);//add TcpConnection in TcpServer
-            epoller->addInChannelList(channel);//add channel in channelList
+            epoller->addInChannelMap(channel);//add channel in channelList
         }
     }
 }

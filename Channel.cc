@@ -13,11 +13,12 @@ namespace unet
         const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
         const int Channel::KWriteEvent = EPOLLOUT;
         
-        Channel::Channel(int fd_,bool hasconnection) : fd(fd_),index(-1),event(0),revent(0),handleeventing(false),hasconnection(hasconnection_)
+        Channel::Channel(EventLoop* loop_,int fd_,bool hasconnection) : loop(loop_),fd(fd_),index(-1),event(0),revent(0),handleeventing(false),hasconnection(hasconnection_)
         {
             if(hasconnection_)
             {
-                tcpconnectionptr(new TcpConnection());//can't confirm TcpConnection's parametre
+                tcpconnectionptr(new TcpConnection(loop,fd));
+                tcpconnectionptr->setResetChannelPtr(std::bind(&Channel::resetChannelPtr,this));
                 tcpconnectionwptr(tcpconnectionptr);
             }
         };
@@ -43,11 +44,17 @@ namespace unet
                 }
                 if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
                 {
+                    if(tcpconnectionwptr.lock())
                         connectionptr->handleRead();
+                    else
+                        handleClose();
                 }
                 if(revent & EPOLLOUT)
                 {
+                    if(tcpconnectionwptr.lock())
                         connecionptr->handleWrite();
+                    else
+                        handleClose();
                 }
                 handleeventing = false;
             }
@@ -80,13 +87,13 @@ namespace unet
         
         void Channel::handleClose()
         {
-            //先处理TcpConnection中的缓冲区
-
+            TcpConnectionPtr conptr(tcpconnectionwptr.lock());
+            conptr->handleClose();
             disableAll();
         }
 
         void Channel::handleError()
-        {       
+        {
             disableAll();
         }
 

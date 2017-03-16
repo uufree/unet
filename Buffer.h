@@ -20,7 +20,7 @@ namespace unet
         class Buffer final
         {
             public:
-                Buffer() : buffer(nullptr),KBufferSize(4),level(KBufferSize/2),headindex(0),tailindex(0)
+                Buffer() : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0)
                 {
                     buffer = static_cast<char*>(malloc(KBufferSize));
                     bzero(buffer,KBufferSize);

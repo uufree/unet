@@ -8,6 +8,8 @@
 #ifndef _TCPSERVER_H
 #define _TCPSERVER_H
 
+class Buffer;
+
 namespace unet
 {
     namespace net
@@ -22,22 +24,35 @@ namespace unet
 //public interface
                 EventLoop* getEventLoop() {return loop;};
                 void start();
-                void setMessageCallBack(const MessageCallBack& cb)
-                {
-                    messagecallback = cb;
-                }
+                void setReadCallBack(const MessageCallBack& cb)
+                {readcallback = cb;}
+
+                void setWriteCallBack(const MessageCallBack& cb)
+                {writecallback = cb;};
+
+                void checkMapIndex();
 
             private:
                 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-                typedef std::function<void()> MessageCallBack;//can't confirm MessageCallBack's parameter
+                typedef std::function<void(Buffer* inputbufer_,Buffer* outputbuffer_)> MessageCallBack;
+                typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;
 
                 Channel* newConnectionCallBack(int fd_,InetAddr& clientaddr);
+                
+                void changeTcpMapIndex(int fd)
+                {   
+                    assert(connectionptrmap[fd] != connectionptrmap.end());
+                    TcpConnectionPtrMap::iterator iter = find(fd);
+                    connectionmap.erase(iter);
+                    connectionmap.insert({-iter->first,iter->second});
+                }
+
 
                 std::map<int,TcpConnectionPtr> connectionptrmap;
                 std::unique<Acceptor> acceptoruptr;
                 EventLoop* loop;
                 InetAddr* serveraddr;
-                MessageCallBack messagecallback;
+                MessageCallBack readcallback,writecallback;
         };
 
     }

@@ -30,7 +30,7 @@ namespace unet
 
             private:
                 typedef std::vector<Channel*> ChannelList;
-                typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> newConnectionCallBack;
+                typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> NewConnectionCallBack;
                 typedef std::vector<Channel*> ChannelList;
 
                 void handleRead();
@@ -40,7 +40,7 @@ namespace unet
                 Channel listenchannel;
                 Epoller epoller;
                 bool listening;
-                newConnectionCallBack newconnectioncallback;
+                NewConnectionCallBack newconnectioncallback;
         };
 
     }
