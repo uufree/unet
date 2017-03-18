@@ -16,7 +16,7 @@ namespace unet
     {
         Epoller::Epoller() :
             epollfd(::epoll_create(EPOLL_CLOEXEC))
-        {
+        {//创建一个内核维护的epollfd
             if(epollfd < 0)
             {
                 std::cout << "epollfd create errno" << std::endl;
@@ -25,12 +25,12 @@ namespace unet
         }
         
         Epoller::~Epoller()
-        {
+        {//关闭epollfd
             ::close(epollfd);
         }
 
         void Epoller::epoll(ChennelList* channels)
-        {
+        {//将epoll中活动的事件对应的channel传递进channels
             eventlist.clear();
             int activeEvents = ::epoll_wait(epollfd,&*eventlist.begin(),static_cast<int>(channelmap.size()),timeoutMs);
 
@@ -38,7 +38,7 @@ namespace unet
 
             if(activeEvents > 0)
             {
-                getActiveEvents(channels);
+                getActiveEvents(channels);//转换epollfd和channel
                 std::cout << "get activeEvents" << activeEvents << std::endl;
             }
             else if(activeEvents == 0)
@@ -55,28 +55,27 @@ namespace unet
         {
             for(EventList::iterator iter=eventlist.begin();iter!=eventlist.end();++iter)
             {   
-                fd = iter->data.fd;
+                fd = iter->data.fd;//转换然后在map中寻找，加入list
                 assert(channelmap.find(fd) != channelmap.end());
                 channels->push_back(channelmap[fd]);
             }
         }
         
         void Epoller::addInChannelMap(Channel* channel_)
-        {//增加参数,在加入epoll时就确定关注的事件
+        {//将channel加入map，顺便设置回调
             const int fd = channel_->getFd();
             assert(channelmap.find(fd) == channelmap.end());
             channelmap[fd] = channel_;
-            channel_->setIndex(fd);
-            channel_->setEvent();
-            channel_->setRemoveCallBck(std::bind(&removeChannle,this,std::placeholders::_1));
-            channel_->setUpdateCallBack(std::bind(&updateChannle,this,std::placeholders::_1));
-            update(EPOLL_CTL_ADD,channel_);
+            channel_->setIndex(fd);//设置在map中的索引
+            channel_->setEvent();//默认关注可读与可写事件
+            channel_->setUpdateCallBack(std::bind(&updateChannle,this,std::placeholders::_1));//设置更新的回调
+            update(EPOLL_CTL_ADD,channel_);//在epollfd中加入索引
         }
 
 
 
         void Epoller::updateChannel(Channel* channel_)
-        {//only change channel in events
+        {//更新已有channel中关注的事件
             const int index = channel_->getIndex();
             const int fd = channel_->getFd();
 
@@ -85,14 +84,14 @@ namespace unet
             assert(fd == index);
             update(EPOLL_CTL_MOD,channel_);
             
-            if(channel_->getEvent() == KNoneEvent)
+            if(channel_->getEvent() == KNoneEvent)//如果不关注任何的事件就移除channel
             {
                 removeChannel(channel_);
             }
         }
 
         void Epoller::update(int operation,Channel* channel_)
-        {
+        {//在epollfd中增加表项
             struct epoll_event event;
             bzero(&evnet,sizeof(event));
             event.events = channel_->getEvent();
@@ -106,7 +105,7 @@ namespace unet
         }
 
         bool Epoller::hasChannel(Channel* channel_)
-        {
+        {//判断是否有channel
             loop->assertInLoopThread();
             int fd = channel_->getFd();
             ChannelMap::const_iterator iter = channelmap.find(fd);
@@ -115,7 +114,7 @@ namespace unet
 
 //remove channelmap epollfd eventlist
         void removeChannel(Channel* channel_)
-        {
+        {//移除channel，分成三步
             const int fd = channel_->getFd();
             const int index = channel_->getIndex();
 

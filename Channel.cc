@@ -11,7 +11,7 @@ namespace unet
 {
     namespace net
     {
-        const int Channel::KNoneEvent = 0;
+        const int Channel::KNoneEvent = 0;//关注的事件的处理方式
         const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
         const int Channel::KWriteEvent = EPOLLOUT;
         
@@ -19,22 +19,21 @@ namespace unet
         {
             if(hasconnection_)
             {
-                tcpconnectionptr(new TcpConnection(loop,fd));
-                tcpconnectionptr->setResetChannelPtr(std::bind(&Channel::resetChannelPtr,this));
-                tcpconnectionwptr(tcpconnectionptr);
+                tcpconnectionptr(new TcpConnection(loop,fd));//创建ptr
+                tcpconnectionptr->setResetChannelPtr(std::bind(&Channel::resetChannelPtr,this));//注册reset掉ptr的函数
+                tcpconnectionwptr(tcpconnectionptr);//将weak_ptr绑定的shared_ptr上
             }
         };
 
         Channel::~Channel()
         {
             assert(handleeventing);
-            assert(!isinepoll);
         }
 
         void Channel::handleEvent()
         {
             if(hasconnection)
-            {//have connectionptr handle ways
+            {//处理有TcpConnectionPtr的情况
                 handleeventing = true;
                 if((revent & EPOLLHUP) && !(revent & EPOLLIN))
                 {
@@ -47,21 +46,21 @@ namespace unet
                 if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
                 {
                     if(tcpconnectionwptr.lock())
-                        connectionptr->handleRead();
+                        tcpconnectionptr->handleRead();
                     else
-                        handleClose();
+                        handleError();
                 }
                 if(revent & EPOLLOUT)
                 {
                     if(tcpconnectionwptr.lock())
-                        connecionptr->handleWrite();
+                        tcpconnecionptr->handleWrite();
                     else
-                        handleClose();
+                        handleError();
                 }
                 handleeventing = false;
             }
             else
-            {//timefd and listenfd handle ways
+            {//处理没有TcpConnection的情况，Listenfd等
                 handleeventing = true;
                 if((revent & EPOLLHUP) && !(revent & POLLIN))
                 {
@@ -88,14 +87,17 @@ namespace unet
         }
         
         void Channel::handleClose()
-        {
-            TcpConnectionPtr conptr(tcpconnectionwptr.lock());
-            conptr->handleClose();
-            disableAll();
+        {//处理正常关闭的情况
+            if(hasconnection)
+            {
+                TcpConnectionPtr conptr(tcpconnectionwptr.lock());
+                conptr->handleClose();
+            }
+            disableAll();//这个函数里面会有一个更新的操作
         }
 
         void Channel::handleError()
-        {
+        {//处理错误的情况
             disableAll();
         }
 

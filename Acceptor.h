@@ -25,10 +25,10 @@ namespace unet
         {
             public:
                 typedef std::vector<Channel*> ChannelList;
-                typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> NewConnectionCallBack;
+                typedef std::function<Channel* (int sockfd,const InetAddress& lhs)> NewConnectionCallBack;
                 typedef std::vector<Channel*> ChannelList;
                 
-                explicit Acceptor(EventLoop* loop_,const& InetAddress& addr_);
+                explicit Acceptor(EventLoop* loop_,const InetAddress& addr_);
                 Acceptor(const Acceptor& lhs) = delete;
                 Acceptor& operator(const Acceptor& lhs) = delete;
                 ~Acceptor() {};

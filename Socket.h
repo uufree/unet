@@ -48,7 +48,7 @@ namespace unet
                 assert(n >= 0);
             }
 
-            int accept(int sockfd)
+            int accept(int sockfd,InetAddress& clientaddr)
             {
                 int connetfd = ::accept(sockfd,nullptr,nullptr);         
                 assert(connetfd > 0);

@@ -28,8 +28,8 @@ namespace unet
                 typedef std::function<void(Channel* channel_)> UpdateCallBack;
                 typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
                 
-                Channel(int fd_,bool hasconnection);
-                ~Channel() {};
+                Channel(int fd_,bool hasconnection = true);
+                ~Channel();
                 Channel(const Channel& lhs) = delete;
                 Channel& operator=(const Channel& lhs)  = delete;
                 
@@ -39,18 +39,23 @@ namespace unet
                 void handleError();
 
                 void setReadCallBack(const ReadCallBack& cb)
-                {readcallback = cb;};
+                {readcallback = cb;};//在没有TcpConnection的情况下由Listenfd和Timefd注册
 
                 void setUpdateCallBack(const UpdateCallBack& cb)
-                {updatecallback = cb;};
+                {updatecallback = cb;};//Epoller注册的
 
-                int getIndex() const {return index;};
-                int getFd() const {return fd;};
+                int getIndex() const {return index;};//得到在epoller中的索引
+                int getFd() const {return fd;};//得到fd
 
-                void setIndex(int index_) {index = index_};        
+                void setIndex(int index_) {index = index_};//设置在epoller中的索引        
 
+                //设置关注的事件，默认关注读写事件，看情况关闭一些事件
                 void setEvent() {evnet |= KReadEvent & KWriteEvent;};
+                
+                //得到关注的事件
                 int getEvent() const {return event;};
+
+                //设置正在发生的事件
                 void setRevent(int revent_) {revent = revent_;};
 
                 bool isNoneEvent() const {return event== KNoneEvent;};
@@ -60,7 +65,7 @@ namespace unet
                 void disableReading() 
                 {
                     event|=~KReadEvent;
-                    updatecallback(this);
+                    updatecallback(this);//更新操作是关键
                 };
 
                 void disableWriting() 
@@ -78,7 +83,7 @@ namespace unet
                 TcpConnectionPtr getTcpConnectionPtr()
                 {return tcpconnectionptr;};
             
-                void resetChannelPtr()
+                void resetChannelPtr()//由TcpServer调用
                 {tcpconnectionptr.reset();};
             
             private:

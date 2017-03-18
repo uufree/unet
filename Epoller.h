@@ -42,9 +42,9 @@ namespace unet
                 void update(int operation,Channel* channel_);
                 void getActiveEvents(ChannelList* channels);
 
-                EventList eventlist;
-                int epollfd;
-                ChannelMap channelmap;
+                EventList eventlist;//保存epollfd的数组
+                int epollfd;//内核维护的epollfd表
+                ChannelMap channelmap;//保存Channel的Map
         };    
     }
 }
