@@ -11,6 +11,11 @@
 //确信讨论一点，当一个连接建立起来之后，关注的事件应该不会再变了
 //confd关注可写和可读事件，listenfd关注可读事件,timefd关注可读事件
 
+#include<memory>
+#include<functional>
+
+class EventLoop;
+
 namespace unet
 {
     namespace net
@@ -18,6 +23,11 @@ namespace unet
         class Channel final
         {
             public:
+                typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
+                typedef std::function<void()> EventCallBack; 
+                typedef std::function<void(Channel* channel_)> UpdateCallBack;
+                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+                
                 Channel(int fd_,bool hasconnection);
                 ~Channel() {};
                 Channel(const Channel& lhs) = delete;
@@ -36,14 +46,14 @@ namespace unet
 
                 int getIndex() const {return index;};
                 int getFd() const {return fd;};
-                void setIndex(int index_) {index = index_};
-                
-                void setEvent() {evnet |= KReadEvent & KWriteEvent;};
 
+                void setIndex(int index_) {index = index_};        
+
+                void setEvent() {evnet |= KReadEvent & KWriteEvent;};
                 int getEvent() const {return event;};
                 void setRevent(int revent_) {revent = revent_;};
 
-                bool isNoneEvent() const {return event == KNoneEvent;};
+                bool isNoneEvent() const {return event== KNoneEvent;};
                 bool isReading() const {return event == KReadEvent;};
                 bool isWriting() const {return event == KWirteEvent;};
 
@@ -72,12 +82,6 @@ namespace unet
                 {tcpconnectionptr.reset();};
             
             private:
-                typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
-                typedef std::function<void()> EventCallBack; 
-                typedef std::function<void(Channel* channel_)> UpdateCallBack;
-                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-                
-
                 EventLoop* loop;
                 const int fd;
                 int index;
@@ -97,8 +101,6 @@ namespace unet
         };
     }
 }
-
-
 
 #endif
 

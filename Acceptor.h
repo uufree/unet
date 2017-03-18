@@ -8,6 +8,15 @@
 #ifndef _ACCEPTOR_H
 #define _ACCEPTOR_H
 
+#include<vector>
+#include<functional>
+
+class Epoller;
+class EventLoop;
+class Socket;
+class Channel;
+class InetAddress;
+
 namespace unet
 {
     namespace net
@@ -15,7 +24,11 @@ namespace unet
         class Acceptor final
         {
             public:
-                Acceptor(EventLoop* loop_,const& InetAddress& addr_);
+                typedef std::vector<Channel*> ChannelList;
+                typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> NewConnectionCallBack;
+                typedef std::vector<Channel*> ChannelList;
+                
+                explicit Acceptor(EventLoop* loop_,const& InetAddress& addr_);
                 Acceptor(const Acceptor& lhs) = delete;
                 Acceptor& operator(const Acceptor& lhs) = delete;
                 ~Acceptor() {};
@@ -26,12 +39,7 @@ namespace unet
 
                 void setNewConnectionCallBack(const newConnectionCallBack& cb)
                 {newconnectioncallback = cb;};
-
-
             private:
-                typedef std::vector<Channel*> ChannelList;
-                typedef std::function<Channel* (int sockfd,const InetAddr& lhs)> NewConnectionCallBack;
-                typedef std::vector<Channel*> ChannelList;
 
                 void handleRead();
 

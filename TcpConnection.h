@@ -8,7 +8,11 @@
 #ifndef _TCPCONNECTION_H
 #define _TCPCONNECTION_H
 
+#include<functional>
+
 class Buffer;
+class Socket;
+class EventLoop;
 
 namespace unet
 {
@@ -17,6 +21,10 @@ namespace unet
         class TcpConnection final
         {
             public:
+                typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
+                typedef std::function<void()> ResetChannelPtr;
+                typedef std::function<void(int fd)> ChangeTcpMapIndex;
+                
                 TcpConnection(EventLoop* loop_,int fd_);
                 TcpConnection(const TcpConnection& lhs) = delete;
                 TcpConnection& operator=(const TcpConnection& lhs) = delete;
@@ -44,14 +52,11 @@ namespace unet
                 void handleClose();
 
             private:
-                typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
-                typedef std::function<void()> ResetChannelPtr;
-                typedef std::function<void(int fd)> ChangeTcpMapIndex;
 
                 EventLoop* loop;
                 Socket confd;
-                OutputBuffer outputbuffer;
-                InputBuffer inputbuffer;
+                Buffer outputbuffer;
+                Buffer inputbuffer;
                 MessageCallBack readcallback;
                 MessageCallBack writecallback;
                 ResetChannelPtr resetchannelptr;

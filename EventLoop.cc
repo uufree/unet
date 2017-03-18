@@ -4,6 +4,9 @@
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年03月10日 星期五 00时53分33秒
  ************************************************************************/
+#include"EventLoop.h"
+#include"Channel.h"
+#include<assert.h>
 
 namespace unet 
 {
@@ -22,9 +25,9 @@ namespace unet
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
-                    for(ChannelList::iterator iter=activechannels.begin();itre!=activechannels.end();++iter)
+                    for(ChannelList::iterator iter=activechannels.begin();iter!=activechannels.end();++iter)
                     {
-                        *it->handleEvent();
+                        *iter->handleEvent();
                     }
                     eventhandling = false;
                 }
@@ -36,7 +39,7 @@ namespace unet
             looping = false;
         }
 
-        void EventLoop::quit()
+        void EventLoop::setQuit()
         {
             quit = true;
         }
@@ -44,7 +47,7 @@ namespace unet
         ChannelList* EventLoop::getChannelList()
         {
             activechannels.clear();
-            return &activeChannels;
+            return &activechannels;
         }
     }
 }

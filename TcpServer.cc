@@ -5,6 +5,12 @@
 	> Created Time: 2017年03月11日 星期六 19时18分41秒
  ************************************************************************/
 
+#include"Buffer.h"
+#include"Channel.h"
+#include"InetAddress.h"
+#include"EventLoop.h"
+#include"TcpServer.h"
+
 namespace unet
 {
     namespace net

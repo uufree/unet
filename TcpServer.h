@@ -8,7 +8,14 @@
 #ifndef _TCPSERVER_H
 #define _TCPSERVER_H
 
+#include<memory>
+#include<functional>
+#include<map>
+
 class Buffer;
+class Channel;
+class InetAddress;
+class EventLoop;
 
 namespace unet
 {
@@ -17,9 +24,13 @@ namespace unet
         class TcpServer final
         {
             public:
+                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+                typedef std::function<void(Buffer* inputbufer_,Buffer* outputbuffer_)> MessageCallBack;
+                typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;
+                
                 TcpServer(EventLoop* eventloop_);
                 TcpServer(const TcpServer& lhs) = delete;
-                TcpServer& operator(const TcpServer& lhs) = delete;
+                TcpServer& operator=(const TcpServer& lhs) = delete;
                 ~TcpServer() {};
 //public interface
                 EventLoop* getEventLoop() {return loop;};
@@ -33,10 +44,6 @@ namespace unet
                 void checkMapIndex();
 
             private:
-                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-                typedef std::function<void(Buffer* inputbufer_,Buffer* outputbuffer_)> MessageCallBack;
-                typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;
-
                 Channel* newConnectionCallBack(int fd_,InetAddr& clientaddr);
                 
                 void changeTcpMapIndex(int fd)
@@ -47,11 +54,10 @@ namespace unet
                     connectionmap.insert({-iter->first,iter->second});
                 }
 
-
                 std::map<int,TcpConnectionPtr> connectionptrmap;
                 std::unique<Acceptor> acceptoruptr;
                 EventLoop* loop;
-                InetAddr* serveraddr;
+                InetAddress* serveraddr;
                 MessageCallBack readcallback,writecallback;
         };
 

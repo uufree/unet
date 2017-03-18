@@ -4,6 +4,8 @@
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年03月09日 星期四 20时56分25秒
  ************************************************************************/
+#include"EventLoop.h"
+#include"Channel.h"
 
 namespace unet
 {

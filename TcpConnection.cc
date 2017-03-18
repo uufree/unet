@@ -5,6 +5,12 @@
 	> Created Time: 2017年03月12日 星期日 09时50分36秒
  ************************************************************************/
 
+#include"TcpConnection.h"
+#include"Buffer.h"
+#include"Socket.h"
+#include"EventLoop.h"
+#include<assert.h>
+
 namespace unet
 {
     namespace net

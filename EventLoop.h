@@ -12,6 +12,7 @@
 #include<functional>
 #include<memory>
 
+class Channel;
 
 namespace unet
 {
@@ -20,21 +21,21 @@ namespace unet
         class EventLoop final
         {
             public:
+                typedef std::vector<Channel*> ChannelList;
+                typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
+                
                 EventLoop();
                 EventLoop(const EventLoop&) = delete;
                 EventLoop& operator=(const EventLoop&) = delete;
                 ~EventLoop();
 //punlic interface
                 void loop();
-                void quit();
+                void setQuit();
                 ChannelList* getChannelList();
-                void setGetActiveChannelsCallBack(const ActiveCallBack& cb)
-                {acticecallback = cb;};
+                void setGetActiveChannelsCallBack(const GetActiveChannelCallBack& cb)
+                {activecallback = cb;};
 
             private:
-                typedef std::vector<Channel*> ChannelList;
-                typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
-                
                 bool looping;
                 bool quit;
                 bool eventhandling;

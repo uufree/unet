@@ -10,8 +10,9 @@
 
 #include<vector>
 #include<map>
-#include"Timestamp.h"
+#include<functional>
 
+class Channel;
 struct epoll_event;
 
 namespace unet
@@ -21,6 +22,10 @@ namespace unet
         class Epoller final
         {
             public:
+                typedef std::vector<struct epoll_event> EventList;
+                typedef std::map<int,Channel*> ChannelMap;
+                typedef std::vector<Channel*> ChannelList;
+                
                 Epoller(EventLoop* loop_);
                 Epoller(const Epoller&) = delete;
                 Epoller operator(const Epoller&) = delete;
@@ -33,9 +38,6 @@ namespace unet
                 void addInChannelMap(Channel* channel_);
 
             private:
-                typedef std::vector<struct epoll_event> EventList;
-                typedef std::map<int,Channel*> ChannelMap;
-                typedef std::vector<Channel*> ChannelList;
 
                 void update(int operation,Channel* channel_);
                 void getActiveEvents(ChannelList* channels);
