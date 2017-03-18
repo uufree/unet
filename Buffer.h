@@ -1,8 +1,8 @@
 /*************************************************************************
-	> File Name: Buffer.h
-	> Author: uuchen
-	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月14日 星期二 19时28分38秒
+  > File Name: Buffer.h
+  > Author: uuchen
+  > Mail: 1319081676@qq.com
+  > Created Time: 2017年03月14日 星期二 19时28分38秒
  ************************************************************************/
 
 #ifndef _BUFFER_H
@@ -20,42 +20,42 @@ namespace unet
         class Buffer final
         {
             public:
-                Buffer() : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0)
-                {
-                    buffer = static_cast<char*>(malloc(KBufferSize));
-                    bzero(buffer,KBufferSize);
-                };
+                explicit Buffer() : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0)
+            {
+                buffer = static_cast<char*>(malloc(KBufferSize));
+                bzero(buffer,KBufferSize);
+            };
 
                 Buffer(const Buffer& lhs) = delete;
                 Buffer& operator=(const Buffer& lhs) = delete;
 
-                ~Buffer()
+                explicit ~Buffer()
                 {
                     free(buffer);
                 };
-//public interface
+                //public interface
                 void readInSocket(int fd);
                 void writeInSocket(int fd);
 
                 void appendInBuffer(const void* message);
                 void* getInBuffer();
-                
-                int getDataSize()
+
+                int getDataSize() const 
                 {return tailindex - headindex;};
 
-                int getFreeSize()
+                int getFreeSize() const 
                 {return KBufferSize - tailindex;};
 
-                bool needMove()
+                bool needMove() const
                 {return headindex >= level;};
-       
-                int getHeadIndex()
+
+                int getHeadIndex() const 
                 {return headindex;};
 
-                int getTailIndex()
+                int getTailIndex() const 
                 {return tailindex;};
-        
-                int getBufferSize()
+
+                int getBufferSize() const 
                 {return KBufferSize;};
 
             private:
@@ -67,27 +67,6 @@ namespace unet
         };        
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
