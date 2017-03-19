@@ -6,6 +6,8 @@
  ************************************************************************/
 
 #include"Buffer.h"
+#include<iostream>
+#include<unistd.h>
 
 namespace unet
 {
@@ -26,7 +28,7 @@ namespace unet
     
             if(n < 0)
             {
-                std::cerr << "readv error!" << endl;
+                std::cerr << "readv error!" << std::endl;
             }
             else if(n < freesize && n > 0)
             {
@@ -92,7 +94,7 @@ namespace unet
             int datasize = getDataSize();
             void* chlist = malloc(datasize);
             bzero(chlist,datasize);
-            memcpy(chlist,static_cast<vdoi*>(buffer+headindex),datasize);
+            memcpy(chlist,static_cast<void*>(buffer+headindex),datasize);
             return chlist;
         }
     }

@@ -11,24 +11,26 @@
 //确信讨论一点，当一个连接建立起来之后，关注的事件应该不会再变了
 //confd关注可写和可读事件，listenfd关注可读事件,timefd关注可读事件
 
-#include<memory>
-#include<functional>
+#include"TcpConnection.h"
 
 class EventLoop;
+class TcpConnection;
+class Channel;
 
 namespace unet
 {
     namespace net
     {
+        typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
+        typedef std::function<void()> EventCallBack; 
+        typedef std::function<void(Channel* channel_)> UpdateCallBack;
+        typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;     
+        
         class Channel final
         {
             public:
-                typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
-                typedef std::function<void()> EventCallBack; 
-                typedef std::function<void(Channel* channel_)> UpdateCallBack;
-                typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
                 
-                Channel(int fd_,bool hasconnection = true);
+                Channel(EventLoop* loop_,int fd_,bool hasconnection_ = true);
                 ~Channel();
                 Channel(const Channel& lhs) = delete;
                 Channel& operator=(const Channel& lhs)  = delete;
@@ -38,7 +40,7 @@ namespace unet
                 void handleClose();
                 void handleError();
 
-                void setReadCallBack(const ReadCallBack& cb)
+                void setReadCallBack(const EventCallBack& cb)
                 {readcallback = cb;};//在没有TcpConnection的情况下由Listenfd和Timefd注册
 
                 void setUpdateCallBack(const UpdateCallBack& cb)
@@ -47,10 +49,10 @@ namespace unet
                 int getIndex() const {return index;};//得到在epoller中的索引
                 int getFd() const {return fd;};//得到fd
 
-                void setIndex(int index_) {index = index_};//设置在epoller中的索引        
+                void setIndex(int index_) {index = index_;};//设置在epoller中的索引        
 
                 //设置关注的事件，默认关注读写事件，看情况关闭一些事件
-                void setEvent() {evnet |= KReadEvent & KWriteEvent;};
+                void setEvent() {event |= KReadEvent & KWriteEvent;};
                 
                 //得到关注的事件
                 int getEvent() const {return event;};
@@ -60,7 +62,7 @@ namespace unet
 
                 bool isNoneEvent() const {return event== KNoneEvent;};
                 bool isReading() const {return event == KReadEvent;};
-                bool isWriting() const {return event == KWirteEvent;};
+                bool isWriting() const {return event == KWriteEvent;};
 
                 void disableReading() 
                 {

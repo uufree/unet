@@ -6,36 +6,32 @@
  ************************************************************************/
 
 #include"TcpConnection.h"
-#include"Buffer.h"
-#include"Socket.h"
-#include"EventLoop.h"
 #include<assert.h>
 
 namespace unet
 {
     namespace net
     {
-        TcpConnection::TcpConnection(EventLoop* loop_,int fd_) :
-            loop(loop_),confd(fd_)
+        TcpConnection::TcpConnection(int fd_) : confd(fd_)
         {};
 
 //if inputbuffer over highwater,handle it and put it in outputbuffer,otherwize,update inputbuffer and outputbuffer
         void TcpConnection::handleRead()
         {//处理读事件   
             inputbuffer.readInSocket(confd.getFd());
-            messagecallback(&inputbuffer,&outputbuffer);
+            readcallback(&inputbuffer,&outputbuffer);
         }
 
         void TcpConnection::handleWrite()
         {//处理写事件
             outputbuffer.writeInSocket(confd.getFd());
-            messagecallback(&inputbuffer,&outputbuffer);
+            writecallback(&inputbuffer,&outputbuffer);
         }
 
         bool TcpConnection::handleWriteForTcpServer()
         {//在TcpServer处理将死未死的连接时，用到这个函数，将buffer中的数据发出去，然后判断是否还有数据
             outputbuffer.writeInSocket(confd.getFd());
-            return outputbuffer.getDataSize == 0;
+            return outputbuffer.getDataSize() == 0;
         }
 
         void TcpConnection::handleClose()

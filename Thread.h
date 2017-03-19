@@ -14,66 +14,69 @@
 
 namespace unet
 {
-    void* runInThread(void* arg)
+    namespace thread
     {
-        typedef std::function<void ()> ThreadFunc;
-        ThreadFunc* thread(static_cast<ThreadFunc*>(arg));
+        void* runInThread(void* arg)
+        {
+            typedef std::function<void ()> ThreadFunc;
+            ThreadFunc* thread(static_cast<ThreadFunc*>(arg));
 
-        (*thread)();
-    }
+            (*thread)();
+            return 0;
+        };
 
-    class Thread final
-    {
-        public:
-            typedef std::function<void()> ThreadFunc;
+        class Thread final
+        {
+            public:
+                typedef std::function<void()> ThreadFunc;
 
-            explicit Thread(const ThreadFunc& thread) : threadid(0),started(false),joined(false),threadfunc(thread)
-            {};
+                explicit Thread(const ThreadFunc& thread) : threadid(0),started(false),joined(false),threadfunc(thread)
+                {};
 
-            explicit Thread(ThreadFunc&& thread) : threadid(0),started(false),joined(false),threadfunc(std::move(thread))
-            {};
+                explicit Thread(ThreadFunc&& thread) : threadid(0),started(false),joined(false),threadfunc(std::move(thread))
+                {};
 
-            Thread(const Thread&) = delete;
-            Thread& operator=(const Thread&) = delete;
+                Thread(const Thread&) = delete;
+                Thread& operator=(const Thread&) = delete;
 
-            pthread_t getThreadid()
-            {
-                return threadid;
-            }
-                
-            ~Thread()
-            {
-                if(started && !joined)
+                pthread_t getThreadid()
                 {
-                    pthread_detach(threadid);
+                    return threadid;
+                }   
+                
+                ~Thread()
+                {
+                    if(started && !joined)
+                    {
+                        pthread_detach(threadid);
+                    }
                 }
-            }
 
-            int start()
-            {
-                assert(!started);
-                started = true;
+                int start()
+                {
+                    assert(!started);
+                    started = true;
             
-                return pthread_create(&threadid,NULL,unet::runInThread,&threadfunc);
-            }
+                    return pthread_create(&threadid,NULL,unet::thread::runInThread,&threadfunc);
+                }
 
-            int join()
-            {
-                assert(started);
-                assert(!joined);
+                int join()
+                {
+                    assert(started);
+                    assert(!joined);
         
-                joined = true;
+                    joined = true;
 
-                return pthread_join(threadid,NULL);
-            }
+                    return pthread_join(threadid,NULL);
+                }
 
-        private:
-            pthread_t threadid;
-            bool started;
-            bool joined;
-            ThreadFunc threadfunc;
-
-    };
+            private:
+                pthread_t threadid;
+                bool started;
+                bool joined;
+                ThreadFunc threadfunc;
+        };
+    }
 
 }
             

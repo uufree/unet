@@ -4,7 +4,8 @@
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年03月09日 星期四 20时56分25秒
  ************************************************************************/
-#include"EventLoop.h"
+#include<sys/epoll.h>
+#include<assert.h>
 #include"Channel.h"
 
 namespace unet
@@ -15,7 +16,7 @@ namespace unet
         const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
         const int Channel::KWriteEvent = EPOLLOUT;
         
-        Channel::Channel(EventLoop* loop_,int fd_,bool hasconnection) : loop(loop_),fd(fd_),index(-1),event(0),revent(0),handleeventing(false),hasconnection(hasconnection_)
+        Channel::Channel(EventLoop* loop_,int fd_,bool hasconnection_ = true) : loop(loop_),fd(fd_),index(-1),event(0),revent(0),handleeventing(false),hasconnection(hasconnection_)
         {
             if(hasconnection_)
             {
@@ -39,7 +40,7 @@ namespace unet
                 {
                     handleClose();
                 }
-                if(revent & (EPOLLERR | EPOLLNVAL))
+                if(revent & (EPOLLERR))
                 {   
                     handleError();
                 }
@@ -62,11 +63,11 @@ namespace unet
             else
             {//处理没有TcpConnection的情况，Listenfd等
                 handleeventing = true;
-                if((revent & EPOLLHUP) && !(revent & POLLIN))
+                if((revent & EPOLLHUP) && !(revent & EPOLLIN))
                 {
                         handleClose();
                 }
-                if(revent & (EPOLLERR | EPOLLNVAL))
+                if(revent & (EPOLLERR))
                 {      
                         handleError();
                 }

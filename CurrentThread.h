@@ -9,6 +9,7 @@
 #define _CURRENTTHREAD_H
 
 #include<sys/syscall.h>
+#include<unistd.h>
 
 namespace unet
 {

@@ -8,32 +8,31 @@
 #ifndef _EVENTLOOP_H
 #define _EVENTLOOP_H
 
-#include<vector>
+#include"Epoller.h"
 #include<functional>
-#include<memory>
 
 class Channel;
 
 namespace unet
 {
     namespace net
-    {
+    { 
         class EventLoop final
         {
-            public:
-                typedef std::vector<Channel*> ChannelList;
-                typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
-                
+            typedef std::vector<Channel*> ChannelList;
+            typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
+
+            public:                                
                 EventLoop();
                 EventLoop(const EventLoop&) = delete;
                 EventLoop& operator=(const EventLoop&) = delete;
-                ~EventLoop();
+                ~EventLoop() {};
 //punlic interface
                 void loop();
                 void setQuit();
                 ChannelList* getChannelList();
-                void setGetActiveChannelsCallBack(const GetActiveChannelCallBack& cb)
-                {activecallback = cb;};
+                void setGetActiveChanneslCallBack(const GetActiveChannelsCallBack& cb)
+                {activecallback = cb;};//由Epoller注册
 
             private:
                 bool looping;

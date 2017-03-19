@@ -8,7 +8,6 @@
 #include"Epoller.h"
 #include<sys/epoll.h>
 #include<assert.h>
-#include"Channel.h"
 
 namespace unet
 {

@@ -5,23 +5,25 @@
 	> Created Time: 2017年03月17日 星期五 19时36分18秒
  ************************************************************************/
 
-#include"SocketText.h"
+#include"../Socket.h"
+#include"../InetAddress.h"
+#include<iostream>
 
 
 int main(int argc,char** argv)
 {
-    int listenfd = net::socket();
-    net::InetAddress addr(7777);
+    int listenfd = unet::net::socket::socket();
+    unet::net::InetAddress addr(7777);
 
-    net::bind(listenfd,&addr);
-    net::listen(listenfd);
-    cout << "listenfd: " << listenfd << endl;
+    unet::net::socket::bind(listenfd,&addr);
+    unet::net::socket::listen(listenfd);
+    std::cout << "listenfd: " << listenfd << std::endl;
 
-    int confd = net::accept(listenfd);
-    cout << "confd: " << confd << endl;
+    int confd = unet::net::socket::accept(listenfd);
+    std::cout << "confd: " << confd << std::endl;
 
-    net::close(listenfd);
-    net::close(confd);
+    unet::net::socket::close(listenfd);
+    unet::net::socket::close(confd);
     return 0;
 }
 

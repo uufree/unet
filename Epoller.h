@@ -8,27 +8,24 @@
 #ifndef _EPOLLER_H
 #define _EPOLLER_H
 
-#include<vector>
-#include<map>
-#include<functional>
+#include"EventLoop.h"
+#include"Channel.h"
 
-class Channel;
 struct epoll_event;
 
 namespace unet
 {
     namespace net
-    {
+    { 
         class Epoller final
         {
-            public:
-                typedef std::vector<struct epoll_event> EventList;
-                typedef std::map<int,Channel*> ChannelMap;
-                typedef std::vector<Channel*> ChannelList;
-                
+            typedef std::vector<struct epoll_event> EventList;
+            typedef std::map<int,Channel*> ChannelMap;
+            
+            public:    
                 Epoller(EventLoop* loop_);
                 Epoller(const Epoller&) = delete;
-                Epoller operator(const Epoller&) = delete;
+                Epoller operator=(const Epoller&) = delete;
                 ~Epoller();
 //public interface 
                 void epoll(ChannelList* channels);

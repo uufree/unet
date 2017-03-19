@@ -10,6 +10,14 @@
 
 #include<assert.h>
 #include"InetAddress.h"
+#include<netinet/in.h>
+#include<string.h>
+#include<arpa/inet.h>
+#include<sys/socket.h>
+#include<assert.h>
+#include<netinet/tcp.h>
+#include<fcntl.h>
+#include<unistd.h>
 
 namespace unet
 {
@@ -48,7 +56,7 @@ namespace unet
                 assert(n >= 0);
             }
 
-            int accept(int sockfd,InetAddress& clientaddr)
+            int accept(int sockfd)
             {
                 int connetfd = ::accept(sockfd,nullptr,nullptr);         
                 assert(connetfd > 0);

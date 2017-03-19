@@ -6,19 +6,14 @@
  ************************************************************************/
 
 #include"Acceptor.h"
-#include"Epoller.h"
-#include"Socket.h"
-#include"InetAddress.h"
-#include"Channel.h"
-#include"EventLoop.h"
 
 namespace unet
 {
     namespace net
     {
-        Acceptor::Acceptor(EventLoop* loop_,const InetAddr& addr_)
-            : loop(loop_),listenfd(socket::socket(....)),
-            listenchannel(loop,listenfd.getSocket()),
+        Acceptor::Acceptor(EventLoop* loop_,const InetAddress* addr_)
+            : loop(loop_),serveraddr(addr_),listenfd(socket::socket()),
+            listenchannel(loop,listenfd.getFd()),
             epoller(loop_),listening(false)
         {
             socket::bind(listenfd.getSocket(),addr_);//设置监听套接字
@@ -29,7 +24,7 @@ namespace unet
         void Acceptor::listen()
         {//将listenfd设置为可读的，并且加入到epoller中
             listening = true;
-            socket::listen(listenfd.getSocket());
+            socket::listen(listenfd.getFd());
             epoller->addInChannelMap(&listenchannel);
         }
 

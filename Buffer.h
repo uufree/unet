@@ -10,6 +10,7 @@
 
 #include<string.h>
 #include<sys/uio.h>
+#include<malloc.h>
 
 //目前版本只支持固定大小的数据传输
 
@@ -29,7 +30,7 @@ namespace unet
                 Buffer(const Buffer& lhs) = delete;
                 Buffer& operator=(const Buffer& lhs) = delete;
 
-                explicit ~Buffer()
+                ~Buffer()
                 {
                     free(buffer);
                 };

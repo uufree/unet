@@ -5,10 +5,6 @@
 	> Created Time: 2017年03月11日 星期六 19时18分41秒
  ************************************************************************/
 
-#include"Buffer.h"
-#include"Channel.h"
-#include"InetAddress.h"
-#include"EventLoop.h"
 #include"TcpServer.h"
 
 namespace unet
@@ -28,19 +24,20 @@ namespace unet
               ptr->setReadCallBack(readcallback);//设置处理消息的方式
               ptr->setWriteCallBack(writecallback);
               ptr->setChangeTcpMapIndex(std::bind(&TcpServer::changeTcpMapIndex,this,std::placeholders::_1));//控制最外面的TcpConnectionMap，区别对待残余的连接
-              connectionptrmap.insert(make_pair(fd_,ptr));//将得到的结果插入map中
+              tcpconnectionptrmap.insert(make_pair(fd_,ptr));//将得到的结果插入map中
               return channel;//返回的Channel交由Epoller处理（放入Epoller的map中）
         }
 
         void TcpServer::start()
         {//启动Loop循环
-            loop.loop();
+            acceptor.listen();
+            loop->loop();
         }
 
         
         void checkMapIndex()
         {//遍历map处理将死未死的连接
-            for(auto iter : connectionptrmap)
+            for(auto iter : tcpconnectionptrmap)
             {
                 if(iter->first < 0)
                 {

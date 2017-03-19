@@ -8,29 +8,27 @@
 #ifndef _TCPCONNECTION_H
 #define _TCPCONNECTION_H
 
-#include<functional>
-
-class Buffer;
-class Socket;
-class EventLoop;
+#include"Buffer.h"
+#include"Socket.h"
+#include"Typedef.h"
 
 namespace unet
 {
     namespace net
-    {
+    {  
         class TcpConnection final
         {
-            public:
-                typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
-                typedef std::function<void()> ResetChannelPtr;
-                typedef std::function<void(int fd)> ChangeTcpMapIndex;
-                
-                TcpConnection(EventLoop* loop_,int fd_);
+            typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
+            typedef std::function<void()> ResetChannelPtr;
+            typedef std::function<void(int fd)> ChangeTcpMapIndex;
+
+            public:        
+                TcpConnection(int fd_);
                 TcpConnection(const TcpConnection& lhs) = delete;
                 TcpConnection& operator=(const TcpConnection& lhs) = delete;
                 ~TcpConnection() {};
 //public interface
-                void setReadCallBack(const MessageCallBakc& cb)
+                void setReadCallBack(const MessageCallBack& cb)
                 {readcallback = cb;};//由TcpServer注册
 
                 void setWriteCallBack(const MessageCallBack& cb)
@@ -53,15 +51,13 @@ namespace unet
                 void handleClose();
 
             private:
-                EventLoop* loop;
-                Socket confd;//处理已连接套接字的关闭问题
+                socket::Socket confd;//处理已连接套接字的关闭问题
                 Buffer outputbuffer;//消息输出的buffer
                 Buffer inputbuffer;//消息输入的buffer
                 MessageCallBack readcallback, writecallback;
                 ResetChannelPtr resetchannelptr;
-                ChangeTcpMapIndex changeTcpMapIndex;//处理在TcpServer中的索引问题
+                ChangeTcpMapIndex changetcpmapindex;//处理在TcpServer中的索引问题
         };
-
     }
 }
                 

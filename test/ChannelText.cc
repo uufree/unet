@@ -1,12 +1,17 @@
 /*************************************************************************
-	> File Name: text.cc
+	> File Name: ChannelText.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月18日 星期六 00时18分57秒
+	> Created Time: 2017年03月19日 星期日 12时20分46秒
  ************************************************************************/
 
-#include"SocketText.h"
+#include"../Channel.h"
+#include"../EventLoop.h"
 
 int main(int argc,char** argv)
 {
+    unet::net::EventLoop loop;
+    unet::net::Channel(&loop,3);
+    return 0;
+}
 

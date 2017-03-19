@@ -4,15 +4,16 @@
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年03月10日 星期五 00时53分33秒
  ************************************************************************/
+
 #include"EventLoop.h"
-#include"Channel.h"
 #include<assert.h>
+#include<iostream>
 
 namespace unet 
 {
     namespace net
     {
-        EventLoop::EventLoop() : looping(false),quit(false),evnethandling(false)
+        EventLoop::EventLoop() : looping(false),quit(false),eventhandling(false)
         {};
 
         void EventLoop::loop()
@@ -21,7 +22,7 @@ namespace unet
             quit = false;
             while(!quit)
             {
-                activecallback(&activechannels);
+//                activecallback(&activechannels);
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
