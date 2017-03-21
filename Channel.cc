@@ -16,13 +16,20 @@ namespace unet
         const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
         const int Channel::KWriteEvent = EPOLLOUT;
         
-        Channel::Channel(EventLoop* loop_,int fd_,bool hasconnection_ = true) : loop(loop_),fd(fd_),index(-1),event(0),revent(0),handleeventing(false),hasconnection(hasconnection_)
+        Channel::Channel(int fd_,bool hasconnection_) : 
+        fd(fd_),
+        index(-1),
+        event(0),
+        revent(0),
+        handleeventing(false),
+        hasconnection(hasconnection_),
+        tcpconnectionptr(new TcpConnection(3)),
+        tcpconnectionwptr(tcpconnectionptr)
         {
-            if(hasconnection_)
+            if(!hasconnection_)
             {
-                tcpconnectionptr(new TcpConnection(loop,fd));//创建ptr
-                tcpconnectionptr->setResetChannelPtr(std::bind(&Channel::resetChannelPtr,this));//注册reset掉ptr的函数
-                tcpconnectionwptr(tcpconnectionptr);//将weak_ptr绑定的shared_ptr上
+                tcpconnectionptr.reset();
+                tcpconnectionwptr.reset();        
             }
         };
 
@@ -46,17 +53,23 @@ namespace unet
                 }
                 if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
                 {
-                    if(tcpconnectionwptr.lock())
-                        tcpconnectionptr->handleRead();
-                    else
-                        handleError();
+                    {
+                        TcpConnectionPtr wptr = tcpconnectionwptr.lock();
+                        if(wptr)
+                            wptr->handleRead();
+                        else
+                            handleError();
+                    }
                 }
                 if(revent & EPOLLOUT)
                 {
-                    if(tcpconnectionwptr.lock())
-                        tcpconnecionptr->handleWrite();
-                    else
-                        handleError();
+                    {
+                        TcpConnectionPtr wptr = tcpconnectionwptr.lock();
+                        if(wptr)
+                            wptr->handleWrite();
+                        else
+                            handleError();
+                    }
                 }
                 handleeventing = false;
             }
@@ -76,12 +89,6 @@ namespace unet
                 {
                     if(readcallback)
                         readcallback();
-                }
-
-                if(revent & EPOLLOUT)
-                {
-                    if(writecallback)
-                        writecallback();
                 }
                 handleeventing = false;
             }

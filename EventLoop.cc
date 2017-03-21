@@ -22,13 +22,13 @@ namespace unet
             quit = false;
             while(!quit)
             {
-//                activecallback(&activechannels);
+                activecallback(&activechannels);
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
                     for(ChannelList::iterator iter=activechannels.begin();iter!=activechannels.end();++iter)
                     {
-                        *iter->handleEvent();
+                        (*iter)->handleEvent();
                     }
                     eventhandling = false;
                 }
@@ -36,6 +36,13 @@ namespace unet
                 {
                     std::cout << "nothing happend!" << std::endl;
                 }
+
+                if(!functorlist.empty())
+                {
+                    for(auto iter=functorlist.begin();iter!=functorlist.end();++iter)
+                        (*iter)();
+                }
+                functorlist.clear();
             }
             looping = false;
         }
@@ -43,13 +50,15 @@ namespace unet
         void EventLoop::setQuit()
         {
             quit = true;
-        }
+        };
 
+        typedef std::vector<Channel*> ChannelList;//WTF
         ChannelList* EventLoop::getChannelList()
         {
             activechannels.clear();
             return &activechannels;
         }
+
     }
 }
         

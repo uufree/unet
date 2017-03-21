@@ -1,16 +1,17 @@
 /*************************************************************************
-	> File Name: Acceptor.cc
+	> File Name: TcpServerText.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月19日 星期日 01时45分15秒
+	> Created Time: 2017年03月21日 星期二 19时57分00秒
  ************************************************************************/
 
-#include"../Acceptor.h"
+#include"../TcpServer.h"
 
 int main(int argc,char** argv)
 {
-    unet::net::InetAddress addr(9999);
-    unet::net::Acceptor acceptor(&addr);
+    unet::net::InetAddress serveraddr(9999);
+    unet::net::TcpServer server(&serveraddr);
     return 0;
 }
+
 

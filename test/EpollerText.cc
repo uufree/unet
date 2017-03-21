@@ -1,16 +1,15 @@
 /*************************************************************************
-	> File Name: Acceptor.cc
+	> File Name: EpollerText.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月19日 星期日 01时45分15秒
+	> Created Time: 2017年03月21日 星期二 02时00分22秒
  ************************************************************************/
 
-#include"../Acceptor.h"
+#include"../Epoller.h"
 
 int main(int argc,char** argv)
 {
-    unet::net::InetAddress addr(9999);
-    unet::net::Acceptor acceptor(&addr);
+    unet::net::Epoller epoller;
     return 0;
 }
 

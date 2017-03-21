@@ -8,7 +8,6 @@
 #ifndef _EPOLLER_H
 #define _EPOLLER_H
 
-#include"EventLoop.h"
 #include"Channel.h"
 
 struct epoll_event;
@@ -19,17 +18,21 @@ namespace unet
     { 
         class Epoller final
         {
+            static const int timeoutMs = 200;
+            static const int KNoneEvent = 0;
+
             typedef std::vector<struct epoll_event> EventList;
             typedef std::map<int,Channel*> ChannelMap;
-            
+            typedef std::vector<Channel*> ChannelList;
+
             public:    
-                Epoller(EventLoop* loop_);
+                Epoller();
                 Epoller(const Epoller&) = delete;
                 Epoller operator=(const Epoller&) = delete;
                 ~Epoller();
 //public interface 
                 void epoll(ChannelList* channels);
-                bool hasChannle(Channel* channel_);
+                bool hasChannel(Channel* channel_);
                 void removeChannel(Channel* channel_);
                 void updateChannel(Channel* channel_); 
                 void addInChannelMap(Channel* channel_);

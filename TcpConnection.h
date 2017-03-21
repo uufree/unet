@@ -8,9 +8,9 @@
 #ifndef _TCPCONNECTION_H
 #define _TCPCONNECTION_H
 
+#include"Typedef.h"
 #include"Buffer.h"
 #include"Socket.h"
-#include"Typedef.h"
 
 namespace unet
 {
@@ -20,7 +20,7 @@ namespace unet
         {
             typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
             typedef std::function<void()> ResetChannelPtr;
-            typedef std::function<void(int fd)> ChangeTcpMapIndex;
+            typedef std::function<void(TcpConnection*)> HandleDiedTcpConnection;
 
             public:        
                 TcpConnection(int fd_);
@@ -37,14 +37,25 @@ namespace unet
                 void setResetChannelPtr(const ResetChannelPtr& cb)
                 {resetchannelptr = cb;};//由Channel注册，目的是为了reset掉Channel中的shared_ptr
                 
-                void setChangeTcpMapIndex(const ChangeTcpMapIndex& cb)
-                {changetcpmapindex = cb;};//由TcpServer注册
+                void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
+                {handlediedtcpconnection = cb;};//由TcpServer注册
+/*
+                void setHandleReadDiedTcpConnection(const HandleDiedTcpConnection& cb)
+                {handlereaddiedtcpconnection = cb;};
 
+                void setHandleWriteDiedTcpConnection(const HandleDiedTcpConnection& cb)
+                {handlewritediedtcpconnection = cb;};
+*/
                 bool handleWriteForTcpServer();
+
+                bool handleReadForTcpClient();
 
                 void resetChannelPtr()
                 {resetchannelptr();};//由Channel注册，使用这个函数可以reset掉Channel中的shared_ptr。这个函数由TcpServer使用
                 //最精华的是注册的顺序，真的很精彩啊
+                    
+                int getFd()
+                {return confd.getFd();};
 
                 void handleRead();
                 void handleWrite();
@@ -56,7 +67,7 @@ namespace unet
                 Buffer inputbuffer;//消息输入的buffer
                 MessageCallBack readcallback, writecallback;
                 ResetChannelPtr resetchannelptr;
-                ChangeTcpMapIndex changetcpmapindex;//处理在TcpServer中的索引问题
+                HandleDiedTcpConnection handlediedtcpconnection;
         };
     }
 }

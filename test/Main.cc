@@ -5,7 +5,7 @@
 	> Created Time: 2017年03月19日 星期日 12时44分29秒
  ************************************************************************/
 
-#include"../TcpServer.h"
+#include"../TcpServ"
 
 
 int main(int argc,char** argv)

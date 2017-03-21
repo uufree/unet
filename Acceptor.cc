@@ -11,21 +11,24 @@ namespace unet
 {
     namespace net
     {
-        Acceptor::Acceptor(EventLoop* loop_,const InetAddress* addr_)
-            : loop(loop_),serveraddr(addr_),listenfd(socket::socket()),
-            listenchannel(loop,listenfd.getFd()),
-            epoller(loop_),listening(false)
+        Acceptor::Acceptor(InetAddress* addr_) :
+            loop(new EventLoop),
+            serveraddr(addr_),
+            listenfd(socket::socket()),
+            listenchannel(new Channel(listenfd.getFd())),
+            epoller(new Epoller),
+            listening(false)
         {
-            socket::bind(listenfd.getSocket(),addr_);//设置监听套接字
-            loop->setGetActiveChannelsCallBack(std::bind(&getActiveChannels,this,std::placeholders::_1));//向loop注册获得活动的channel的方法
-            listenchannel->setReadCallBack(std::bind(&handleRead,this));//处理listenfd的可读事件
+            socket::bind(listenfd.getFd(),addr_);//设置监听套接字
+            loop->setGetActiveChannelsCallBack(std::bind(&Acceptor::getActiveChannels,this,std::placeholders::_1));//向loop注册获得活动的channel的方法
+            listenchannel->setReadCallBack(std::bind(&Acceptor::handleRead,this));//处理listenfd的可读事件
         }
 
         void Acceptor::listen()
         {//将listenfd设置为可读的，并且加入到epoller中
             listening = true;
             socket::listen(listenfd.getFd());
-            epoller->addInChannelMap(&listenchannel);
+            epoller->addInChannelMap(listenchannel);
         }
 
         void Acceptor::getActiveChannels(ChannelList* channels)
@@ -35,13 +38,13 @@ namespace unet
         
         void Acceptor::handleRead()
         {//监听到的时间的处理方法
-            InetAddr clientaddr;
-            int confd = sockfd::accept(listenfd.getSocket(),clientaddr);
+            int confd = socket::accept(listenfd.getFd());
             assert(confd >= 0);
             
-            Channel* channel = newconnectioncallback(confd,clientaddr);//获得新的channel
+            Channel* channel = newconnectioncallback(confd);//获得新的channel
             epoller->addInChannelMap(channel);//将channel添加到epoller中
         }
+
     }
 }
 

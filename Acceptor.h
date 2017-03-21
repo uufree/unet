@@ -9,8 +9,7 @@
 #define _ACCEPTOR_H
 
 #include"Epoller.h"
-
-using namespace unet::rapid;
+#include"EventLoop.h"
 
 namespace unet
 {
@@ -18,27 +17,38 @@ namespace unet
     {
         class Acceptor final
         {
+            typedef std::function<Channel* (int sockfd)> NewConnectionCallBack;
+            typedef std::vector<Channel*> ChannelList;
+            typedef std::function<void()> Functor;
+
             public:          
-                explicit Acceptor(EventLoop* loop_,const InetAddress* addr_);
+                explicit Acceptor(InetAddress* addr_);
                 Acceptor(const Acceptor& lhs) = delete;
                 Acceptor& operator=(const Acceptor& lhs) = delete;
                 ~Acceptor() {};
 //public interface
                 void listen();
                 bool listened() {return listening;};
-                void getActiveChannels();
+                void startLoop() {loop->loop();};
+                void getActiveChannels(ChannelList* channels);
 
                 void setNewConnectionCallBack(const NewConnectionCallBack& cb)
                 {newconnectioncallback = cb;};
+                
+                void addFunctorInLoop(const Functor& fun)
+                {
+                    loop->addFunctorInLoop(fun);
+                }
+
             private:
 
                 void handleRead();
 
-                EventLoop* loop;
+                std::unique_ptr<EventLoop> loop;
                 InetAddress* serveraddr;
                 socket::Socket listenfd;
-                Channel listenchannel;
-                Epoller* epoller;
+                Channel* listenchannel;
+                std::unique_ptr<Epoller> epoller;
                 bool listening;
                 NewConnectionCallBack newconnectioncallback;
         };

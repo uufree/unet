@@ -10,6 +10,7 @@
 
 #include"Epoller.h"
 #include<functional>
+#include<deque>
 
 class Channel;
 
@@ -21,8 +22,10 @@ namespace unet
         {
             typedef std::vector<Channel*> ChannelList;
             typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
+            typedef std::function<void()> Functor;
+            typedef std::deque<Functor> FunctorList;
 
-            public:                                
+            public:                                    
                 EventLoop();
                 EventLoop(const EventLoop&) = delete;
                 EventLoop& operator=(const EventLoop&) = delete;
@@ -30,15 +33,21 @@ namespace unet
 //punlic interface
                 void loop();
                 void setQuit();
+                void setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& cb)
+                {activecallback = cb;};//由Acceptor注
+                
                 ChannelList* getChannelList();
-                void setGetActiveChanneslCallBack(const GetActiveChannelsCallBack& cb)
-                {activecallback = cb;};//由Epoller注册
+                void addFunctorInLoop(const Functor& fun)
+                {
+                    functorlist.push_back(fun);
+                }
 
             private:
                 bool looping;
                 bool quit;
                 bool eventhandling;
                 ChannelList activechannels;
+                FunctorList functorlist; 
                 GetActiveChannelsCallBack activecallback;
         };
     }

@@ -13,24 +13,22 @@
 
 #include"TcpConnection.h"
 
-class EventLoop;
-class TcpConnection;
 class Channel;
 
 namespace unet
 {
     namespace net
     {
-        typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
-        typedef std::function<void()> EventCallBack; 
-        typedef std::function<void(Channel* channel_)> UpdateCallBack;
-        typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;     
         
         class Channel final
         {
+            typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
+            typedef std::function<void()> EventCallBack; 
+            typedef std::function<void(Channel*)> UpdateCallBack;
+            typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;     
+            
             public:
-                
-                Channel(EventLoop* loop_,int fd_,bool hasconnection_ = true);
+                Channel(int fd_,bool hasconnection_ = true);
                 ~Channel();
                 Channel(const Channel& lhs) = delete;
                 Channel& operator=(const Channel& lhs)  = delete;
@@ -51,7 +49,7 @@ namespace unet
 
                 void setIndex(int index_) {index = index_;};//设置在epoller中的索引        
 
-                //设置关注的事件，默认关注读写事件，看情况关闭一些事件
+                //设置关注的事件，默认关注读写事件，看情况关闭写事件
                 void setEvent() {event |= KReadEvent & KWriteEvent;};
                 
                 //得到关注的事件
@@ -89,20 +87,18 @@ namespace unet
                 {tcpconnectionptr.reset();};
             
             private:
-                EventLoop* loop;
                 const int fd;
                 int index;
                 int event;//关注的事件
                 int revent;//正在发生的事件
                 bool handleeventing;
                 bool hasconnection;
-                TcpConnectionWptr tcpconnectionwptr;
                 TcpConnectionPtr tcpconnectionptr;
+                TcpConnectionWptr tcpconnectionwptr;
 
                 static const int KNoneEvent;
                 static const int KReadEvent;
                 static const int KWriteEvent;
-
                 EventCallBack readcallback;
                 UpdateCallBack updatecallback;
         };

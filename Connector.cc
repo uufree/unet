@@ -1,15 +1,8 @@
 /*************************************************************************
-	> File Name: ChannelText.cc
+	> File Name: Connector.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月19日 星期日 12时20分46秒
+	> Created Time: 2017年03月21日 星期二 20时36分20秒
  ************************************************************************/
 
-#include"../Channel.h"
-
-int main(int argc,char** argv)
-{
-    unet::net::Channel(3);
-    return 0;
-}
 

@@ -33,6 +33,12 @@ namespace unet
             outputbuffer.writeInSocket(confd.getFd());
             return outputbuffer.getDataSize() == 0;
         }
+    
+        bool TcpConnection::handleReadForTcpClient()
+        {
+            inputbuffer.readInSocket(confd.getFd());
+            return inputbuffer.getDataSize();
+        }
 
         void TcpConnection::handleClose()
         {
@@ -41,15 +47,21 @@ namespace unet
             if(outputbuffer.getDataSize() != 0)
             {
                 outputbuffer.writeInSocket(fd);//将数据发送出去    
-                if(outputbuffer.getDataSize() != 0)
+                handleWriteForTcpServer();
+                socket::close(fd);
+                handlediedtcpconnection(this);
+/*
+                if(!handleWriteForTcpServer())
                 {//如果发送完毕之后还有残余数据，关闭可读事件
                     socket::shutdownRead(fd);
-                    changetcpmapindex(fd);//改变外面TcpServer中的索引
+                    handlereaddiedtcpconnection(shared_from_this());//改变外面TcpServer中的索引
                 }
                 else
                 {
                     socket::close(fd);//如果发送完毕了，直接关闭套接字
+                    handlediedtcpconnection(shared_from_this());
                 }
+*/
             }
         }
 
