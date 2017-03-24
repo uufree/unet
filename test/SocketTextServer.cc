@@ -9,6 +9,7 @@
 #include"../InetAddress.h"
 #include<iostream>
 #include<string>
+#include<sys/poll.h>
 
 int main(int argc,char** argv)
 {
@@ -21,7 +22,7 @@ int main(int argc,char** argv)
 
     int confd = unet::net::socket::accept(listenfd);
     std::cout << "confd: " << confd << std::endl;
-    
+/*    
     std::string str = "hello client!";
     char buf[1024];
     bzero(buf,1024);
@@ -35,10 +36,30 @@ int main(int argc,char** argv)
         std::cout << buf << std::endl;
         sleep(1);
     }
+*/
+    
+    struct pollfd pfd;
+    pfd.fd = confd;
+    pfd.events = POLLOUT && POLLIN;
+    int count = ::poll(&pfd,1,64000);
 
+    if(count == 1)
+    {
+        if(pfd.revents & POLLIN)
+            std::cout << "Server confd can read!" << std::endl;
+        else if(pfd.revents & POLLOUT)
+            std::cout << "Server confd can write!" << std::endl;
+        else
+            std::cout << "error!" << std::endl;
+    }
+    else
+        std::cout << "nothing happened!" << std::endl;
+   
+    sleep(10);
     unet::net::socket::close(listenfd);
-    std::cout << "socket close" << std::endl;
+    std::cout << "listen socket close" << std::endl;
     unet::net::socket::close(confd);
+    std::cout << "server confd close" << std::endl;
     return 0;
 }
 

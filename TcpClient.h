@@ -9,6 +9,7 @@
 #define _TCPCLIENT_H
 
 #include"Connector.h"
+#include<functional>
 
 namespace unet
 {
@@ -16,34 +17,41 @@ namespace unet
     {
         class TcpClient final
         {
-            typedef std::function<Buffer*,Buffer*> MessageCallBack;
+            typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
             public:
-            explicit TcpClient(const InetAddress& serveraddr_);
-            TcpClient(const TcpClient& lhs) = delete;
-            TcpClient& operator=(const TcpClient& lhs) = delete;
-            ~TcpClient();
+                explicit TcpClient(InetAddress* serveraddr_);
+                TcpClient(const TcpClient& lhs) = delete;
+                TcpClient& operator=(const TcpClient& lhs) = delete;
+                ~TcpClient() {};
 
-            void setReadCallBack(const MessageCallBack& cb)
-            {readcallback = cb;};
+                void setReadCallBack(const MessageCallBack& cb)
+                {readcallback = cb;};
 
-            void setWriteCallBack(const MessageCallBack& cb)
-            {writecallback = cb;};
+                void setWriteCallBack(const MessageCallBack& cb)
+                {writecallback = cb;};
 
-            void handleDiedTcpConnection(TcpConnection* con)
-            {ptr.reset();};
+                void handleDiedTcpConnection(TcpConnection* con)
+                {ptr.reset();};
 
-            void start()
-            {
-                connector->start();
-            }
+                void start()
+                {
+                    connector->createChannel();
+                    connector->start();
+                }
+
+                void setTcpConnectionPtr(TcpConnectionPtr ptr_)
+                {
+                    ptr.reset(ptr_.get());
+                    ptr->resetChannelPtr();
+                }
 
             private:
-            InetAddress serveraddr;
-            std::unique_ptr<Connector> connector;
-            TcpConnectionPtr ptr;
-            MessageCallBack readcallback,writecallback;
+                InetAddress* serveraddr;
+                std::unique_ptr<Connector> connector;
+                TcpConnectionPtr ptr;
+                MessageCallBack readcallback,writecallback;
         };
     }
 }

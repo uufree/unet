@@ -12,32 +12,37 @@ namespace unet
 {
     namespace net
     {
-        Connector::Connector(const InetAddress& serveraddr_) : 
+        Connector::Connector(InetAddress* serveraddr_) : 
             confd(socket::socket()),
             serveraddr(serveraddr_),
             connected(false),
             epoller(new Epoller),
-            loop(new EventLoop),
+            loop(new EventLoop)
         {
             socket::setNonBlockAndCloseOnExec(confd.getFd());
         };
 
-        void start()
+        void Connector::createChannel()
         {
-            while(!createConncetion())   
+            while(!createConnection())   
             {
                 confd.setFd(socket::socket());    
                 socket::setNonBlockAndCloseOnExec(confd.getFd());
             }
             
-            connectchannel = new channel(confd.getFd());
+            connectchannel = new Channel(confd.getFd());
+            connectioncallback((connectchannel->getTcpConnectionPtr()));
             epoller->addInChannelMap(connectchannel);
+        }
+
+        void Connector::start()
+        {
             loop->loop();
         }
 
         int Connector::createConnection()
         {
-            int n = socket::connect(confd.getFd(),&serveraddr);
+            int n = socket::connect(confd.getFd(),serveraddr);
             if(n < 0)
             {
                 if(errno != EINPROGRESS)

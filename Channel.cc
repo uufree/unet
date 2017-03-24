@@ -23,7 +23,7 @@ namespace unet
         revent(0),
         handleeventing(false),
         hasconnection(hasconnection_),
-        tcpconnectionptr(new TcpConnection(3)),
+        tcpconnectionptr(new TcpConnection(fd_)),
         tcpconnectionwptr(tcpconnectionptr)
         {
             if(!hasconnection_)

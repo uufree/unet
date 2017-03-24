@@ -15,7 +15,7 @@ int main(int argc,char** argv)
 {
     unet::net::TcpConnection tcp(3);
     unet::net::TcpConnection* ptr = new unet::net::TcpConnection(3);
-    TcpConnectionPtr uptr(ptr);
+    TcpConnectionPtr uptr(nullptr);
 
     return 0;
 }

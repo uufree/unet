@@ -11,17 +11,19 @@ namespace unet
 {
     namespace net
     {
-        TcpClient::TcpClient(const InetAddress& serveraddr_) :
+        TcpClient::TcpClient(InetAddress* serveraddr_) :
             serveraddr(serveraddr_),
-            connector(new connector(serveraddr_)),
-            ptr(connector->getTcpConnectionPtr())
+            connector(new Connector(serveraddr_)),
+            ptr(nullptr)
         {
-            ptr->resetChannelPtr();
+            connector->setConnectionCallBack(std::bind(&TcpClient::setTcpConnectionPtr,this,std::placeholders::_1));
             ptr->setReadCallBack(readcallback);
             ptr->setWriteCallBack(writecallback);
-            ptr->setHandleDiedTcpConnection(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1);
+            ptr->setHandleDiedTcpConnection(std::bind(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1));
         };
-        
+
+    }
+}
         
             
 

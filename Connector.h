@@ -9,6 +9,7 @@
 #define _CONNECTOR_H
 
 #include"Epoller.h"
+#include"EventLoop.h"
 
 namespace unet
 {
@@ -20,17 +21,21 @@ namespace unet
             typedef std::function<void(TcpConnectionPtr)> ConnectionCallBack;
 
             public:
-                Connector(const InetAddress& serveraddr_);
+                Connector(InetAddress* serveraddr_);
                 Connector(const Connector& lhs) = delete;
                 Connector& operator=(const Connector& lhs) = delete;
                 ~Connector(){};
-                    
+                
+                void setConnectionCallBack(const ConnectionCallBack& cb)
+                {connectioncallback = cb;};
+                
                 int createConnection();
+                void createChannel();
                 void start();
 
             private:
                 socket::Socket confd;
-                InetAddress serveraddr;
+                InetAddress* serveraddr;
                 Channel* connectchannel;
                 bool connected;
                 ConnectionCallBack connectioncallback;
