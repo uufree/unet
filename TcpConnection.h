@@ -39,13 +39,7 @@ namespace unet
                 
                 void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
                 {handlediedtcpconnection = cb;};//由TcpServer注册
-/*
-                void setHandleReadDiedTcpConnection(const HandleDiedTcpConnection& cb)
-                {handlereaddiedtcpconnection = cb;};
-
-                void setHandleWriteDiedTcpConnection(const HandleDiedTcpConnection& cb)
-                {handlewritediedtcpconnection = cb;};
-*/
+                
                 bool handleWriteForTcpServer();
 
                 bool handleReadForTcpClient();

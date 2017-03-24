@@ -6,3 +6,23 @@
  ************************************************************************/
 
 #include"TcpClient.h"
+
+namespace unet
+{
+    namespace net
+    {
+        TcpClient::TcpClient(const InetAddress& serveraddr_) :
+            serveraddr(serveraddr_),
+            connector(new connector(serveraddr_)),
+            ptr(connector->getTcpConnectionPtr())
+        {
+            ptr->resetChannelPtr();
+            ptr->setReadCallBack(readcallback);
+            ptr->setWriteCallBack(writecallback);
+            ptr->setHandleDiedTcpConnection(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1);
+        };
+        
+        
+            
+
+        

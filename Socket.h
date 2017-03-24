@@ -37,22 +37,18 @@ namespace unet
 
             int accept(int sockfd);
 
-            void connect(int sockfd,InetAddress* addr);
+            int connect(int sockfd,InetAddress* addr);
 
             void bind(int sockfd,InetAddress* addr);
 
             void setKeepAlive(int sockfd);
-
-            void shutdownWrite(int sockfd);
-
-            void shutdownRead(int sockfd);
 
             void close(int sockfd);
 
             class Socket final
             {//用RAII处理sockfd
                 public:
-                    explicit Socket(int sockfd_) : sockfd(sockfd_),opened(true)
+                    explicit Socket(int sockfd_) : sockfd(sockfd_)
                     {};
                 
                     Socket(const Socket&) = delete;
@@ -60,8 +56,7 @@ namespace unet
 
                     ~Socket()
                     {
-                        if(opened)
-                            assert(::close(sockfd) == 0);
+                        assert(::close(sockfd) == 0);
                     }
 
                     int getFd() const
@@ -69,9 +64,11 @@ namespace unet
                         return sockfd;
                     }
 
+                    void setFd(int fd_)
+                    {sockfd = fd_;};
+
                 private:
-                    const int sockfd;
-                    bool opened;
+                    int sockfd;
             };
             
         }

@@ -49,12 +49,12 @@ namespace unet
                 return connetfd;
             }
 
-            void connect(int sockfd,InetAddress* addr)
+            int connect(int sockfd,InetAddress* addr)
             {
                 sockaddr_in addr_ = addr->getSockaddr();
                 int n = ::connect(sockfd,(sockaddr*)(&addr_),static_cast<socklen_t>(sizeof(struct sockaddr_in)));
                 
-                assert(n >= 0);
+                return n;
             }
 
             void bind(int sockfd,InetAddress* addr)
@@ -68,18 +68,6 @@ namespace unet
             {
                 int m = 1;
                 int n = ::setsockopt(sockfd,SOL_SOCKET,SO_KEEPALIVE,&m,static_cast<socklen_t>(sizeof(int)));
-                assert(n >= 0);
-            }
-
-            void shutdownWrite(int sockfd)
-            {
-                int n = ::shutdown(sockfd,SHUT_WR);
-                assert(n >= 0);
-            }
-
-            void shutdownRead(int sockfd)
-            {
-                int n = ::shutdown(sockfd,SHUT_RD);
                 assert(n >= 0);
             }
 

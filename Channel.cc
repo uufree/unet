@@ -13,7 +13,7 @@ namespace unet
     namespace net
     {
         const int Channel::KNoneEvent = 0;//关注的事件的处理方式
-        const int Channel::KReadEvent = EPOLLIN | EPOLLPRI;
+        const int Channel::KReadEvent = EPOLLIN;
         const int Channel::KWriteEvent = EPOLLOUT;
         
         Channel::Channel(int fd_,bool hasconnection_) : 
@@ -43,53 +43,44 @@ namespace unet
             if(hasconnection)
             {//处理有TcpConnectionPtr的情况
                 handleeventing = true;
-                if((revent & EPOLLHUP) && !(revent & EPOLLIN))
+                if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
                     handleClose();
                 }
-                if(revent & (EPOLLERR))
-                {   
-                    handleError();
-                }
-                if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
+                else if(revent & EPOLLIN)
                 {
-                    {
-                        TcpConnectionPtr wptr = tcpconnectionwptr.lock();
-                        if(wptr)
-                            wptr->handleRead();
-                        else
-                            handleError();
-                    }
+                    TcpConnectionPtr wptr = tcpconnectionwptr.lock();
+                    if(wptr)
+                        wptr->handleRead();
+                    else
+                        handleClose();
                 }
-                if(revent & EPOLLOUT)
+                else if(revent & EPOLLOUT)
                 {
-                    {
-                        TcpConnectionPtr wptr = tcpconnectionwptr.lock();
-                        if(wptr)
-                            wptr->handleWrite();
-                        else
-                            handleError();
-                    }
+                    TcpConnectionPtr wptr = tcpconnectionwptr.lock();
+                    if(wptr)
+                        wptr->handleWrite();
+                    else
+                        handleClose();
                 }
+                else
+                    handleClose();
                 handleeventing = false;
             }
             else
             {//处理没有TcpConnection的情况，Listenfd等
                 handleeventing = true;
-                if((revent & EPOLLHUP) && !(revent & EPOLLIN))
+                if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
-                        handleClose();
+                    handleClose();
                 }
-                if(revent & (EPOLLERR))
-                {      
-                        handleError();
-                }
-
-                if(revent & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
+                else if(revent & EPOLLIN)
                 {
                     if(readcallback)
                         readcallback();
                 }
+                else
+                    handleClose();
                 handleeventing = false;
             }
         }
@@ -99,16 +90,11 @@ namespace unet
             if(hasconnection)
             {
                 TcpConnectionPtr conptr(tcpconnectionwptr.lock());
-                conptr->handleClose();
+                if(conptr)
+                    conptr->handleClose();
             }
             disableAll();//这个函数里面会有一个更新的操作
         }
-
-        void Channel::handleError()
-        {//处理错误的情况
-            disableAll();
-        }
-
     }
 }
 

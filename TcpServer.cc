@@ -25,7 +25,6 @@ namespace unet
               ptr->setWriteCallBack(writecallback);
               
               ptr->setHandleDiedTcpConnection(std::bind(&TcpServer::handleDiedTcpConnection,this,std::placeholders::_1));
-//              ptr->setHandleReadDiedTcpConnection(std::bind(&TcpServer::handleDiedTcpConnection,this,std::placeholders::_1));
               
               tcpconnectionptrmap.insert(make_pair(fd_,ptr));//将得到的结果插入map中
               return channel;//返回的Channel交由Epoller处理（放入Epoller的map中）
@@ -44,13 +43,6 @@ namespace unet
             tcpconnectionptrmap[fd].reset();
             tcpconnectionptrmap.erase(fd);
         }
-/*
-        void TcpServer::handleReadDiedTcpConnection(TcpConnection* ptr)
-        {
-            acceptor->addInLoop(std::bind(&TcpServer::HandleReadDiedTcpConnection,this,ptr)); 
-        }
-*/
-
     }
 }
         

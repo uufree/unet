@@ -36,22 +36,10 @@ namespace unet
                 {writecallback = cb;};
                 
                 void handleDiedTcpConnection(TcpConnection* ptr);
-//                void handleReadDiedTcpConnection(TcpConnectionPtr& ptr);
 
             private:
-                Channel* newConnectionCallBack(int fd_);//设置新连接到来时的处理方式
-                
-//这个函数的作用是当已经删除掉Epoller中的channel时，因为Buffer中的数据还没有处理完成，所以将fd设置为-fd，特殊处理将要关闭但是还没有关闭的事件                
-/*                
-                void HandleReadDiedTcpConnection(TcpConnectionPtr& ptr)
-                {
-                    if(ptr->handleWriteForTcpServer())
-                        handleDiedTcpConnection(ptr);
-                    else
-                        HandleReadDiedTcpConnection(ptr);
-                }
-*/                
                 InetAddress* serveraddr;
+                Channel* newConnectionCallBack(int fd_);//设置新连接到来时的处理方式
                 std::unique_ptr<Acceptor> acceptor;
                 TcpConnectionPtrMap tcpconnectionptrmap;
                 MessageCallBack readcallback,writecallback;

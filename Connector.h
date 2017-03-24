@@ -17,21 +17,25 @@ namespace unet
         class Connector final
         {
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+            typedef std::function<void(TcpConnectionPtr)> ConnectionCallBack;
 
             public:
-                Connector();
+                Connector(const InetAddress& serveraddr_);
                 Connector(const Connector& lhs) = delete;
                 Connector& operator=(const Connector& lhs) = delete;
                 ~Connector(){};
-
-
-
-
+                    
+                int createConnection();
+                void start();
 
             private:
                 socket::Socket confd;
-                InetAddress clientaddr;
+                InetAddress serveraddr;
                 Channel* connectchannel;
+                bool connected;
+                ConnectionCallBack connectioncallback;
+                std::unique_ptr<Epoller> epoller;
+                std::unique_ptr<EventLoop> loop;
         };
     }
 }

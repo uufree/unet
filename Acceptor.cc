@@ -40,6 +40,7 @@ namespace unet
         {//监听到的时间的处理方法
             int confd = socket::accept(listenfd.getFd());
             assert(confd >= 0);
+            socket::setNonBlockAndCloseOnExec(confd);
             
             Channel* channel = newconnectioncallback(confd);//获得新的channel
             epoller->addInChannelMap(channel);//将channel添加到epoller中

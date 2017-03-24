@@ -36,7 +36,6 @@ namespace unet
 //public interface
                 void handleEvent();
                 void handleClose();
-                void handleError();
 
                 void setReadCallBack(const EventCallBack& cb)
                 {readcallback = cb;};//在没有TcpConnection的情况下由Listenfd和Timefd注册

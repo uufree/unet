@@ -21,7 +21,7 @@ namespace unet
         class Buffer final
         {
             public:
-                explicit Buffer() : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0)
+                explicit Buffer() : buffer(nullptr),KBufferSize(32),level(KBufferSize/2),headindex(0),tailindex(0),key(0)
             {
                 buffer = static_cast<char*>(malloc(KBufferSize));
                 bzero(buffer,KBufferSize);
@@ -34,12 +34,13 @@ namespace unet
                 {
                     free(buffer);
                 };
+
                 //public interface
                 void readInSocket(int fd);
                 void writeInSocket(int fd);
 
                 void appendInBuffer(const void* message);
-                void* getInBuffer();
+                char* getCompleteMessageInBuffer();
 
                 int getDataSize() const 
                 {return tailindex - headindex;};
@@ -58,6 +59,9 @@ namespace unet
 
                 int getBufferSize() const 
                 {return KBufferSize;};
+               
+                int getKey() const
+                {return key;};
 
             private:
                 char* buffer;
@@ -65,6 +69,7 @@ namespace unet
                 int level;
                 int headindex;
                 int tailindex;
+                int key;
         };        
     }
 }
