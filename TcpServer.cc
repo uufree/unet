@@ -36,10 +36,10 @@ namespace unet
             acceptor->startLoop();            
         }
  
-        void TcpServer::handleDiedTcpConnection(TcpConnection* ptr)
+        void TcpServer::handleDiedTcpConnection(int fd)
         {
-            int fd = ptr->getFd();
-            assert(tcpconnectionptrmap[fd].get() == ptr);
+            assert(tcpconnectionmap[fd] != tcpconnectionmap.end());
+            tcpconnectionptrmap[fd].handleChannel();
             tcpconnectionptrmap[fd].reset();
             tcpconnectionptrmap.erase(fd);
         }

@@ -20,7 +20,8 @@ namespace unet
         {
             typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
             typedef std::function<void()> ResetChannelPtr;
-            typedef std::function<void(TcpConnection*)> HandleDiedTcpConnection;
+            typedef std::function<void(int)> HandleDiedTcpConnection;
+            typedef std::function<void()> WheetChannelCallBack;
 
             public:        
                 TcpConnection(int fd_);
@@ -40,6 +41,9 @@ namespace unet
                 void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
                 {handlediedtcpconnection = cb;};//由TcpServer注册
                 
+                void setWheetChannelCallBack(const WheetChannelCallBack& cb)
+                {wheetchannel = cb;};
+
                 bool handleWriteForTcpServer();
 
                 bool handleReadForTcpClient();
@@ -62,6 +66,7 @@ namespace unet
                 MessageCallBack readcallback, writecallback;
                 ResetChannelPtr resetchannelptr;
                 HandleDiedTcpConnection handlediedtcpconnection;
+                WheetChannelCallBack wheetchannel;
         };
     }
 }

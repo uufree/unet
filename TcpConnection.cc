@@ -42,7 +42,12 @@ namespace unet
 
         void TcpConnection::handleClose()
         {
-            handlediedtcpconnection(this);
+            handlediedtcpconnection(confd.getFd());
+        }
+
+        void TcpConnection::handleChannel()
+        {
+            wheetchannel();
         }
     }
 }
