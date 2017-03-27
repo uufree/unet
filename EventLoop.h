@@ -37,6 +37,7 @@ namespace unet
                 {activecallback = cb;};//由Acceptor注
                 
                 ChannelList* getChannelList();
+                
                 void addFunctorInLoop(const Functor& fun)
                 {
                     functorlist.push_back(fun);

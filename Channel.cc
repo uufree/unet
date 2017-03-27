@@ -55,7 +55,6 @@ namespace unet
                     TcpConnectionPtr wptr = tcpconnectionwptr.lock();
                     if(wptr)
                     {
-                        std::cout << "I'm here!" << std::endl;
                         wptr->handleRead();
                     }
                     else
@@ -84,6 +83,7 @@ namespace unet
                 }
                 else if(revent & EPOLLIN)
                 {
+                    std::cout << "I'm here!" << std::endl;
                     if(readcallback)
                         readcallback();
                 }

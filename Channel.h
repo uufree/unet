@@ -81,9 +81,12 @@ namespace unet
 
                 TcpConnectionPtr&& getTcpConnectionPtr()
                 {return std::move(tcpconnectionptr);};
-            
+                
+                void setFd(int fd_)
+                {fd = fd_;};
+
             private:
-                const int fd;
+                int fd;
                 int index;
                 int event;//关注的事件
                 int revent;//正在发生的事件

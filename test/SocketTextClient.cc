@@ -21,13 +21,12 @@ int main(int argc,char** argv)
     char buf[16] = "hello,world!";
     write(confd,buf,16);
 */
-    char buf[16];
-    bzero(buf,16);
+    char buf[16] = "hello, server!";
     while(1)
     {  
         sleep(1);
-        ::read(confd,buf,16);
-        std::cout << buf << std::endl;
+        ::write(confd,buf,16);
+        std::cout << "sending~" << std::endl;
     }
     
     sleep(3);

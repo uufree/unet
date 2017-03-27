@@ -25,7 +25,7 @@ namespace unet
                 explicit Acceptor(InetAddress* addr_);
                 Acceptor(const Acceptor& lhs) = delete;
                 Acceptor& operator=(const Acceptor& lhs) = delete;
-                ~Acceptor() {};
+                ~Acceptor() {::close(listenfd);};
 //public interface
                 void listen();
                 bool listened() {return listening;};
@@ -46,7 +46,7 @@ namespace unet
 
                 std::unique_ptr<EventLoop> loop;
                 InetAddress* serveraddr;
-                socket::Socket listenfd;
+                int listenfd;
                 Channel* listenchannel;
                 std::unique_ptr<Epoller> epoller;
                 bool listening;

@@ -24,12 +24,13 @@ int main(int argc,char** argv)
     int confd = unet::net::socket::accept(listenfd);
     std::cout << "confd: " << confd << std::endl;
     
-    char buf[16] = "hello,client!";
+    char buf[16];
+    bzero(buf,16);
     while(1)
     {
         sleep(1);
-        std::cout << "sending~" << std::endl;
-        ::write(confd,buf,16);
+        ::read(confd,buf,16);
+        std::cout << buf << std::endl;
     }
 /*    
     int epollfd = ::epoll_create(5);
