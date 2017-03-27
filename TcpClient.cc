@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"TcpClient.h"
+#include<stdio.h>
 
 namespace unet
 {
@@ -17,8 +18,7 @@ namespace unet
             ptr(nullptr)
         {
             connector->setConnectionCallBack(std::bind(&TcpClient::setTcpConnectionPtr,this,std::placeholders::_1));
-            ptr->setReadCallBack(readcallback);
-            ptr->setWriteCallBack(writecallback);
+            connector->createChannel();
             ptr->setHandleDiedTcpConnection(std::bind(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1));
         };
 

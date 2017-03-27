@@ -11,6 +11,7 @@
 #include<string.h>
 #include<sys/uio.h>
 #include<malloc.h>
+#include<iostream>
 
 //目前版本只支持固定大小的数据传输
 
@@ -21,7 +22,7 @@ namespace unet
         class Buffer final
         {
             public:
-                explicit Buffer() : buffer(nullptr),KBufferSize(32),level(KBufferSize/2),headindex(0),tailindex(0),key(0)
+                explicit Buffer() : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0)
             {
                 buffer = static_cast<char*>(malloc(KBufferSize));
                 bzero(buffer,KBufferSize);
@@ -44,6 +45,12 @@ namespace unet
 
                 int getDataSize() const 
                 {return tailindex - headindex;};
+
+                void getData() const
+                {
+                    std::cout << "Buffer Data Size: " << tailindex-headindex << std::endl;
+                    std::cout << buffer+headindex << std::endl;
+                }
 
                 int getFreeSize() const 
                 {return KBufferSize - tailindex;};

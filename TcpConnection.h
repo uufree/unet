@@ -19,7 +19,6 @@ namespace unet
         class TcpConnection final
         {
             typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
-            typedef std::function<void()> ResetChannelPtr;
             typedef std::function<void(int)> HandleDiedTcpConnection;
             typedef std::function<void()> WheetChannelCallBack;
 
@@ -35,9 +34,6 @@ namespace unet
                 void setWriteCallBack(const MessageCallBack& cb)
                 {writecallback = cb;};//由TcpServer注册
 
-                void setResetChannelPtr(const ResetChannelPtr& cb)
-                {resetchannelptr = cb;};//由Channel注册，目的是为了reset掉Channel中的shared_ptr
-                
                 void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
                 {handlediedtcpconnection = cb;};//由TcpServer注册
                 
@@ -48,9 +44,7 @@ namespace unet
 
                 bool handleReadForTcpClient();
 
-                void resetChannelPtr()
-                {resetchannelptr();};//由Channel注册，使用这个函数可以reset掉Channel中的shared_ptr。这个函数由TcpServer使用
-                //最精华的是注册的顺序，真的很精彩啊
+                void handleChannel();
                     
                 int getFd()
                 {return confd.getFd();};
@@ -64,7 +58,6 @@ namespace unet
                 Buffer outputbuffer;//消息输出的buffer
                 Buffer inputbuffer;//消息输入的buffer
                 MessageCallBack readcallback, writecallback;
-                ResetChannelPtr resetchannelptr;
                 HandleDiedTcpConnection handlediedtcpconnection;
                 WheetChannelCallBack wheetchannel;
         };

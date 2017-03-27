@@ -20,7 +20,6 @@ namespace unet
         {
               Channel* channel = new Channel(fd_,true);
               TcpConnectionPtr ptr(channel->getTcpConnectionPtr());//得到Channel对象中的TcpConnectionPtr对象（重点在于让Channel中的TcpConnectionPtr对象将控制权交出来，只保留弱指针）
-              ptr->resetChannelPtr();
               ptr->setReadCallBack(readcallback);//设置处理消息的方式
               ptr->setWriteCallBack(writecallback);
               
@@ -38,8 +37,7 @@ namespace unet
  
         void TcpServer::handleDiedTcpConnection(int fd)
         {
-            assert(tcpconnectionmap[fd] != tcpconnectionmap.end());
-            tcpconnectionptrmap[fd].handleChannel();
+            tcpconnectionptrmap[fd]->handleChannel();
             tcpconnectionptrmap[fd].reset();
             tcpconnectionptrmap.erase(fd);
         }

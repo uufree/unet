@@ -7,6 +7,7 @@
 
 #include"TcpConnection.h"
 #include<assert.h>
+#include<iostream>
 
 namespace unet
 {
@@ -19,13 +20,19 @@ namespace unet
         void TcpConnection::handleRead()
         {//处理读事件   
             inputbuffer.readInSocket(confd.getFd());
-            readcallback(&inputbuffer,&outputbuffer);
+            if(readcallback)
+                readcallback(&inputbuffer,&outputbuffer);
+            else
+                std::cout << "没有注册readcallback" << std::endl;
         }
 
         void TcpConnection::handleWrite()
         {//处理写事件
+            if(writecallback)
+                writecallback(&inputbuffer,&outputbuffer);
+            else
+                std::cout << "没有注册writecallback" << std::endl;
             outputbuffer.writeInSocket(confd.getFd());
-            writecallback(&inputbuffer,&outputbuffer);
         }
 
         bool TcpConnection::handleWriteForTcpServer()

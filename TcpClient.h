@@ -10,6 +10,7 @@
 
 #include"Connector.h"
 #include<functional>
+#include<iostream>
 
 namespace unet
 {
@@ -27,31 +28,31 @@ namespace unet
                 ~TcpClient() {};
 
                 void setReadCallBack(const MessageCallBack& cb)
-                {readcallback = cb;};
+                {ptr->setReadCallBack(cb);};
 
                 void setWriteCallBack(const MessageCallBack& cb)
-                {writecallback = cb;};
+                {ptr->setWriteCallBack(cb);};
 
-                void handleDiedTcpConnection(TcpConnection* con)
+                void handleDiedTcpConnection(int fd)
                 {ptr.reset();};
 
                 void start()
                 {
-                    connector->createChannel();
                     connector->start();
                 }
 
-                void setTcpConnectionPtr(TcpConnectionPtr ptr_)
+                void setTcpConnectionPtr(TcpConnectionPtr&& ptr_)
                 {
                     ptr.reset(ptr_.get());
-                    ptr->resetChannelPtr();
                 }
+
+                int getFd()
+                {return ptr->getFd();};
 
             private:
                 InetAddress* serveraddr;
                 std::unique_ptr<Connector> connector;
                 TcpConnectionPtr ptr;
-                MessageCallBack readcallback,writecallback;
         };
     }
 }

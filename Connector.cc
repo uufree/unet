@@ -7,6 +7,7 @@
 
 #include"Connector.h"
 #include<sys/poll.h>
+#include<iostream>
 
 namespace unet
 {
@@ -20,16 +21,36 @@ namespace unet
             loop(new EventLoop)
         {
             socket::setNonBlockAndCloseOnExec(confd.getFd());
+            loop->setGetActiveChannelsCallBack(std::bind(&Connector::getActiveChannels,this,std::placeholders::_1));
         };
+
+        void Connector::getActiveChannels(ChannelList* channels)
+        {
+            epoller->epoll(channels);
+        }
 
         void Connector::createChannel()
         {
+/*            
             while(!createConnection())   
             {
-                confd.setFd(socket::socket());    
+                confd.setFd(socket::socket());
                 socket::setNonBlockAndCloseOnExec(confd.getFd());
             }
-            
+            std::cout << "confd: " << confd.getFd() << std::endl;
+*/
+            std::cout << "confd: " << confd.getFd() << std::endl;
+            socket::connect(confd.getFd(),serveraddr);            
+/*            
+            char buf[16];
+            bzero(buf,16);
+            while(1)
+            {
+                ::sleep(1);
+                ::read(confd.getFd(),buf,16);
+                std::cout << buf << std::endl;
+            }
+*/            
             connectchannel = new Channel(confd.getFd());
             connectioncallback((connectchannel->getTcpConnectionPtr()));
             epoller->addInChannelMap(connectchannel);
@@ -37,6 +58,7 @@ namespace unet
 
         void Connector::start()
         {
+            epoller->getInfo();
             loop->loop();
         }
 

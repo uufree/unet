@@ -9,8 +9,11 @@
 #define _EPOLLER_H
 
 #include"Channel.h"
+#include<iostream>
 
-struct epoll_event;
+//struct epoll_event;
+
+struct pollfd;
 
 namespace unet
 {
@@ -21,7 +24,8 @@ namespace unet
             static const int timeoutMs = 200;
             static const int KNoneEvent = 0;
 
-            typedef std::vector<struct epoll_event> EventList;
+//            typedef std::vector<struct epoll_event> EventList;
+            typedef std::vector<struct pollfd> EventList;
             typedef std::map<int,Channel*> ChannelMap;
             typedef std::vector<Channel*> ChannelList;
 
@@ -36,14 +40,16 @@ namespace unet
                 void removeChannel(Channel* channel_);
                 void updateChannel(Channel* channel_); 
                 void addInChannelMap(Channel* channel_);
-
+                
+                void getInfo();
+            
             private:
 
-                void update(int operation,Channel* channel_);
-                void getActiveEvents(ChannelList* channels);
+                void update(Channel* channel_);
+                void getActiveEvents(int activeEvents,ChannelList* channels);
 
                 EventList eventlist;//保存epollfd的数组
-                int epollfd;//内核维护的epollfd表
+//                int epollfd;//内核维护的epollfd表
                 ChannelMap channelmap;//保存Channel的Map
         };    
     }

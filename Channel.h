@@ -49,7 +49,7 @@ namespace unet
                 void setIndex(int index_) {index = index_;};//设置在epoller中的索引        
 
                 //设置关注的事件，默认关注读写事件，看情况关闭写事件
-                void setEvent() {event |= KReadEvent & KWriteEvent;};
+                void setEvent() {event = KWriteEvent && KReadEvent;};
                 
                 //得到关注的事件
                 int getEvent() const {return event;};
@@ -79,11 +79,8 @@ namespace unet
                     updatecallback(this);
                 }
 
-                TcpConnectionPtr getTcpConnectionPtr()
-                {return tcpconnectionptr;};
-            
-                void resetChannelPtr()//由TcpServer调用
-                {tcpconnectionptr.reset();};
+                TcpConnectionPtr&& getTcpConnectionPtr()
+                {return std::move(tcpconnectionptr);};
             
             private:
                 const int fd;

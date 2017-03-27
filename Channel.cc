@@ -7,6 +7,7 @@
 #include<sys/epoll.h>
 #include<assert.h>
 #include"Channel.h"
+#include<iostream>
 
 namespace unet
 {
@@ -41,6 +42,7 @@ namespace unet
 
         void Channel::handleEvent()
         {
+            
             if(hasconnection)
             {//处理有TcpConnectionPtr的情况
                 handleeventing = true;
@@ -52,7 +54,10 @@ namespace unet
                 {
                     TcpConnectionPtr wptr = tcpconnectionwptr.lock();
                     if(wptr)
+                    {
+                        std::cout << "I'm here!" << std::endl;
                         wptr->handleRead();
+                    }
                     else
                         handleClose();
                 }
@@ -66,6 +71,8 @@ namespace unet
                 }
                 else
                     handleClose();
+
+                revent = 0;
                 handleeventing = false;
             }
             else

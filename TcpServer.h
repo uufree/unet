@@ -35,7 +35,7 @@ namespace unet
             void setWriteCallBack(const MessageCallBack& cb)
             {writecallback = cb;};
 
-            void handleDiedTcpConnection(TcpConnection* ptr);
+            void handleDiedTcpConnection(int fd);
 
             private:
             InetAddress* serveraddr;

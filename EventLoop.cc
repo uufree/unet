@@ -18,11 +18,21 @@ namespace unet
 
         void EventLoop::loop()
         {
+            std::cout << "I'm in looping!" << std::endl;
+            std::cout << "----------------------" << std::endl;
             looping = true;
             quit = false;
             while(!quit)
             {
-                activecallback(&activechannels);
+                activechannels.clear();
+                
+                if(activecallback)
+                    activecallback(&activechannels);
+                
+                std::cout << "activechannels: " << activechannels.size() << std::endl;
+                
+                sleep(1);
+                
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
@@ -45,6 +55,7 @@ namespace unet
                 functorlist.clear();
             }
             looping = false;
+            std::cout << "I'm in looping!" << std::endl;
         }
 
         void EventLoop::setQuit()

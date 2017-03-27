@@ -18,7 +18,8 @@ namespace unet
         class Connector final
         {
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-            typedef std::function<void(TcpConnectionPtr)> ConnectionCallBack;
+            typedef std::function<void(TcpConnectionPtr&&)> ConnectionCallBack;
+            typedef std::vector<Channel*> ChannelList;
 
             public:
                 Connector(InetAddress* serveraddr_);
@@ -32,6 +33,7 @@ namespace unet
                 int createConnection();
                 void createChannel();
                 void start();
+                void getActiveChannels(ChannelList* channels);
 
             private:
                 socket::Socket confd;
