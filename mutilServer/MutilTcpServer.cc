@@ -1,13 +1,9 @@
 /*************************************************************************
-	> File Name: ThreadPoll.h
+	> File Name: MutilTcpServer.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年02月26日 星期日 00时35分42秒
+	> Created Time: 2017年03月29日 星期三 02时31分02秒
  ************************************************************************/
 
-#ifndef _THREADPOLL_H
-#define _THREADPOLL_H
-#endif
-#include<iostream>
-using namespace std;
+#include"MutilTcpServer.h"
 

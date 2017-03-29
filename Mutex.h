@@ -9,15 +9,21 @@
 #define _MUTEX_H
 
 #include<pthread.h>
-#include"CurrentThread.h"
-
-//因为不是封装的库，所以在一些地方写的比较死，完全确认自己不会乱用
+#include<sys/syscall.h>
+#include<unistd.h>
 
 namespace unet
 {
-    namespace thread
+    namespace now
     {
-    
+        inline pid_t pid()
+        {
+            return ::syscall(SYS_gettid);
+        }
+    }
+
+    namespace thread
+    {    
         class MutexLock final
         {
             public:
@@ -32,7 +38,7 @@ namespace unet
 
                 bool isLockInThisThread() const
                 {
-                    return pid == current::pid();
+                    return pid == now::pid();
                 };
 
                 const pid_t getPid()
@@ -42,8 +48,8 @@ namespace unet
 
                 void lock()
                 {
-                    pthread_mutex_lock(&mutex);
-                    pid = current::pid();
+                    ::pthread_mutex_lock(&mutex);
+                    pid = now::pid();
                 };
 
                 pthread_mutex_t* getMutex()
@@ -54,7 +60,7 @@ namespace unet
                 void unlock()
                 {
                     pid = 0;
-                    pthread_mutex_unlock(&mutex);
+                    ::pthread_mutex_unlock(&mutex);
                 };
             
                 ~MutexLock()
@@ -87,41 +93,7 @@ namespace unet
 
             private:
                 MutexLock& mutex;
-        };
-
-        class Condition final
-        {
-            public:
-                explicit Condition(MutexLock& mutex_) : mutex(mutex_)
-                {
-                    pthread_cond_init(&cond,NULL);
-                }
-
-                ~Condition()
-                {
-                    pthread_cond_destroy(&cond);
-                }
-
-                void notify()
-                {
-                    pthread_cond_signal(&cond);
-                }
-
-                void notifyAll()
-                {
-                    pthread_cond_broadcast(&cond);
-                }
-
-                void wait()
-                {
-                    assert(mutex.getPid() != 0);//mutex is locked
-                    pthread_cond_wait(&cond,mutex.getMutex());    
-                }
-
-            private:
-                MutexLock& mutex;
-                pthread_cond_t cond;
-        };
+        }; 
     }
 }
 

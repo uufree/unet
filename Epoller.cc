@@ -92,6 +92,7 @@ namespace unet
 
         void Epoller::addInChannelMap(Channel* channel_)
         {//将channel加入map，顺便设置回调
+            MutexLockGuard guard(mutex);
             const int fd = channel_->getFd();
             assert(channelmap.find(fd) == channelmap.end());
             channelmap[fd] = channel_;

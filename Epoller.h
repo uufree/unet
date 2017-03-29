@@ -10,6 +10,7 @@
 
 #include"Channel.h"
 #include<iostream>
+#include"Mutex.h"
 
 //struct epoll_event;
 
@@ -41,6 +42,9 @@ namespace unet
                 void updateChannel(Channel* channel_); 
                 void addInChannelMap(Channel* channel_);
                 
+                int getConSize()
+                {return channelmap.size();};
+
                 void getInfo();
             
             private:
@@ -51,6 +55,7 @@ namespace unet
                 EventList eventlist;//保存epollfd的数组
 //                int epollfd;//内核维护的epollfd表
                 ChannelMap channelmap;//保存Channel的Map
+                MutexLock mutex;
         };    
     }
 }
