@@ -10,18 +10,18 @@
 
 #include"EventLoopThreadPool.h"
 
-namespace uent
+namespace unet
 {
     namespace net
     {
         class MutilAcceptor final
         {
-            typedef std::unique_ptr<unet::net::EventLoopThreadPool> PoolPtr;
+            typedef std::unique_ptr<unet::thread::EventLoopThreadPool> PoolPtr;
             typedef std::function<Channel* (int sockfd)> NewConnectionCallBack;
             typedef std::function<void(Channel*)> AddInServerLoop;
 
             public:
-                explicit MutilAcceptor();
+                explicit MutilAcceptor(unet::net::InetAddress* addr_,int size=2);
                 MutilAcceptor(const MutilAcceptor& lhs) = delete;
                 MutilAcceptor& operator=(const MutilAcceptor& lhs) = delete;
                 ~MutilAcceptor();
@@ -34,39 +34,26 @@ namespace uent
                 
                 void setAddInServerLoopCallBack(const AddInServerLoop& cb)
                 {addinserverloop = cb;};
-
+            
                 void startLoop()
                 {pool->start();};
+
+                void join()
+                {pool->joinAll();};
 
             private:
                 void handleRead();
 
                 PoolPtr pool;
-                InetAddress* serveraddr;
+                unet::net::InetAddress* serveraddr;
                 int listenfd;
                 Channel* listenchannel;
                 bool listening;
                 NewConnectionCallBack newconnectioncallback;
-                AddInServerLoop addinserverloop;
-                    
+                AddInServerLoop addinserverloop;                    
         };
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
 

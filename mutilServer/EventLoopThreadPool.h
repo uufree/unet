@@ -18,7 +18,7 @@ namespace unet
         {
             typedef std::function<void()> ThreadFunc;
             typedef std::vector<pthread_t> EventLoopThreadList;
-            typedef std::vector<unet::net::Epoller*,int> EpollerList;
+            typedef std::vector<unet::net::Epoller*> EpollerList;
 
             public:
                 EventLoopThreadPool(int size = 2);
@@ -41,7 +41,7 @@ namespace unet
                 void start();
                 void joinAll(); 
 
-                void addInChannelMap(Channel* channel);
+                void addInChannelMap(unet::net::Channel* channel);
 
             private:
                 EventLoopThread thread;

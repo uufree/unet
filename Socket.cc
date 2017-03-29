@@ -62,7 +62,6 @@ namespace unet
             {
                 sockaddr_in addr_ = addr->getSockaddr();                
                 int n = ::bind(sockfd,(sockaddr*)(&addr_),static_cast<socklen_t>(sizeof(struct sockaddr_in)));
-                std::cout << "bind return: " << n << std::endl;
                 assert(n >= 0);
             }
 

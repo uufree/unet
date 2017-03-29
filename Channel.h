@@ -78,13 +78,20 @@ namespace unet
                     event = KNoneEvent;
                     updatecallback(this);
                 }
+                
+                void handleDrived()
+                {
+                    TcpConnectionPtr ptr = tcpconnectionwptr.lock();
+                    if(ptr)
+                        ptr->handleDrived();
+                }
 
                 TcpConnectionPtr&& getTcpConnectionPtr()
                 {return std::move(tcpconnectionptr);};
                 
                 void setFd(int fd_)
                 {fd = fd_;};
-
+                
             private:
                 int fd;
                 int index;

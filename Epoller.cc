@@ -92,7 +92,7 @@ namespace unet
 
         void Epoller::addInChannelMap(Channel* channel_)
         {//将channel加入map，顺便设置回调
-            MutexLockGuard guard(mutex);
+            unet::thread::MutexLockGuard guard(mutex);
             const int fd = channel_->getFd();
             assert(channelmap.find(fd) == channelmap.end());
             channelmap[fd] = channel_;
@@ -105,6 +105,10 @@ namespace unet
             pfd.fd = channel_->getFd();
             pfd.events = channel_->getEvent();
             eventlist.push_back(pfd);
+            
+            channel_->handleDrived();//处理主动的事件;
+            getInfo();
+
         }
 /*
         void Epoller::update(Channel* channel_)

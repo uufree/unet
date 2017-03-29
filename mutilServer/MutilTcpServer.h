@@ -19,21 +19,40 @@ namespace unet
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
             typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;//保存描述连接的智能指针，索引是连接中保存的fd
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
+            
             public:
+                MutilTcpServer(InetAddress* addr_,int size=2);
+                MutilTcpServer(const MutilTcpServer& lhs) = delete;
+                MutilTcpServer& operator=(const MutilTcpServer& lhs) = delete;
+                ~MutilTcpServer();
+
+        //public interface
+                void setReadCallBack(const MessageCallBack& cb)
+                {readcallback = cb;};
                 
+                void setWriteCallBack(const MessageCallBack& cb)
+                {writecallback = cb;};
 
+                void setDrivedCallBack(const MessageCallBack& cb)
+                {drivedcallback = cb;};
 
-
-
+                void handleDiedTcpConnection(int fd);
+                void start();
+                
 
             private:
                 Channel* newConnectionCallBack(int fd_);//设置新连接到来时的处理方式
+                void addInServerLoop(Channel* channel);
                 
+                std::unique_ptr<unet::thread::Current> current; 
                 InetAddress* serveraddr;
                 std::unique_ptr<MutilAcceptor> acceptor;
                 TcpConnectionPtrMap tcpconnectionptrmap;
-                MessageCallBack readcallback,writecallback;
+                MessageCallBack readcallback,writecallback,drivedcallback;
+                thread::MutexLock mutex;
         };
+    }
+}
 
 #endif
 

@@ -34,6 +34,9 @@ namespace unet
                 void setWriteCallBack(const MessageCallBack& cb)
                 {writecallback = cb;};//由TcpServer注册
 
+                void setDrivedCallBack(const MessageCallBack& cb)
+                {drivedcallback = cb;};
+
                 void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
                 {handlediedtcpconnection = cb;};//由TcpServer注册
                 
@@ -45,7 +48,13 @@ namespace unet
                 bool handleReadForTcpClient();
 
                 void handleChannel();
-                    
+                
+                void handleDrived()
+                {
+                    if(drivedcallback)
+                        drivedcallback(&inputbuffer,&outputbuffer);
+                }
+
                 int getFd()
                 {return confd.getFd();};
 
@@ -57,7 +66,7 @@ namespace unet
                 socket::Socket confd;//处理已连接套接字的关闭问题
                 Buffer outputbuffer;//消息输出的buffer
                 Buffer inputbuffer;//消息输入的buffer
-                MessageCallBack readcallback, writecallback;
+                MessageCallBack readcallback, writecallback,drivedcallback;
                 HandleDiedTcpConnection handlediedtcpconnection;
                 WheetChannelCallBack wheetchannel;
         };

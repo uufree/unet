@@ -20,6 +20,11 @@ namespace unet
         {
             epoller->epoll(channels);
         };
+
+        void Current::addInEpoller(unet::net::Channel* channel_)
+        {
+            epoller->addInChannelMap(channel_);
+        };
     }
 }
 

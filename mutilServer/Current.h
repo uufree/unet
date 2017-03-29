@@ -35,6 +35,11 @@ namespace unet
                 {return epoller->getConSize();};
 
                 void getActiveChannels(ChannelList* channels);
+                
+                void addInEpoller(unet::net::Channel* channel_);
+
+                void quit()
+                {loop->setQuit();};
 
             private:
                 std::unique_ptr<unet::net::Epoller> epoller;

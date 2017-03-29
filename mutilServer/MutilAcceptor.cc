@@ -11,7 +11,7 @@ namespace unet
 {
     namespace net
     {
-        MutilAcceptor::MutilAcceptor(int size,InetAddress* addr_) :
+        MutilAcceptor::MutilAcceptor(unet::net::InetAddress* addr_,int size) :
             pool(new unet::thread::EventLoopThreadPool(size)),
             serveraddr(addr_),
             listenfd(socket::socket()),
@@ -23,7 +23,7 @@ namespace unet
             listenfd = fd;
             listenchannel->setFd(fd);
             
-            listenchannel->setReadCallBack(std::bind(&Acceptor::handleRead,this));//处理listenfd的可读事件
+            listenchannel->setReadCallBack(std::bind(&MutilAcceptor::handleRead,this));//处理listenfd的可读事件
         }
         
         MutilAcceptor::~MutilAcceptor()
