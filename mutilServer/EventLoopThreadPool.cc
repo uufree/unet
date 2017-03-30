@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"EventLoopThreadPool.h"
-#include<iostream>
 
 namespace unet
 {

@@ -6,8 +6,6 @@
  ************************************************************************/
 
 #include"EventLoop.h"
-#include<assert.h>
-#include<iostream>
 
 namespace unet 
 {
@@ -28,8 +26,6 @@ namespace unet
                 
                 if(activecallback)
                     activecallback(&activechannels);
-                
-                sleep(1);
 
                 if(!activechannels.empty())
                 {
@@ -40,20 +36,8 @@ namespace unet
                     }
                     eventhandling = false;
                 }
-                else
-                {
-                    std::cout << "nothing happend!" << std::endl;
-                }
-
-                if(!functorlist.empty())
-                {
-                    for(auto iter=functorlist.begin();iter!=functorlist.end();++iter)
-                        (*iter)();
-                }
-                functorlist.clear();
             }
             looping = false;
-            std::cout << "I'm in looping!" << std::endl;
         }
 
         void EventLoop::setQuit()

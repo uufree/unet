@@ -23,7 +23,7 @@ namespace unet
             typedef std::function<void()> WheetChannelCallBack;
 
             public:        
-                TcpConnection(int fd_);
+                explicit TcpConnection(int fd_);
                 TcpConnection(const TcpConnection& lhs) = delete;
                 TcpConnection& operator=(const TcpConnection& lhs) = delete;
                 ~TcpConnection() {};
@@ -35,10 +35,10 @@ namespace unet
                 {writecallback = cb;};//由TcpServer注册
 
                 void setDrivedCallBack(const MessageCallBack& cb)
-                {drivedcallback = cb;};
+                {drivedcallback = cb;};//由TcpServer注册，用于处理TcpServer的主动事件
 
                 void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
-                {handlediedtcpconnection = cb;};//由TcpServer注册
+                {handlediedtcpconnection = cb;};//由TcpServer注册，用于处理销毁TcpConnection的销毁事件
                 
                 void setWheetChannelCallBack(const WheetChannelCallBack& cb)
                 {wheetchannel = cb;};
@@ -47,20 +47,16 @@ namespace unet
 
                 bool handleReadForTcpClient();
 
-                void handleChannel();
+                void handleChannel();//不关注所有事件的回调
                 
-                void handleDrived()
-                {
-                    if(drivedcallback)
-                        drivedcallback(&inputbuffer,&outputbuffer);
-                }
 
-                int getFd()
+                int getFd()//返回自己关注的描述符
                 {return confd.getFd();};
 
-                void handleRead();
+                void handleRead();//用于处理描述符上发生的事件
                 void handleWrite();
-                void handleClose();
+                void handleClose(); 
+                void handleDrived();
 
             private:
                 socket::Socket confd;//处理已连接套接字的关闭问题

@@ -9,8 +9,6 @@
 #define _EVENTLOOP_H
 
 #include"Epoller.h"
-#include<functional>
-#include<deque>
 
 class Channel;
 
@@ -22,8 +20,6 @@ namespace unet
         {
             typedef std::vector<Channel*> ChannelList;
             typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
-            typedef std::function<void()> Functor;
-            typedef std::deque<Functor> FunctorList;
 
             public:                                    
                 EventLoop();
@@ -38,17 +34,11 @@ namespace unet
                 
                 ChannelList* getChannelList();
                 
-                void addFunctorInLoop(const Functor& fun)
-                {
-                    functorlist.push_back(fun);
-                }
-
             private:
                 bool looping;
                 bool quit;
                 bool eventhandling;
                 ChannelList activechannels;
-                FunctorList functorlist; 
                 GetActiveChannelsCallBack activecallback;
         };
     }

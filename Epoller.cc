@@ -6,11 +6,6 @@
  ************************************************************************/
 
 #include"Epoller.h"
-#include<sys/epoll.h>
-#include<sys/poll.h>
-#include<assert.h>
-#include<iostream>
-
 
 namespace unet
 {
@@ -39,17 +34,20 @@ namespace unet
 //            eventlist.clear();
 //            int activeEvents = ::epoll_wait(epollfd,&*eventlist.begin(),static_cast<int>(channelmap.size()),timeoutMs);
             
-            int activeEvents = ::poll(&*eventlist.begin(),eventlist.size(),timeoutMs);
-            int savedErrno = errno;
+            int activeEvents = ::poll(&*eventlist.begin(),eventlist.size(),timeoutMs);//获得活动的事件
+            int savedErrno = errno;    
 
             if(activeEvents > 0)
                 getActiveEvents(activeEvents,channels);
             else if(activeEvents == 0)
-                std::cout << "nothing happended" << std::endl;
+                printf("nothing happended!\n");
             else
             {
                 if(savedErrno != EINTR)
-                    std::cerr << errno << std::endl;
+                {
+                    printf("poll mistake!\n");
+                    exit(0);
+                }
             }
         }
 
@@ -74,12 +72,10 @@ namespace unet
         
         void Epoller::updateChannel(Channel* channel_)
         {//更新已有channel中关注的事件
-            const int index = channel_->getIndex();
             const int fd = channel_->getFd();
 
             assert(channelmap.find(fd) != channelmap.end());
             assert(channelmap[fd] == channel_);
-            assert(fd == index);
             
             if(channel_->getEvent() == KNoneEvent)//如果不关注任何的事件就移除channel
             {
@@ -96,7 +92,6 @@ namespace unet
             const int fd = channel_->getFd();
             assert(channelmap.find(fd) == channelmap.end());
             channelmap[fd] = channel_;
-            channel_->setIndex(fd);//设置在map中的索引
             channel_->setEvent();//默认关注可读与可写事件
             channel_->setUpdateCallBack(std::bind(&Epoller::updateChannel,this,std::placeholders::_1));//设置更新的回调
 //            update(channel_);//在epollfd中加入索引
@@ -108,7 +103,6 @@ namespace unet
             
             channel_->handleDrived();//处理主动的事件;
             getInfo();
-
         }
 /*
         void Epoller::update(Channel* channel_)
@@ -154,7 +148,7 @@ namespace unet
             }
         }
 
-        void Epoller::getInfo()
+        void Epoller::getInfo() const
         {
             std::cout << "channelmap size: " << channelmap.size() << std::endl;
             std::cout << "eventlist size: " << eventlist.size() << std::endl;
@@ -183,7 +177,7 @@ namespace unet
         }
 
 
-        bool Epoller::hasChannel(Channel* channel_)
+        bool Epoller::hasChannel(Channel* channel_) const
         {//判断是否有channel
             int fd = channel_->getFd();
             ChannelMap::const_iterator iter = channelmap.find(fd);

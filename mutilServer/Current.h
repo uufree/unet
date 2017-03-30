@@ -20,7 +20,7 @@ namespace unet
         {
             typedef std::vector<unet::net::Channel*> ChannelList;
             public:
-                Current();
+                explicit Current();
                 Current(const Current& lhs) = delete;
                 Current& operator=(const Current& lhs) = delete;
                 ~Current(){};

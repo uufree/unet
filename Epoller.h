@@ -9,10 +9,13 @@
 #define _EPOLLER_H
 
 #include"Channel.h"
-#include<iostream>
 #include"Mutex.h"
 
 //struct epoll_event;
+
+//用的是Poll,因为epoll老是莫名其妙的报错，检查errno也没用
+
+//用map保存Channel，维护map和channel对应的pollfd
 
 struct pollfd;
 
@@ -22,7 +25,7 @@ namespace unet
     { 
         class Epoller final
         {
-            static const int timeoutMs = 200;
+            static const int timeoutMs = 200;//默认poll阻塞200ms
             static const int KNoneEvent = 0;
 
 //            typedef std::vector<struct epoll_event> EventList;
@@ -31,25 +34,28 @@ namespace unet
             typedef std::vector<Channel*> ChannelList;
 
             public:    
-                Epoller();
+                explicit Epoller();
                 Epoller(const Epoller&) = delete;
                 Epoller operator=(const Epoller&) = delete;
                 ~Epoller();
 //public interface 
+                //将poll中有事件发生的channel放进channellist
                 void epoll(ChannelList* channels);
-                bool hasChannel(Channel* channel_);
+                bool hasChannel(Channel* channel_) const;
                 void removeChannel(Channel* channel_);
                 void updateChannel(Channel* channel_); 
                 void addInChannelMap(Channel* channel_);
                 
-                int getConSize()
+                int getConSize() const 
                 {return channelmap.size();};
 
-                void getInfo();
+                void getInfo() const;
             
             private:
 
                 void update(Channel* channel_);
+
+                //将pollfd与channel做映射
                 void getActiveEvents(int activeEvents,ChannelList* channels);
 
                 EventList eventlist;//保存epollfd的数组

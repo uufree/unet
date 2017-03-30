@@ -19,7 +19,6 @@ namespace unet
         {
             typedef std::function<Channel* (int sockfd)> NewConnectionCallBack;
             typedef std::vector<Channel*> ChannelList;
-            typedef std::function<void()> Functor;
 
             public:          
                 explicit Acceptor(InetAddress* addr_);
@@ -35,11 +34,6 @@ namespace unet
                 void setNewConnectionCallBack(const NewConnectionCallBack& cb)
                 {newconnectioncallback = cb;};
                 
-                void addFunctorInLoop(const Functor& fun)
-                {
-                    loop->addFunctorInLoop(fun);
-                }
-
             private:
 
                 void handleRead();

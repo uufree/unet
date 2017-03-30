@@ -4,10 +4,7 @@
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年03月09日 星期四 20时56分25秒
  ************************************************************************/
-#include<sys/epoll.h>
-#include<assert.h>
 #include"Channel.h"
-#include<iostream>
 
 namespace unet
 {
@@ -19,7 +16,6 @@ namespace unet
         
         Channel::Channel(int fd_,bool hasconnection_) : 
         fd(fd_),
-        index(-1),
         event(0),
         revent(0),
         handleeventing(false),
@@ -28,7 +24,7 @@ namespace unet
         tcpconnectionwptr(tcpconnectionptr)
         {
             tcpconnectionptr->setWheetChannelCallBack(std::bind(&Channel::disableAll,this));
-            if(!hasconnection_)
+            if(!hasconnection_)//如果是listenchannel,将ptr reset掉
             {
                 tcpconnectionptr.reset();
                 tcpconnectionwptr.reset();        
@@ -83,7 +79,6 @@ namespace unet
                 }
                 else if(revent & EPOLLIN)
                 {
-                    std::cout << "I'm here!" << std::endl;
                     if(readcallback)
                         readcallback();
                 }

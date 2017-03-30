@@ -6,8 +6,6 @@
  ************************************************************************/
 
 #include"TcpConnection.h"
-#include<assert.h>
-#include<iostream>
 
 namespace unet
 {
@@ -23,7 +21,7 @@ namespace unet
             if(readcallback)
                 readcallback(&inputbuffer,&outputbuffer);
             else
-                std::cout << "没有注册readcallback" << std::endl;
+                perror("没有注册readcallback\n");
         }
 
         void TcpConnection::handleWrite()
@@ -31,30 +29,44 @@ namespace unet
             if(writecallback)
                 writecallback(&inputbuffer,&outputbuffer);
             else
-                std::cout << "没有注册writecallback" << std::endl;
+                perror("没有注册writecallback");
             outputbuffer.writeInSocket(confd.getFd());
         }
 
         bool TcpConnection::handleWriteForTcpServer()
-        {//在TcpServer处理将死未死的连接时，用到这个函数，将buffer中的数据发出去，然后判断是否还有数据
+        {//将buffer中的数据发出去，然后判断是否还有数据
             outputbuffer.writeInSocket(confd.getFd());
             return outputbuffer.getDataSize() == 0;
         }
     
         bool TcpConnection::handleReadForTcpClient()
-        {
+        {//将接收到的数据放到缓冲区中，然后判断是否是一条完整的数据
             inputbuffer.readInSocket(confd.getFd());
             return inputbuffer.getKey() == 0;
         }
 
         void TcpConnection::handleClose()
-        {
-            handlediedtcpconnection(confd.getFd());
+        {   
+            if(handlediedtcpconnection)
+                handlediedtcpconnection(confd.getFd());
+            else
+                perror("没有注册handlediedtcpconnection\n");
         }
 
         void TcpConnection::handleChannel()
         {
-            wheetchannel();
+            if(wheetchannel)
+                wheetchannel();
+            else
+                perror("没有注册wheetchannel\n");
+        }
+        
+        void TcpConnection::handleDrived()
+        {
+            if(drivedcallback)
+                drivedcallback(&inputbuffer,&outputbuffer);
+            else
+                perror("没有注册drivedcallback\n");
         }
     }
 }
