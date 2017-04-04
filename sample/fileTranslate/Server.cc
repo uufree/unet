@@ -40,27 +40,7 @@ void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 
 void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {//服务端主动发送文件，及时服务
-    char buf[1024];
-    bzero(buf,1024);
-    File uuchen(argv[1]);
-//    int confd = inputbuffer->getFd();
-
-    while(1)
-    {
-        uuchen.readn(static_cast<void*>(buf),1024);
-        if(uuchen.getReadSize() > 0)
-        {
-            outputbuffer->appendInBuffer(static_cast<const void*>(buf));
-            outputbuffer->writeInSocket();
-/*            
-            ::write(confd,buf,1024);
-            ::sleep(0.5);
-            perror("writeInSocket!\n");
-*/
-        }
-        else
-            break;
-    }
+    inputbuffer->sendFile("/home/uuchen/uuchen.jpeg");
 }
 
 

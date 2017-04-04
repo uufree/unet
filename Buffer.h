@@ -39,10 +39,16 @@ namespace unet
                 //public interface
                 void readInSocket();
                 void writeInSocket();
-
+                
+                //通用操作
                 void appendInBuffer(const char* message);
-                char* getCompleteMessageInBuffer();
-
+                void getCompleteMessageInBuffer(char* message);
+                
+                //针对File
+                int readInSocket(int size);
+                int sendFile(const char* filename,int size=1024);
+                int recvFile(const char* filename,int size=1024);
+                
                 int getDataSize() const 
                 {return tailindex - headindex;};
 
@@ -72,6 +78,7 @@ namespace unet
                 
                 int getFd()
                 {return fd;};
+                
             private:
                 char* buffer;
                 int KBufferSize;

@@ -19,16 +19,7 @@ using namespace unet::net;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {//被动的接受服务端传送的文件
-    char* buf;
-    inputbuffer->readInSocket();
-    buf = inputbuffer->getCompleteMessageInBuffer();
-
-    if(buf != nullptr)
-    {
-        File chenuu(argv[1]);
-        chenuu.writen(buf,strlen(buf));
-        ::free(buf);
-    }
+    outputbuffer->recvFile("/home/uuchen/chenuu.jpeg");
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)

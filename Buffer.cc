@@ -9,6 +9,7 @@
 #include<unistd.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include"File.h"
 
 namespace unet
 {
@@ -24,10 +25,10 @@ namespace unet
             vec[1].iov_base = extrabuf;
             vec[1].iov_len = 65536;
 
-//            int n = ::readv(fd,vec,getFreeSize());
-            int n = ::read(fd,buffer+tailindex,getFreeSize());
+            int n = ::readv(fd,vec,getFreeSize());
+//            int n = ::read(fd,buffer+tailindex,1024);
             std::cout << "-------------------------" << std::endl;
-            std::cout << "read size: " << n << std::endl;
+            std::cout << "readInSocket: " << n << std::endl;
 
             if(n < 0)
             {
@@ -55,12 +56,15 @@ namespace unet
         void Buffer::writeInSocket()
         {
             int n = ::write(fd,buffer+headindex,getDataSize());
-            std::cout << "write n: " << n << std::endl;
+            
+            std::cout << "writeInSocket : " << n << std::endl;
+            
             if(n > 0)
             {
                 headindex += n;
                 if(needMove())
                 {
+                    std::cout << "move~~" << std::endl;
                     strcpy(buffer,buffer+headindex);
                     tailindex -= headindex;
                     headindex = 0;
@@ -72,13 +76,13 @@ namespace unet
             }
         }
 
+        //通用操作
         void Buffer::appendInBuffer(const char* message)
         {
-            int n = strlen(message);
-            std::cout << "appendInBuffer n: " << n << std::endl;
-            if(n+2 > getFreeSize())
+            int size = strlen(message);
+            if(size+2 > getFreeSize())
             {
-                while(n+2 > getFreeSize())
+                while(size+2 > getFreeSize())
                 {
                     KBufferSize *= 2;
                     level  = KBufferSize / 2;
@@ -86,37 +90,158 @@ namespace unet
                 }
             }
             
-            strcat(buffer,message);
-            strcat(buffer,"\r\n");
-            tailindex += strlen(message);
+            std::cout << "----------------------" << std::endl;
+            std::cout << "appendInBuffer: " << size << std::endl;
+
+            strncat(buffer,message,size);
+            strncat(buffer,"\r\n",2);
+            tailindex += size;
             tailindex += 2;
         }
-    
-        char* Buffer::getCompleteMessageInBuffer()
+        
+        void Buffer::getCompleteMessageInBuffer(char* message)
         {
             char* ch = strstr(buffer+headindex,"\r\n");
             if(ch != NULL)
             {
-                int size = ch - buffer + headindex;
-                char* buf = static_cast<char*>(malloc(size));
-                strncpy(buf,buffer+headindex,size);
+                int size = ch - buffer - headindex;
+                strncpy(message,buffer+headindex,size);
                 headindex += size;
                 headindex += 2;
-                std::cout << "get n: " << size << std::endl;
+                
+                std::cout << "getCompleteMessageInBuffer : " << size << std::endl;
 
                 if(needMove())
                 {
+                    std::cout << "move~~" << std::endl;
                     strcpy(buffer,buffer+headindex);
                     tailindex -= headindex;
                     headindex = 0;
                 }
                 
-                return buf;
             }
             else
-                return nullptr;
-
+                message = nullptr;
         }
+
+        //File操作
+        int Buffer::readInSocket(int size)
+        {
+            if(getFreeSize() < size)
+            {
+                strcpy(buffer,buffer+headindex);
+                tailindex -= headindex;
+                headindex = 0;
+            }
+
+            while(getFreeSize() < size)
+            {
+                KBufferSize *= 2;
+                level  = KBufferSize / 2;
+                buffer = static_cast<char*>(realloc(static_cast<char*>(buffer),static_cast<size_t>(KBufferSize)));
+            }
+
+            int n = ::read(fd,buffer+tailindex,size); 
+
+            if(n == 0)
+                ::close(fd);
+
+            tailindex += 1024; 
+
+            std::cout << "-------------------------" << std::endl;
+            std::cout << "readInSocket: " << n << std::endl;
+            return n;
+        }
+
+        int Buffer::sendFile(const char* filename,int size)
+        {
+            File uuchen(filename);
+            int n;
+
+            while(1)
+            {
+                if(getFreeSize() < size)
+                {
+                    strcpy(buffer,buffer+headindex);
+                    tailindex -= headindex;
+                    headindex = 0;
+                }
+
+                while(getFreeSize() < size)
+                {
+                    KBufferSize *= 2;
+                    level  = KBufferSize / 2;
+                    buffer = static_cast<char*>(realloc(static_cast<char*>(buffer),static_cast<size_t>(KBufferSize)));
+                }
+
+                uuchen.readn(buffer+tailindex,1024);
+                n = uuchen.getReadSize();
+                tailindex += n;
+                
+                if(n > 0)
+                    writeInSocket();
+                else if(n == 0)
+                    return 1;
+                else
+                    break;
+            }
+            return -1;
+        }
+
+        int Buffer::recvFile(const char* filename,int size)
+        {
+            File chenuu(filename);
+            int n;
+
+            while(1)
+            {
+                n = readInSocket(1024);
+                chenuu.writen(buffer+headindex,n);
+                headindex += n;
+                  
+                if(n > 0)
+                    continue;
+                else if(n == 0)
+                    return 1;
+                else
+                    break;
+            }
+            return -1;
+        }
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
-

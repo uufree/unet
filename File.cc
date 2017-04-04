@@ -54,13 +54,11 @@ namespace unet
 
     }
     
-    void File::readn(void* buf,size_t nbytes)
+    void File::readn(char* cptr,size_t nbytes)
     {
         int nleft,nread;
-        char* cptr;
         
         readsize = 0;
-        cptr = static_cast<char*>(buf);
         nleft = nbytes;
 
         while(nleft > 0)
@@ -83,12 +81,10 @@ namespace unet
         readsize = nbytes - nleft;
     }
             
-    void File::writen(void* buf,size_t nbytes)
+    void File::writen(char* cptr,size_t nbytes)
     {
         int nleft,nwriten;
-        char* cptr;
     
-        cptr = static_cast<char*>(buf);
         nleft = nbytes;
         
         writesize = 0;

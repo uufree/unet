@@ -28,7 +28,9 @@ int main(int argc,char** argv)
         cout << inputbuffer.getCompleteMessageInBuffer() << endl;
         sleep(0.5);
     }
-/*
+        
+
+    /*
     inputbuffer.appendInBuffer(buf);
     char* buff = inputbuffer.getCompleteMessageInBuffer();
     std::cout << buff << std::endl;

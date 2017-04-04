@@ -34,13 +34,13 @@ namespace unet
                 assert(::close(fd) == 0);
             }
 
-            void readn(void* buf,size_t nbytes);
+            void readn(char* cptr,size_t nbytes);
             
             int getReadSize() const
             {return readsize;};
             
 
-            void writen(void* buf,size_t nbytes);
+            void writen(char* cptr,size_t nbytes);
     
             int getWriteSize() const
             {return writesize;};

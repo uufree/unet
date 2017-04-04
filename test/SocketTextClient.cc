@@ -26,19 +26,33 @@ int main(int argc,char** argv)
     std::cout << "confd: " << confd << std::endl;
 
     Buffer outputbuffer(confd);
-    File chenuu("/home/uuchen/chenuu.jpeg") ;
-    char* buf;
+//    File chenuu("/home/uuchen/chenuu.jpeg") ;
+//    char buf[1024];
 
-    while(1)
-    {
-        outputbuffer.readInSocket();
-        buf = outputbuffer.getCompleteMessageInBuffer();
-        chenuu.writen(buf,strlen(buf));
-        if(chenuu.getWriteSize() < 0)
+    outputbuffer.recvFile("/home/uuchen/chenuu.jpeg");
+    
+
+//    while(1)
+//    {
+/*
+        outputbuffer.readInSocket(1024);
+        outputbuffer.getCompleteMessageInBuffer(buf,1024);
+        chenuu.writen(buf,1024);
+        if(chenuu.getWriteSize() == 0)
+        {
+            ::close(confd);
             break;
-        
-        ::sleep(1);
-    }
+        }
+*/
+/*       
+        if((::read(confd,buf,1024)) == 0)
+        {
+            ::close(confd);
+            break;
+        }
+        chenuu.writen(buf,1024);
+*/         
+//    }
 
     return 0;
 }

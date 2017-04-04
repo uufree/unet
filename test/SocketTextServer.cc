@@ -30,24 +30,36 @@ int main(int argc,char** argv)
     std::cout << "confd: " << confd << std::endl;
     Buffer inputbuffer(confd);
 
-    File uuchen("/home/uuchen/uuchen.jpeg");
-    char buf[1024];
+//    File uuchen("/home/uuchen/uuchen.jpeg");
+//    char buf[1024];
+    
+    inputbuffer.sendFile("/home/uuchen/uuchen.jpeg");
 
-    while(1)
-    {
+//    while(1)
+//    {
+/*        
         uuchen.readn(buf,1024);
-        std::cout << "----------------------------" << std::endl;
-        std::cout << "readSize: " << strlen(buf) << std::endl;
         if(uuchen.getReadSize() > 0)
         {
-            inputbuffer.appendInBuffer(buf);
+            inputbuffer.appendInBuffer(buf,1024);
             inputbuffer.writeInSocket();
         }
         else
+        {
+            ::close(confd);
             break;
-
-        ::sleep(1);
-    }
+        }
+*/
+/*        
+        uuchen.readn(buf,1024);
+        if((uuchen.getReadSize()) == 0)
+        {
+            ::close(confd);
+            break;
+        }
+        ::write(confd,buffer,1024);
+*/        
+//    }
 
 /*    
     int epollfd = ::epoll_create(5);
@@ -100,7 +112,7 @@ int main(int argc,char** argv)
     else
         std::cout << "nothing happened!" << std::endl;
 */    
-    sleep(30);
+    sleep(5);
     unet::net::socket::close(listenfd);
     std::cout << "listen socket close" << std::endl;
     unet::net::socket::close(confd);
