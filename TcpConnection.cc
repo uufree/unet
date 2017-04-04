@@ -11,13 +11,16 @@ namespace unet
 {
     namespace net
     {
-        TcpConnection::TcpConnection(int fd_) : confd(fd_)
+        TcpConnection::TcpConnection(int fd_) : 
+            confd(fd_),
+            outputbuffer(fd_),
+            inputbuffer(fd_)
         {};
 
 //if inputbuffer over highwater,handle it and put it in outputbuffer,otherwize,update inputbuffer and outputbuffer
         void TcpConnection::handleRead()
         {//处理读事件   
-            inputbuffer.readInSocket(confd.getFd());
+            inputbuffer.readInSocket();
             if(readcallback)
                 readcallback(&inputbuffer,&outputbuffer);
             else
@@ -30,18 +33,18 @@ namespace unet
                 writecallback(&inputbuffer,&outputbuffer);
             else
                 perror("没有注册writecallback");
-            outputbuffer.writeInSocket(confd.getFd());
+            outputbuffer.writeInSocket();
         }
 
         bool TcpConnection::handleWriteForTcpServer()
         {//将buffer中的数据发出去，然后判断是否还有数据
-            outputbuffer.writeInSocket(confd.getFd());
+            outputbuffer.writeInSocket();
             return outputbuffer.getDataSize() == 0;
         }
     
         bool TcpConnection::handleReadForTcpClient()
         {//将接收到的数据放到缓冲区中，然后判断是否是一条完整的数据
-            inputbuffer.readInSocket(confd.getFd());
+            inputbuffer.readInSocket();
             return inputbuffer.getKey() == 0;
         }
 
@@ -64,7 +67,9 @@ namespace unet
         void TcpConnection::handleDrived()
         {
             if(drivedcallback)
+            {
                 drivedcallback(&inputbuffer,&outputbuffer);
+            }
             else
                 perror("没有注册drivedcallback\n");
         }

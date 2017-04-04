@@ -38,7 +38,7 @@ namespace unet
                 ptr->setWriteCallBack(writecallback);
             if(drivedcallback)
                 ptr->setDrivedCallBack(drivedcallback);
-
+            
             ptr->setHandleDiedTcpConnection(std::bind(&MutilTcpServer::handleDiedTcpConnection,this,std::placeholders::_1));
             tcpconnectionptrmap.insert({fd_,ptr});
             

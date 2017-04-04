@@ -96,6 +96,8 @@ namespace unet
                     TcpConnectionPtr ptr = tcpconnectionwptr.lock();
                     if(ptr)
                         ptr->handleDrived();
+                    else
+                        perror("ptr提升失败!\n");
                 }
 
                 //用std::move的特性，将shared_ptr<TcpConnection>交由TcpServer保管

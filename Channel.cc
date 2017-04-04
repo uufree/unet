@@ -24,6 +24,7 @@ namespace unet
         tcpconnectionwptr(tcpconnectionptr)
         {
             tcpconnectionptr->setWheetChannelCallBack(std::bind(&Channel::disableAll,this));
+            
             if(!hasconnection_)//如果是listenchannel,将ptr reset掉
             {
                 tcpconnectionptr.reset();

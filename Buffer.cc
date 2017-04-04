@@ -14,7 +14,7 @@ namespace unet
 {
     namespace net
     {
-        void Buffer::readInSocket(int fd)
+        void Buffer::readInSocket()
         {
             char extrabuf[65536];
             bzero(extrabuf,65536);
@@ -24,21 +24,23 @@ namespace unet
             vec[1].iov_base = extrabuf;
             vec[1].iov_len = 65536;
 
-            int freesize = getFreeSize();
-            int n = ::readv(fd,vec,freesize);
-    
+//            int n = ::readv(fd,vec,getFreeSize());
+            int n = ::read(fd,buffer+tailindex,getFreeSize());
+            std::cout << "-------------------------" << std::endl;
+            std::cout << "read size: " << n << std::endl;
+
             if(n < 0)
             {
                 perror("readv error\n");
             }
-            else if(n < freesize && n > 0)
+            else if(n < getFreeSize() && n > 0)
             {
                 tailindex += n;
             }
             else
             {   
                 tailindex += getFreeSize();
-                int size = n - freesize;
+                int size = n - getFreeSize();
                 while(size > getFreeSize())
                 {
                     KBufferSize *= 2;
@@ -50,9 +52,10 @@ namespace unet
             }
         }
 
-        void Buffer::writeInSocket(int fd)
+        void Buffer::writeInSocket()
         {
             int n = ::write(fd,buffer+headindex,getDataSize());
+            std::cout << "write n: " << n << std::endl;
             if(n > 0)
             {
                 headindex += n;
@@ -69,99 +72,51 @@ namespace unet
             }
         }
 
-        void Buffer::appendInBuffer(const void* message)
+        void Buffer::appendInBuffer(const char* message)
         {
-            int n = strlen(static_cast<const char*>(message));
-            if(n+10 > getFreeSize())
+            int n = strlen(message);
+            std::cout << "appendInBuffer n: " << n << std::endl;
+            if(n+2 > getFreeSize())
             {
-                while(n+10 > getFreeSize())
+                while(n+2 > getFreeSize())
                 {
                     KBufferSize *= 2;
                     level  = KBufferSize / 2;
-                    buffer = static_cast<char*>(realloc(static_cast<void*>(buffer),static_cast<size_t>(KBufferSize)));
+                    buffer = static_cast<char*>(realloc(static_cast<char*>(buffer),static_cast<size_t>(KBufferSize)));
                 }
             }
-
-            snprintf(buffer+tailindex,getFreeSize(),"\r\n%d\r\n",n);
-            strcat(buffer,static_cast<const char*>(message));
-            char* ch = strchr(buffer,'\0');
-            tailindex = ch - buffer;
+            
+            strcat(buffer,message);
+            strcat(buffer,"\r\n");
+            tailindex += strlen(message);
+            tailindex += 2;
         }
     
         char* Buffer::getCompleteMessageInBuffer()
         {
-            if(key == 0)
+            char* ch = strstr(buffer+headindex,"\r\n");
+            if(ch != NULL)
             {
-                char* ch1 = strstr(buffer+headindex,"\r\n");
-                ch1 += 2;
-                char* ch2 = strstr(ch1,"\r\n");
-                int length = ch2 - ch1;
-                if(length >= 10)
-                    perror("buffer length error!\n");
-                ch2 += 2;
-                char buf[length];
-                bzero(buf,length);
-                strncpy(buf,ch1,length);
-                key = atoi(buf);
-                ch1 -= 2;
-                headindex += (ch2-ch1); 
-            }
+                int size = ch - buffer + headindex;
+                char* buf = static_cast<char*>(malloc(size));
+                strncpy(buf,buffer+headindex,size);
+                headindex += size;
+                headindex += 2;
+                std::cout << "get n: " << size << std::endl;
 
-            if(key > (tailindex-headindex))
-                return nullptr;
-            else
-            {
-                char* buf = static_cast<char*>(malloc(key));
-                bzero(buf,key);
-                strncpy(buf,buffer+headindex,key);
-                headindex += key;
-                key = 0;
-                 
                 if(needMove())
                 {
                     strcpy(buffer,buffer+headindex);
                     tailindex -= headindex;
                     headindex = 0;
                 }
-
+                
                 return buf;
             }
+            else
+                return nullptr;
+
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -22,7 +22,7 @@ namespace unet
         class Buffer final
         {
             public:
-                explicit Buffer() : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0)
+                explicit Buffer(int fd_) : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0),fd(fd_)
             {
                 buffer = static_cast<char*>(malloc(KBufferSize));
                 bzero(buffer,KBufferSize);
@@ -37,10 +37,10 @@ namespace unet
                 };
 
                 //public interface
-                void readInSocket(int fd);
-                void writeInSocket(int fd);
+                void readInSocket();
+                void writeInSocket();
 
-                void appendInBuffer(const void* message);
+                void appendInBuffer(const char* message);
                 char* getCompleteMessageInBuffer();
 
                 int getDataSize() const 
@@ -67,9 +67,11 @@ namespace unet
                 int getBufferSize() const 
                 {return KBufferSize;};
                
-                int getKey() const
+                bool getKey() const
                 {return key;};
-
+                
+                int getFd()
+                {return fd;};
             private:
                 char* buffer;
                 int KBufferSize;
@@ -77,6 +79,7 @@ namespace unet
                 int headindex;
                 int tailindex;
                 int key;
+                int fd;
         };        
     }
 }

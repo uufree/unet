@@ -45,7 +45,12 @@ namespace unet
             assert(confd >= 0);
             socket::setNonBlockAndCloseOnExec(confd);
             
-            Channel* channel = newconnectioncallback(confd);//获得新的channel
+            Channel* channel;
+            if(newconnectioncallback)
+                channel = newconnectioncallback(confd);//获得新的channel
+            else
+                perror("没有注册newconnectioncallback回调!\n");
+            
             pool->addInChannelMap(channel);//将channel添加到epoller中
         }
     }

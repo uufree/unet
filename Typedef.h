@@ -18,6 +18,7 @@
 #include<sys/poll.h>
 #include<deque>
 #include<iostream>
+#include<string.h>
 
 
 /*

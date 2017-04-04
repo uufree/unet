@@ -32,6 +32,9 @@ namespace unet
 
                 void setWriteCallBack(const MessageCallBack& cb)
                 {ptr->setWriteCallBack(cb);};
+            
+                void setDrivedCallBack(const MessageCallBack& cb)
+                {ptr->setDrivedCallBack(cb);};
 
                 void handleDiedTcpConnection(int fd)
                 {ptr.reset();};

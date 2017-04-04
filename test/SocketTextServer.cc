@@ -5,17 +5,22 @@
 	> Created Time: 2017年03月17日 星期五 19时36分18秒
  ************************************************************************/
 
+#include"../Buffer.h"
 #include"../Socket.h"
 #include"../InetAddress.h"
+#include"../File.h"
 #include<iostream>
 #include<string>
 #include<sys/epoll.h>
 #include<sys/poll.h>
 
+using namespace unet;
+using namespace unet::net;
+
 int main(int argc,char** argv)
 {
     int listenfd = unet::net::socket::socket();
-    unet::net::InetAddress addr(7777);
+    InetAddress addr(7777);
 
     unet::net::socket::bind(listenfd,&addr);
     unet::net::socket::listen(listenfd);
@@ -23,15 +28,27 @@ int main(int argc,char** argv)
 
     int confd = unet::net::socket::accept(listenfd);
     std::cout << "confd: " << confd << std::endl;
-    
-    char buf[16];
-    bzero(buf,16);
+    Buffer inputbuffer(confd);
+
+    File uuchen("/home/uuchen/uuchen.jpeg");
+    char buf[1024];
+
     while(1)
     {
-        sleep(1);
-        ::read(confd,buf,16);
-        std::cout << buf << std::endl;
+        uuchen.readn(buf,1024);
+        std::cout << "----------------------------" << std::endl;
+        std::cout << "readSize: " << strlen(buf) << std::endl;
+        if(uuchen.getReadSize() > 0)
+        {
+            inputbuffer.appendInBuffer(buf);
+            inputbuffer.writeInSocket();
+        }
+        else
+            break;
+
+        ::sleep(1);
     }
+
 /*    
     int epollfd = ::epoll_create(5);
     std::cout << "epollfd: " << epollfd << std::endl;

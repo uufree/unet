@@ -101,8 +101,8 @@ namespace unet
             pfd.events = channel_->getEvent();
             eventlist.push_back(pfd);
             
-            channel_->handleDrived();//处理主动的事件;
             getInfo();
+            channel_->handleDrived();//处理主动的事件;
         }
 /*
         void Epoller::update(Channel* channel_)
@@ -150,6 +150,9 @@ namespace unet
 
         void Epoller::getInfo() const
         {
+            std::cout << "-----------------------------------------" << std::endl;
+            std::cout << "pthread number: " << ::pthread_self() << std::endl; 
+            std::cout << "-----------------------------------------" << std::endl;
             std::cout << "channelmap size: " << channelmap.size() << std::endl;
             std::cout << "eventlist size: " << eventlist.size() << std::endl;
             std::cout << "---------------------------------" << std::endl;

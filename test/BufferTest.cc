@@ -9,12 +9,32 @@
 #include<string.h>
 #include<unistd.h>
 #include"../Buffer.h"
+#include"../File.h"
 
 using namespace std;
-    
+using namespace unet::net;
+using namespace unet;
+
 int main(int argc,char** argv)
 {
-    unet::net::Buffer inputbuffer;
+    char buf[1024] = "hello,world!";
+    File uuchen("/home/uuchen/uuchen.jpeg");
+    Buffer inputbuffer(5);
+
+    for(int i=0;i<10;++i)
+    {
+        cout << "-----------------------------" << endl;
+        inputbuffer.appendInBuffer(buf);
+        cout << inputbuffer.getCompleteMessageInBuffer() << endl;
+        sleep(0.5);
+    }
+/*
+    inputbuffer.appendInBuffer(buf);
+    char* buff = inputbuffer.getCompleteMessageInBuffer();
+    std::cout << buff << std::endl;
+*/
+
+/*    
     inputbuffer.appendInBuffer("hello world!");
     cout << "--------readInSocket() and getCompleteMessageInBuffer()-----------" << endl;
     cout << inputbuffer.getCompleteMessageInBuffer() << endl;
@@ -23,6 +43,7 @@ int main(int argc,char** argv)
     cout << "HeadIndex: " << inputbuffer.getHeadIndex() << endl;
     cout << "TailIndex: " << inputbuffer.getTailIndex() << endl;
     cout << "BufferSize: " << inputbuffer.getBufferSize() << endl;
+*/
 /*    
     cout << "--------writeInsocket()----------" << endl;
     cout << "DataSize: " << inputbuffer.getDataSize() << endl;
