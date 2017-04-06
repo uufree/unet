@@ -26,6 +26,9 @@ namespace unet
             public:
                 explicit Thread() : threadid(0)
                 {};
+                
+                explicit Thread(const ThreadFunc& lhs) : threadid(0)
+                {threadfunc = lhs;};
 
                 Thread(const Thread& lhs);
                 Thread(Thread&& lhs);

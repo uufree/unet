@@ -11,8 +11,8 @@ namespace unet
     namespace net
     {
         const int Channel::KNoneEvent = 0;//关注的事件的处理方式
-        const int Channel::KReadEvent = EPOLLIN;
-        const int Channel::KWriteEvent = EPOLLOUT;
+        const int Channel::KReadEvent = POLLIN;
+        const int Channel::KWriteEvent = POLLOUT;
         
         Channel::Channel(int fd_,bool hasconnection_) : 
         fd(fd_),
@@ -43,11 +43,11 @@ namespace unet
             if(hasconnection)
             {//处理有TcpConnectionPtr的情况
                 handleeventing = true;
-                if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
+                if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
                 {
                     handleClose();
                 }
-                else if(revent & EPOLLIN)
+                else if(revent & POLLIN)
                 {
                     TcpConnectionPtr wptr = tcpconnectionwptr.lock();
                     if(wptr)
@@ -57,7 +57,7 @@ namespace unet
                     else
                         handleClose();
                 }
-                else if(revent & EPOLLOUT)
+                else if(revent & POLLOUT)
                 {
                     TcpConnectionPtr wptr = tcpconnectionwptr.lock();
                     if(wptr)
@@ -74,11 +74,11 @@ namespace unet
             else
             {//处理没有TcpConnection的情况，Listenfd等
                 handleeventing = true;
-                if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
+                if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
                 {
                     handleClose();
                 }
-                else if(revent & EPOLLIN)
+                else if(revent & POLLIN)
                 {
                     if(readcallback)
                         readcallback();

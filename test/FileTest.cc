@@ -12,6 +12,7 @@
 
 int main(int argc,char** argv)
 {
+/*    
     unet::File uuchen("/home/uuchen/uuchen.jpeg");
     unet::File chenuu("/home/uuchen/chenuu.jpeg");
     Buffer inputbuffer(uuchen.getFd());
@@ -30,6 +31,10 @@ int main(int argc,char** argv)
         else
             break;
     }
+*/
+    unet::File hello("/home/uuchen/hello.txt");
+    hello.writen("hello,world!\n",13);
+
     return 0;
 }
 

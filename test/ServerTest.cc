@@ -5,14 +5,7 @@
 	> Created Time: 2017年03月17日 星期五 19时36分18秒
  ************************************************************************/
 
-#include"../Buffer.h"
-#include"../Socket.h"
-#include"../InetAddress.h"
-#include"../File.h"
-#include<iostream>
-#include<string>
-#include<sys/epoll.h>
-#include<sys/poll.h>
+#include"../mutilServer/MutilTcpServer.h"
 
 using namespace unet;
 using namespace unet::net;
@@ -28,38 +21,6 @@ int main(int argc,char** argv)
 
     int confd = unet::net::socket::accept(listenfd);
     std::cout << "confd: " << confd << std::endl;
-    Buffer inputbuffer(confd);
-
-//    File uuchen("/home/uuchen/uuchen.jpeg");
-//    char buf[1024];
-    
-    inputbuffer.sendFile("/home/uuchen/uuchen.jpeg");
-
-//    while(1)
-//    {
-/*        
-        uuchen.readn(buf,1024);
-        if(uuchen.getReadSize() > 0)
-        {
-            inputbuffer.appendInBuffer(buf,1024);
-            inputbuffer.writeInSocket();
-        }
-        else
-        {
-            ::close(confd);
-            break;
-        }
-*/
-/*        
-        uuchen.readn(buf,1024);
-        if((uuchen.getReadSize()) == 0)
-        {
-            ::close(confd);
-            break;
-        }
-        ::write(confd,buffer,1024);
-*/        
-//    }
 
 /*    
     int epollfd = ::epoll_create(5);
@@ -94,25 +55,68 @@ int main(int argc,char** argv)
         std::cout << "nothing happened!" << std::endl;
 */
 
-/*    
+  
+    char buf[16];
     struct pollfd pfd;
     pfd.fd = confd;
     pfd.events = POLLOUT && POLLIN;
-    int count = ::poll(&pfd,1,64000);
 
-    if(count == 1)
-    {
-        if(pfd.revents & POLLIN)
-            std::cout << "Client confd can read!" << std::endl;
-        else if(pfd.revents & POLLOUT)
-            std::cout << "Client confd can write!" << std::endl;
+        int count = ::poll(&pfd,1,64000);
+        
+        if(count == 1)
+        {
+            if(pfd.revents & POLLIN)
+            {
+                std::cout << "Client confd can read!" << std::endl;
+                ::read(confd,buf,16);
+                std::cout << buf << std::endl;
+                bzero(buf,16);
+            }
+            else if(pfd.revents & POLLOUT)
+            {
+                std::cout << "Client confd can write!" << std::endl;
+            }
+            else if((pfd.revents & POLLERR) || (pfd.revents & POLLHUP) || (pfd.revents & POLLNVAL))
+            {
+                std::cout << "confd alredy close!" << std::endl;
+            }
+            else
+            {
+                std::cout << "error!" << std::endl;
+            }
+        }
         else
-            std::cout << "error!" << std::endl;
-    }
-    else
-        std::cout << "nothing happened!" << std::endl;
-*/    
-    sleep(5);
+            std::cout << "nothing happened!" << std::endl;
+    
+        count = ::poll(&pfd,1,64000);
+        
+        if(count == 1)
+        {
+            if(pfd.revents & POLLIN)
+            {
+                std::cout << "Client confd can read!" << std::endl;
+                int n = ::read(confd,buf,16);
+                std::cout << "read n: " << n << std::endl;
+                if(n == 0)
+                    std::cout << "client confd alreay close!" << std::endl;
+            }
+            else if(pfd.revents & POLLOUT)
+            {
+                std::cout << "Client confd can write!" << std::endl;
+            }
+            else if((pfd.revents & POLLERR) || (pfd.revents & POLLHUP) || (pfd.revents & POLLNVAL))
+            {
+                std::cout << "confd alredy close!" << std::endl;
+            }
+            else
+            {
+                std::cout << "error!" << std::endl;
+            }
+        }
+        else
+            std::cout << "nothing happened!" << std::endl;
+
+    sleep(10);
     unet::net::socket::close(listenfd);
     std::cout << "listen socket close" << std::endl;
     unet::net::socket::close(confd);

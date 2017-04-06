@@ -20,7 +20,7 @@ namespace unet
 //if inputbuffer over highwater,handle it and put it in outputbuffer,otherwize,update inputbuffer and outputbuffer
         void TcpConnection::handleRead()
         {//处理读事件   
-            inputbuffer.readInSocket();
+//            inputbuffer.readInSocket();
             if(readcallback)
                 readcallback(&inputbuffer,&outputbuffer);
             else
@@ -33,7 +33,7 @@ namespace unet
                 writecallback(&inputbuffer,&outputbuffer);
             else
                 perror("没有注册writecallback");
-            outputbuffer.writeInSocket();
+//            outputbuffer.writeInSocket();
         }
 
         bool TcpConnection::handleWriteForTcpServer()

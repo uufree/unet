@@ -40,7 +40,7 @@ namespace unet
                 {ptr.reset();};
 
                 void start()
-                {
+                { 
                     connector->start();
                 }
 
@@ -56,6 +56,7 @@ namespace unet
                 InetAddress* serveraddr;
                 std::unique_ptr<Connector> connector;
                 TcpConnectionPtr ptr;
+                MessageCallBack readcallback,writecallback,drivedcallback;
         };
     }
 }

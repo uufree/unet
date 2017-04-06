@@ -20,17 +20,8 @@ using namespace unet::net;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {//服务端被动处理事务（适用于短连接）,只能在fd资源和内存资源中二选一
-/*    char* buf;
-    inputbuffer->readInSocket();
-    buf = inputbuffer->getCompleteMessageInBuffer();
-
-    if(buf != nullptr)
-    {
-        File chenuu("/home/uuchen/chenuu.jpeg");
-        chenuu.writen(buf,strlen(buf));
-        ::free(buf);
-    }
-*/}
+//    outputbuffer->recvFile("/home/uuchen/chenuu.jpeg");
+}
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {

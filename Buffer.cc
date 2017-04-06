@@ -64,7 +64,6 @@ namespace unet
                 headindex += n;
                 if(needMove())
                 {
-                    std::cout << "move~~" << std::endl;
                     strcpy(buffer,buffer+headindex);
                     tailindex -= headindex;
                     headindex = 0;
@@ -113,7 +112,6 @@ namespace unet
 
                 if(needMove())
                 {
-                    std::cout << "move~~" << std::endl;
                     strcpy(buffer,buffer+headindex);
                     tailindex -= headindex;
                     headindex = 0;
@@ -148,8 +146,9 @@ namespace unet
 
             tailindex += 1024; 
 
+
             std::cout << "-------------------------" << std::endl;
-            std::cout << "readInSocket: " << n << std::endl;
+            std::cout << "File readInSocket: " << n << std::endl;
             return n;
         }
 
@@ -195,7 +194,7 @@ namespace unet
 
             while(1)
             {
-                n = readInSocket(1024);
+                n = readInSocket(size);
                 chenuu.writen(buffer+headindex,n);
                 headindex += n;
                   
@@ -208,40 +207,5 @@ namespace unet
             }
             return -1;
         }
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

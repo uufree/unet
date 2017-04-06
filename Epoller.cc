@@ -101,7 +101,6 @@ namespace unet
             pfd.events = channel_->getEvent();
             eventlist.push_back(pfd);
             
-            getInfo();
             channel_->handleDrived();//处理主动的事件;
         }
 /*
