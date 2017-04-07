@@ -26,13 +26,17 @@ namespace unet
             vec[1].iov_len = 65536;
 
             int n = ::readv(fd,vec,getFreeSize());
-//            int n = ::read(fd,buffer+tailindex,1024);
             std::cout << "-------------------------" << std::endl;
             std::cout << "readInSocket: " << n << std::endl;
 
             if(n < 0)
             {
                 perror("readv error\n");
+            }
+            else if(n == 0)
+            {
+                printf("对端的socket已经关闭!\n");
+                closecallback();
             }
             else if(n < getFreeSize() && n > 0)
             {

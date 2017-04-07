@@ -40,7 +40,7 @@ namespace unet
             if(activeEvents > 0)
                 getActiveEvents(activeEvents,channels);
             else if(activeEvents == 0)
-                printf("nothing happended!\n");
+                printf("%ld--nothing happended!\n",pthread_self());
             else
             {
                 if(savedErrno != EINTR)
@@ -101,6 +101,7 @@ namespace unet
             pfd.events = channel_->getEvent();
             eventlist.push_back(pfd);
             
+            getInfo();
             channel_->handleDrived();//处理主动的事件;
         }
 /*
@@ -151,31 +152,9 @@ namespace unet
         {
             std::cout << "-----------------------------------------" << std::endl;
             std::cout << "pthread number: " << ::pthread_self() << std::endl; 
-            std::cout << "-----------------------------------------" << std::endl;
             std::cout << "channelmap size: " << channelmap.size() << std::endl;
             std::cout << "eventlist size: " << eventlist.size() << std::endl;
             std::cout << "---------------------------------" << std::endl;
-            for(auto iter=eventlist.begin();iter!=eventlist.end();++iter)
-            {
-                std::cout << "event fd: " << iter->fd << std::endl;
-                if(iter->events & POLLIN)
-                    std::cout << "event can read!" << std::endl;
-                if(iter->events & POLLOUT)
-                    std::cout << "event can write!" << std::endl;
-            }
-
-            std::cout << "---------------------------------" << std::endl;
-            
-            for(auto iter=channelmap.begin();iter!=channelmap.end();++iter)
-            {
-                std::cout << "channel fd: " << iter->first << std::endl;
-                int event = iter->second->getEvent();
-                if(event & POLLIN)
-                    std::cout << "channel can read!" << std::endl;
-                if(event & POLLOUT)
-                    std::cout << "channel can write!" << std::endl;
-            }
-            std::cout << "----------------------------------" << std::endl;
         }
 
 

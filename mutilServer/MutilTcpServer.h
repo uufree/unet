@@ -21,7 +21,7 @@ namespace unet
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
             
             public:
-                MutilTcpServer(InetAddress* addr_,int size=2);
+                MutilTcpServer(InetAddress* addr_,int size=1);
                 MutilTcpServer(const MutilTcpServer& lhs) = delete;
                 MutilTcpServer& operator=(const MutilTcpServer& lhs) = delete;
                 ~MutilTcpServer();

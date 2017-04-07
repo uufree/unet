@@ -9,6 +9,7 @@
 
 using namespace unet;
 using namespace unet::net;
+using namespace unet::thread;
 
 int main(int argc,char** argv)
 {
@@ -20,7 +21,7 @@ int main(int argc,char** argv)
     char buf[16] = "hello,server!";
     ::write(confd,buf,16);
     
-    sleep(2);
+    sleep(4);
     ::close(confd);
     std::cout << "Client Confd alredy close!" << std::endl;
     sleep(2);

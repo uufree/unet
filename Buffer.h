@@ -12,6 +12,7 @@
 #include<sys/uio.h>
 #include<malloc.h>
 #include<iostream>
+#include<functional>
 
 //目前版本只支持固定大小的数据传输
 
@@ -21,6 +22,8 @@ namespace unet
     {
         class Buffer final
         {
+            typedef std::function<void()> CloseCallBack;
+
             public:
                 explicit Buffer(int fd_) : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0),fd(fd_)
             {
@@ -54,10 +57,9 @@ namespace unet
 
                 void getData() const
                 {
-                    std::cout << "Buffer Data Size: " << tailindex-headindex << std::endl;
-                    std::cout << buffer+headindex << std::endl;
+                    printf("%s\n",buffer+headindex);
                 }
-
+        
                 int getFreeSize() const 
                 {return KBufferSize - tailindex;};
 
@@ -79,6 +81,9 @@ namespace unet
                 int getFd()
                 {return fd;};
                 
+                void setHandleCloseCallBack(const CloseCallBack& cb)
+                {closecallback = cb;};
+
             private:
                 char* buffer;
                 int KBufferSize;
@@ -87,6 +92,7 @@ namespace unet
                 int tailindex;
                 int key;
                 int fd;
+                CloseCallBack closecallback;
         };        
     }
 }

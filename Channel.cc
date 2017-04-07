@@ -39,7 +39,7 @@ namespace unet
 
         void Channel::handleEvent()
         {
-            
+//            std::cout << "I'm here!" << std::endl; 
             if(hasconnection)
             {//处理有TcpConnectionPtr的情况
                 handleeventing = true;

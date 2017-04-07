@@ -13,7 +13,7 @@ namespace unet
     {
         Current::Current() : epoller(new unet::net::Epoller),loop(new unet::net::EventLoop)
         {
-            loop->setGetActiveChannelsCallBack(std::bind(&Current::getActiveChannels,this,std::placeholders::_1));                    
+            loop->setGetActiveChannelsCallBack(std::bind(&Current::getActiveChannels,this,std::placeholders::_1));
         }
 
         void Current::getActiveChannels(ChannelList* channels)

@@ -14,6 +14,7 @@
 #include<sys/socket.h>
 #include<string.h>
 #include<string>
+#include<iostream>
 
 namespace unet
 {

@@ -40,7 +40,7 @@ namespace unet
                 void setHandleDiedTcpConnection(const HandleDiedTcpConnection& cb)
                 {handlediedtcpconnection = cb;};//由TcpServer注册，用于处理销毁TcpConnection的销毁事件
                 
-                void setWheetChannelCallBack(const WheetChannelCallBack& cb)
+                void setWheetChannelCallBack(const WheetChannelCallBack& cb)//不关注所有事件的回调
                 {wheetchannel = cb;};
 
                 bool handleWriteForTcpServer();

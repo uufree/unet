@@ -15,12 +15,14 @@ namespace unet
             confd(fd_),
             outputbuffer(fd_),
             inputbuffer(fd_)
-        {};
+        {
+            outputbuffer.setHandleCloseCallBack(std::bind(&TcpConnection::handleClose,this));
+            inputbuffer.setHandleCloseCallBack(std::bind(&TcpConnection::handleClose,this));
+        };
 
 //if inputbuffer over highwater,handle it and put it in outputbuffer,otherwize,update inputbuffer and outputbuffer
         void TcpConnection::handleRead()
         {//处理读事件   
-//            inputbuffer.readInSocket();
             if(readcallback)
                 readcallback(&inputbuffer,&outputbuffer);
             else
@@ -33,7 +35,6 @@ namespace unet
                 writecallback(&inputbuffer,&outputbuffer);
             else
                 perror("没有注册writecallback");
-//            outputbuffer.writeInSocket();
         }
 
         bool TcpConnection::handleWriteForTcpServer()
@@ -51,9 +52,12 @@ namespace unet
         void TcpConnection::handleClose()
         {   
             if(handlediedtcpconnection)
+            {
                 handlediedtcpconnection(confd.getFd());
+            }
             else
                 perror("没有注册handlediedtcpconnection\n");
+
         }
 
         void TcpConnection::handleChannel()
