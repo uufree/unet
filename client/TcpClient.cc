@@ -14,12 +14,14 @@ namespace unet
     {
         TcpClient::TcpClient(InetAddress* serveraddr_) :
             serveraddr(serveraddr_),
-            connector(new Connector(serveraddr_)),
+            connector(new ConnectorThread(serveraddr_)),
             ptr(nullptr)
         {
             connector->setConnectionCallBack(std::bind(&TcpClient::setTcpConnectionPtr,this,std::placeholders::_1));
             connector->createChannel();
+            
             ptr->setHandleDiedTcpConnection(std::bind(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1));
+            ptr->setHandleAsyncBuffer(std::bind(&TcpClient::handleAsyncBuffer,this,std::placeholders::_1));
         };
 
     }

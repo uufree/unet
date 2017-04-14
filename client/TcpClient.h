@@ -8,7 +8,7 @@
 #ifndef _TCPCLIENT_H
 #define _TCPCLIENT_H
 
-#include"Connector.h"
+#include"ConnectorThread.h"
 #include<functional>
 #include<iostream>
 
@@ -20,6 +20,7 @@ namespace unet
         {
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+            typedef std::function<void()> BussinessThreadCallBack;
 
             public:
                 explicit TcpClient(InetAddress* serveraddr_);
@@ -28,21 +29,30 @@ namespace unet
                 ~TcpClient() {};
 
                 void setReadCallBack(const MessageCallBack& cb)
-                {ptr->setReadCallBack(cb);};
+                {
+                    ptr->setReadCallBack(cb);
+                };
 
                 void setWriteCallBack(const MessageCallBack& cb)
-                {ptr->setWriteCallBack(cb);};
+                {
+                    ptr->setWriteCallBack(cb);
+                };
             
                 void setDrivedCallBack(const MessageCallBack& cb)
-                {ptr->setDrivedCallBack(cb);};
-
+                {
+                    ptr->setDrivedCallBack(cb);
+                };
+                
                 void handleDiedTcpConnection(int fd)
-                {ptr.reset();};
+                {
+                    ptr.reset();
+                };
 
                 void start()
-                { 
+                {
                     connector->start();
                 }
+                
 
                 void setTcpConnectionPtr(TcpConnectionPtr&& ptr_)
                 {
@@ -51,12 +61,35 @@ namespace unet
 
                 int getFd()
                 {return ptr->getFd();};
+                
+                void writeInAsyncBuffer(string&& str)
+                {   
+                    unet::thread::MutexLockGuard guard(lock);
+                    asyncbuffer.push_back(str);
+                }
 
             private:
+
+                void handleAsyncBuffer(Buffer* outputbuffer)
+                {
+                    std::vector<std::string> vec;
+                    {
+                        unet::thread::MutexLockGuard guard(lock);
+                        if(asyncbuffer.size() != 0)
+                            asyncbuffer.swap(vec);    
+                    }
+
+                    for(auto iter=vec.begin();iter!=vec.end();++iter)
+                        outputbuffer.appendInBuffer(iter->c_str());
+                }
+
                 InetAddress* serveraddr;
-                std::unique_ptr<Connector> connector;
+                std::unique_ptr<ConnectorThread> connector;
                 TcpConnectionPtr ptr;
                 MessageCallBack readcallback,writecallback,drivedcallback;
+                std::vector<std::string> asyncbuffer;
+                unet::thread::Thread bussinessthread;//业务线程 
+                unet::thread::MutexLock lock;
         };
     }
 }

@@ -21,6 +21,7 @@ namespace unet
             typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
             typedef std::function<void(int)> HandleDiedTcpConnection;
             typedef std::function<void()> WheetChannelCallBack;
+            typedef std::function<void()> AsyncBufferCallBack;
 
             public:        
                 explicit TcpConnection(int fd_);
@@ -42,7 +43,10 @@ namespace unet
                 
                 void setWheetChannelCallBack(const WheetChannelCallBack& cb)//不关注所有事件的回调
                 {wheetchannel = cb;};
-
+                
+                void setHandleAsyncBuffer(const AsyncBufferCallBack& cb)
+                {asyncbuffer = cb;};
+                
                 bool handleWriteForTcpServer();
 
                 bool handleReadForTcpClient();
@@ -57,6 +61,7 @@ namespace unet
                 void handleWrite();
                 void handleClose(); 
                 void handleDrived();
+                void handleAsyncBuffer();
 
             private:
                 socket::Socket confd;//处理已连接套接字的关闭问题
@@ -65,6 +70,7 @@ namespace unet
                 MessageCallBack readcallback, writecallback,drivedcallback;
                 HandleDiedTcpConnection handlediedtcpconnection;
                 WheetChannelCallBack wheetchannel;
+                AsyncBufferCallBack asyncbuffer;//客户端异步处理消息的回调
         };
     }
 }
