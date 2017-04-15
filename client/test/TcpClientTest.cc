@@ -18,9 +18,8 @@ int main(int argc,char** argv)
     
     client.start();
     
-    std::cout << "one" << std::endl;
 
-    sleep(100);
+    sleep(5);
     return 0;
 }
 

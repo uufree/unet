@@ -33,45 +33,24 @@ void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {
-
 }
 
 void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
-{
+{//服务端主动发送文件，及时服务
 //    inputbuffer->sendFile("/home/uuchen/uuchen.jpeg");
-}
-
-void threadFunc()
-{ 
-    InetAddress addr(7777);
-    TcpClient client(&addr);//主动处理事件的能力发生在client对象的构建过程中。server对象可以，但是client不行
-    
-    client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
-    client.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));
-    client.setDrivedCallBack(std::bind(&drivedCallBack,std::placeholders::_1,std::placeholders::_2));
-    
-    client.start();    
 }
 
 int main(int argc,char** argv)
 {
-/*    
     InetAddress addr(7777);
     TcpClient client(&addr);//主动处理事件的能力发生在client对象的构建过程中。server对象可以，但是client不行
     
     client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setDrivedCallBack(std::bind(&drivedCallBack,std::placeholders::_1,std::placeholders::_2));
-    
     client.start();
-*/
-    ThreadPool pool(150);
-    Thread thread(std::bind(&threadFunc));
-    pool.setThreadCallBack(thread);
-
-    pool.start();
-    
-    sleep(60);
+   
+    sleep(10);
     return 0;
 }
 

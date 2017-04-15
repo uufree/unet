@@ -73,7 +73,8 @@ namespace unet
         void Epoller::updateChannel(Channel* channel_)
         {//更新已有channel中关注的事件
             const int fd = channel_->getFd();
-
+            
+            
             assert(channelmap.find(fd) != channelmap.end());
             assert(channelmap[fd] == channel_);
             
@@ -172,9 +173,11 @@ namespace unet
 
             assert(channelmap[fd] == channel_);
             assert(channel_->getEvent() == KNoneEvent);
+
 //remove in ChannelMap
             delete channelmap[fd];
             channelmap.erase(fd);
+
 //remove in eventlist
             for(auto iter = eventlist.begin();iter!=eventlist.end();++iter)
             {//这个处理有问题

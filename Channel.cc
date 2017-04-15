@@ -39,7 +39,6 @@ namespace unet
 
         void Channel::handleEvent()
         {
-//            std::cout << "I'm here!" << std::endl; 
             if(hasconnection)
             {//处理有TcpConnectionPtr的情况
                 handleeventing = true;
@@ -51,9 +50,7 @@ namespace unet
                 {
                     TcpConnectionPtr wptr = tcpconnectionwptr.lock();
                     if(wptr)
-                    {
                         wptr->handleRead();
-                    }
                     else
                         handleClose();
                 }
@@ -92,10 +89,12 @@ namespace unet
         void Channel::handleClose()
         {//处理正常关闭的情况
             if(hasconnection)
-            {
+            {   
                 TcpConnectionPtr conptr(tcpconnectionwptr.lock());
                 if(conptr)
+                {
                     conptr->handleClose();
+                }
             }
             disableAll();//这个函数里面会有一个更新的操作
         }

@@ -26,8 +26,6 @@ namespace unet
             vec[1].iov_len = 65536;
 
             int n = ::readv(fd,vec,getFreeSize());
-            std::cout << "-------------------------" << std::endl;
-            std::cout << "readInSocket: " << n << std::endl;
 
             if(n < 0)
             {
@@ -35,7 +33,6 @@ namespace unet
             }
             else if(n == 0)
             {
-                printf("对端的socket已经关闭!\n");
                 closecallback();
             }
             else if(n < getFreeSize() && n > 0)
@@ -111,8 +108,6 @@ namespace unet
                 strncpy(message,buffer+headindex,size);
                 headindex += size;
                 headindex += 2;
-                
-                std::cout << "getCompleteMessageInBuffer : " << size << std::endl;
 
                 if(needMove())
                 {
@@ -150,9 +145,6 @@ namespace unet
 
             tailindex += 1024; 
 
-
-            std::cout << "-------------------------" << std::endl;
-            std::cout << "File readInSocket: " << n << std::endl;
             return n;
         }
 
