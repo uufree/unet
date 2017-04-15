@@ -23,18 +23,18 @@ namespace unet
             while(!quit)
             {
                 ::sleep(1);
-
+                
                 activechannels.clear();
                     
                 if(activecallback)
                     activecallback(&activechannels);
-
+                
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
                     for(ChannelList::iterator iter=activechannels.begin();iter!=activechannels.end();++iter)
                     {
-                        (*iter)->handleEvent();
+                        (*iter)->handleEvent();//这行有问题
                     }
                     eventhandling = false;
                 }

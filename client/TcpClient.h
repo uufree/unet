@@ -62,7 +62,7 @@ namespace unet
                 int getFd()
                 {return ptr->getFd();};
                 
-                void writeInAsyncBuffer(string&& str)
+                void writeInAsyncBuffer(std::string&& str)
                 {   
                     unet::thread::MutexLockGuard guard(lock);
                     asyncbuffer.push_back(str);
@@ -80,7 +80,7 @@ namespace unet
                     }
 
                     for(auto iter=vec.begin();iter!=vec.end();++iter)
-                        outputbuffer.appendInBuffer(iter->c_str());
+                        outputbuffer->appendInBuffer(iter->c_str());
                 }
 
                 InetAddress* serveraddr;

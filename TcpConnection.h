@@ -21,7 +21,7 @@ namespace unet
             typedef std::function<void (Buffer* inputbuffer_,Buffer* outputbuffer_)> MessageCallBack;
             typedef std::function<void(int)> HandleDiedTcpConnection;
             typedef std::function<void()> WheetChannelCallBack;
-            typedef std::function<void()> AsyncBufferCallBack;
+            typedef std::function<void(Buffer*)> AsyncBufferCallBack;
 
             public:        
                 explicit TcpConnection(int fd_);

@@ -51,7 +51,6 @@ namespace unet
         {
             epoller->getInfo();
             loop->loop();
-            startthread();
         }
 
         int Connector::createConnection()

@@ -17,13 +17,14 @@ namespace unet
     {
         class ConnectorThread final
         {
+            typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
             typedef std::function<void(TcpConnectionPtr&&)> ConnectionCallBack;
             
             public:
                 ConnectorThread(InetAddress* serveraddr) :   connector(new unet::net::Connector(serveraddr)),
                 thread(new unet::thread::Thread)
                 {
-                    thread->setThreadCallBack(std::bind(&EventLoopThread::loopStart,this));
+                    thread->setThreadCallBack(std::bind(&ConnectorThread::loopStart,this));
                 };
                 
                 ConnectorThread(const ConnectorThread& lhs) = delete;
@@ -45,7 +46,7 @@ namespace unet
             private:
                 std::unique_ptr<unet::net::Connector> connector;
                 std::unique_ptr<unet::thread::Thread> thread;
-        }
+        };
     }
 }
 

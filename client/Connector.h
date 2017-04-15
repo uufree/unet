@@ -9,7 +9,7 @@
 #define _CONNECTOR_H
 
 #include"../Epoller.h"
-#include"EventLoop.h"
+#include"../EventLoop.h"
 
 namespace unet
 {
@@ -43,7 +43,6 @@ namespace unet
                 ConnectionCallBack connectioncallback;
                 std::unique_ptr<Epoller> epoller;
                 std::unique_ptr<EventLoop> loop;
-                BussinessThreadCallBack startthread;
         };
     }
 }
