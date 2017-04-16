@@ -42,6 +42,7 @@ namespace unet
         void EventLoopThreadPool::addInChannelMap(unet::net::Channel* channel)
         {
             EpollerList::iterator iter = epollerlist.begin();
+            
             for(auto it=epollerlist.begin();it!=epollerlist.end();++it)
             {
                 if((*iter)->getConSize() <= (*it)->getConSize())

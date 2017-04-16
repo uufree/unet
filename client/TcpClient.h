@@ -84,12 +84,13 @@ namespace unet
                         if(asyncbuffer.size() != 0)
                             asyncbuffer.swap(vec);    
                     }
-
+                
                     for(auto iter=vec.begin();iter!=vec.end();++iter)
                         outputbuffer->appendInBuffer(iter->c_str());
                     
                     std::cout << "将要发送～" << std::endl;
-                    outputbuffer->writeInSocket();
+                    if(outputbuffer->getDataSize() > 0)
+                        outputbuffer->writeInSocket();
                     std::cout << "发送完毕～" << std::endl; 
                 }
 

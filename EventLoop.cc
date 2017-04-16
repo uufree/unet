@@ -34,7 +34,9 @@ namespace unet
                     eventhandling = true;
                     for(ChannelList::iterator iter=activechannels.begin();iter!=activechannels.end();++iter)
                     {
-                        (*iter)->handleEvent();//这行有问题
+                        std::cout << "pthread_self1(): " << pthread_self() << std::endl;
+                        (*iter)->handleEvent();
+                        std::cout << "pthread_self2(): " << pthread_self() << std::endl;
                     }
                     eventhandling = false;
                 }

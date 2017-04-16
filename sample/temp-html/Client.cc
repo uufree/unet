@@ -43,7 +43,7 @@ int main(int argc,char** argv)
     client.start();
     
     char buf[256];
-    FILE* fp = fopen("/home/uuchen/unet/sample/rapidjson/temp.json","rb");
+    FILE* fp = fopen("/home/uuchen/unet/sample/temp-html/temp.json","rb");
     FileReadStream is(fp,buf,sizeof(buf));   
     Document docu;
     docu.ParseStream(is);

@@ -26,6 +26,7 @@ namespace unet
             vec[1].iov_len = 65536;
 
             int n = ::readv(fd,vec,getFreeSize());
+            printf("readv n: %d\n",n);
 
             if(n < 0)
             {
@@ -53,7 +54,7 @@ namespace unet
                 tailindex += size;
             }
         }
-
+            
         void Buffer::writeInSocket()
         {
             int n = ::write(fd,buffer+headindex,getDataSize());
@@ -102,12 +103,14 @@ namespace unet
         void Buffer::getCompleteMessageInBuffer(char* message)
         {
             char* ch = strstr(buffer+headindex,"\r\n");
+            
             if(ch != NULL)
             {
                 int size = ch - buffer - headindex;
                 strncpy(message,buffer+headindex,size);
                 headindex += size;
                 headindex += 2;
+                
 
                 if(needMove())
                 {
