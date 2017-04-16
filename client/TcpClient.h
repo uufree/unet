@@ -20,8 +20,7 @@ namespace unet
         {
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-            typedef std::function<void()> BussinessThreadCallBack;
-
+            
             public:
                 explicit TcpClient(InetAddress* serveraddr_);
                 TcpClient(const TcpClient& lhs) = delete;
@@ -61,10 +60,17 @@ namespace unet
 
                 int getFd()
                 {return ptr->getFd();};
-                
+/*                
                 void writeInAsyncBuffer(std::string&& str)
                 {   
                     unet::thread::MutexLockGuard guard(lock);
+                    asyncbuffer.push_back(str);
+                }
+*/
+                void writeInAsyncBuffer(const std::string str)
+                {
+                    unet::thread::MutexLockGuard guard(lock);
+                    std::cout << "writeInAsyncBuffer: " << str << std::endl;
                     asyncbuffer.push_back(str);
                 }
 
@@ -81,6 +87,10 @@ namespace unet
 
                     for(auto iter=vec.begin();iter!=vec.end();++iter)
                         outputbuffer->appendInBuffer(iter->c_str());
+                    
+                    std::cout << "将要发送～" << std::endl;
+                    outputbuffer->writeInSocket();
+                    std::cout << "发送完毕～" << std::endl; 
                 }
 
                 InetAddress* serveraddr;
@@ -88,7 +98,6 @@ namespace unet
                 TcpConnectionPtr ptr;
                 MessageCallBack readcallback,writecallback,drivedcallback;
                 std::vector<std::string> asyncbuffer;
-                unet::thread::Thread bussinessthread;//业务线程 
                 unet::thread::MutexLock lock;
         };
     }

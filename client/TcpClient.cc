@@ -19,9 +19,10 @@ namespace unet
         {
             connector->setConnectionCallBack(std::bind(&TcpClient::setTcpConnectionPtr,this,std::placeholders::_1));
             connector->createChannel();
+            connector->setHandleAsyncBufferCallBack(std::bind(&TcpClient::handleAsyncBuffer,this,ptr->getOutputBuffer())); 
             
             ptr->setHandleDiedTcpConnection(std::bind(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1));
-            ptr->setHandleAsyncBuffer(std::bind(&TcpClient::handleAsyncBuffer,this,std::placeholders::_1));
+            
         };
 
     }

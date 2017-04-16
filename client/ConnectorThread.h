@@ -19,7 +19,8 @@ namespace unet
         {
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
             typedef std::function<void(TcpConnectionPtr&&)> ConnectionCallBack;
-            
+            typedef std::function<void()> HandleAsyncBuffer;
+
             public:
                 ConnectorThread(InetAddress* serveraddr) :   connector(new unet::net::Connector(serveraddr)),
                 thread(new unet::thread::Thread)
@@ -33,6 +34,9 @@ namespace unet
                 
                 void setConnectionCallBack(const ConnectionCallBack& cb)
                 {connector->setConnectionCallBack(cb);};
+
+                void setHandleAsyncBufferCallBack(const HandleAsyncBuffer& cb)
+                {connector->setHandleAsyncBufferCallBack(cb);};
 
                 void createChannel()
                 {connector->createChannel();};

@@ -49,14 +49,6 @@ namespace unet
             return inputbuffer.getKey() == 0;
         }
         
-        void TcpConnection::handleAsyncBuffer()
-        {
-            if(asyncbuffer)
-                asyncbuffer(&outputbuffer);
-            else
-                perror("没有注册asyncbuffer");
-        }
-
         void TcpConnection::handleClose()
         {   
             if(handlediedtcpconnection)
