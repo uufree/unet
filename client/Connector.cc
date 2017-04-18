@@ -13,14 +13,10 @@ namespace unet
 {
     namespace net
     {
-        Connector::Connector(InetAddress* serveraddr_) : 
-            confd(socket::socket()),
-            serveraddr(serveraddr_),
-            connected(false),
+        Connector::Connector() : 
             epoller(new Epoller),
-            loop(new EventLoop)
+            loop(new AsyncEventLoop)
         {
-            socket::setNonBlockAndCloseOnExec(confd.getFd());
             loop->setGetActiveChannelsCallBack(std::bind(&Connector::getActiveChannels,this,std::placeholders::_1));
         };
 
@@ -29,7 +25,7 @@ namespace unet
             epoller->epoll(channels);
         }
 
-        void Connector::createChannel()
+        void Connector::connection(InetAddress* addr_)
         {
 /*            
             while(!createConnection())   
@@ -38,21 +34,20 @@ namespace unet
                 socket::setNonBlockAndCloseOnExec(confd.getFd());
             }
 */
-
-            socket::connect(confd.getFd(),serveraddr);            
-            std::cout << "confd: " << confd.getFd() << std::endl;
+            int confd = socket::socket();
+            socket::connect(confd,addr_);            
+            socket::setNonBlockAndCloseOnExec(confd);
+            std::cout << "confd: " << confd << std::endl;
             
-            connectchannel = new Channel(confd.getFd());
-            connectioncallback((connectchannel->getTcpConnectionPtr()));
+            Channel* connectchannel = connectioncallback(confd);
             epoller->addInChannelMap(connectchannel);
         }
 
         void Connector::start()
         {
-            epoller->getInfo();
             loop->loop();
         }
-
+/*
         int Connector::createConnection()
         {
             int n = socket::connect(confd.getFd(),serveraddr);
@@ -99,9 +94,10 @@ namespace unet
             }
             else
                 return -1;
-        }
-    } 
 
+        }
+*/    
+    } 
 }            
 
 

@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"TcpClient.h"
-#include<stdio.h>
 
 namespace unet
 {
@@ -14,16 +13,38 @@ namespace unet
     {
         TcpClient::TcpClient(InetAddress* serveraddr_) :
             serveraddr(serveraddr_),
-            connector(new ConnectorThread(serveraddr_)),
+            connector(new ConnectorThread()),
             ptr(nullptr)
         {
-            connector->setConnectionCallBack(std::bind(&TcpClient::setTcpConnectionPtr,this,std::placeholders::_1));
-            connector->createChannel();
-            connector->setHandleAsyncBufferCallBack(std::bind(&TcpClient::handleAsyncBuffer,this,ptr->getOutputBuffer())); 
+            connector->setConnectionCallBack(std::bind(&TcpClient::newConnectionCallBack,this,std::placeholders::_1));
+            connector->setHandleAsyncBufferCallBack(std::bind(&TcpClient::handleAsyncBuffer,this,ptr->getOutputBuffer()));     
+        };
+
+        Channel* TcpClient::newConnectionCallBack(int fd_)
+        {
+            Channel* channel = new Channel(fd_,true);
+            TcpConnectionPtr ptr(channel->getTcpConnectionPtr());
+
+            if(readcallback)
+                ptr->setReadCallBack(readcallback);
+            if(writecallback)
+                ptr->setWriteCallBack(writecallback);
+            if(drivedcallback)
+                ptr->setDrivedCallBack(drivedcallback);
             
             ptr->setHandleDiedTcpConnection(std::bind(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1));
+            tcpconnectionptrmap.insert({fd_,ptr});
             
-        };
+            return channel;
+        }
+
+        void TcpClient::handleDiedTcpConnection(int fd_)
+        { 
+            thread::MutexLockGuard guard(lock);
+            tcpconnectionptrmap[fd_]->handleChannel();
+            tcpconnectionptrmap[fd_].reset();
+            tcpconnectionptrmap.erase(fd_);
+        }
 
     }
 }

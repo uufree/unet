@@ -5,7 +5,7 @@
 	> Created Time: 2017年04月15日 星期六 17时12分40秒
  ************************************************************************/
 
-#include"../../mutilServer/MutilTcpServer.h"
+#include"../../asyncServer/AsyncTcpServer.h"
 #include"../../rapidjson/document.h"
 #include"../../rapidjson/writer.h"
 #include"../../rapidjson/stringbuffer.h"
@@ -49,7 +49,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    unet::net::MutilTcpServer server(&serveraddr,1);
+    unet::net::AsyncTcpServer server(&serveraddr,2);
     
     server.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
     server.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));

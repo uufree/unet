@@ -9,7 +9,7 @@
 #define _CONNECTOR_H
 
 #include"../Epoller.h"
-#include"EventLoop.h"
+#include"AsyncEventLoop.h"
 
 namespace unet
 {
@@ -18,12 +18,12 @@ namespace unet
         class Connector final
         {
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-            typedef std::function<void(TcpConnectionPtr&&)> ConnectionCallBack;
+            typedef std::function<Channel*(int)> ConnectionCallBack;
             typedef std::vector<Channel*> ChannelList;
             typedef std::function<void()> HandleAsyncBuffer;
 
             public:
-                Connector(InetAddress* serveraddr_);
+                Connector();
                 Connector(const Connector& lhs) = delete;
                 Connector& operator=(const Connector& lhs) = delete;
                 ~Connector(){};
@@ -34,19 +34,15 @@ namespace unet
                 void setHandleAsyncBufferCallBack(const HandleAsyncBuffer& cb)
                 {loop->setHandleAsyncBuffer(cb);};
 
-                int createConnection();
-                void createChannel();
+//                int createConnection(InetAddress* addr_);
+                void connection(InetAddress* addr_);
                 void start();
                 void getActiveChannels(ChannelList* channels);
 
             private:
-                socket::Socket confd;
-                InetAddress* serveraddr;
-                Channel* connectchannel;
-                bool connected;
                 ConnectionCallBack connectioncallback;
                 std::unique_ptr<Epoller> epoller;
-                std::unique_ptr<EventLoop> loop;
+                std::unique_ptr<AsyncEventLoop> loop;
         };
     }
 }

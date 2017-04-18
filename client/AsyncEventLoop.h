@@ -1,12 +1,12 @@
 /*************************************************************************
-	> File Name: EventLoop.h
+	> File Name: AsyncEventLoop.h
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月01日 星期三 14时24分39秒
+	> Created Time: 2017年04月18日 星期二 21时00分10秒
  ************************************************************************/
 
-#ifndef _EVENTLOOP_H
-#define _EVENTLOOP_H
+#ifndef _ASYNCEVENTLOOP_H
+#define _ASYNCEVENTLOOP_H
 
 #include"../Epoller.h"
 
@@ -16,17 +16,17 @@ namespace unet
 {
     namespace net
     { 
-        class EventLoop final
+        class AsyncEventLoop final
         {
             typedef std::vector<Channel*> ChannelList;
             typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
             typedef std::function<void()> HandleAsyncBuffer;
 
             public:                                    
-                EventLoop();
-                EventLoop(const EventLoop&) = delete;
-                EventLoop& operator=(const EventLoop&) = delete;
-                ~EventLoop() {};
+                AsyncEventLoop();
+                AsyncEventLoop(const AsyncEventLoop&) = delete;
+                AsyncEventLoop& operator=(const AsyncEventLoop&) = delete;
+                ~AsyncEventLoop() {};
 //punlic interface
                 void loop();
                 void setQuit();
@@ -50,4 +50,12 @@ namespace unet
 }
 
 #endif
+
+
+
+
+
+
+
+
 

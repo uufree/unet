@@ -18,11 +18,11 @@ namespace unet
         class ConnectorThread final
         {
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-            typedef std::function<void(TcpConnectionPtr&&)> ConnectionCallBack;
+            typedef std::function<Channel*(int)> ConnectionCallBack;
             typedef std::function<void()> HandleAsyncBuffer;
 
             public:
-                ConnectorThread(InetAddress* serveraddr) :   connector(new unet::net::Connector(serveraddr)),
+                ConnectorThread() : connector(new Connector()),
                 thread(new unet::thread::Thread)
                 {
                     thread->setThreadCallBack(std::bind(&ConnectorThread::loopStart,this));
@@ -37,10 +37,10 @@ namespace unet
 
                 void setHandleAsyncBufferCallBack(const HandleAsyncBuffer& cb)
                 {connector->setHandleAsyncBufferCallBack(cb);};
-
+/*
                 void createChannel()
                 {connector->createChannel();};
-
+*/
                 void loopStart()
                 {connector->start();};
 

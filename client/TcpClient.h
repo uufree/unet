@@ -9,8 +9,6 @@
 #define _TCPCLIENT_H
 
 #include"ConnectorThread.h"
-#include<functional>
-#include<iostream>
 
 namespace unet
 {
@@ -20,6 +18,7 @@ namespace unet
         {
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+            typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;
             
             public:
                 explicit TcpClient(InetAddress* serveraddr_);
@@ -28,45 +27,21 @@ namespace unet
                 ~TcpClient() {};
 
                 void setReadCallBack(const MessageCallBack& cb)
-                {
-                    ptr->setReadCallBack(cb);
-                };
+                {readcallback = cb;};
 
                 void setWriteCallBack(const MessageCallBack& cb)
-                {
-                    ptr->setWriteCallBack(cb);
-                };
+                {writecallback = cb;};
             
                 void setDrivedCallBack(const MessageCallBack& cb)
-                {
-                    ptr->setDrivedCallBack(cb);
-                };
+                {drivedcallback = cb;};
                 
-                void handleDiedTcpConnection(int fd)
-                {
-                    ptr.reset();
-                };
+                void handleDiedTcpConnection(int fd_);
+                Channel* newConnectionCallBack(int fd_);
 
                 void start()
-                {
-                    connector->start();
-                }
+                {connector->start();};
                 
 
-                void setTcpConnectionPtr(TcpConnectionPtr&& ptr_)
-                {
-                    ptr.reset(ptr_.get());
-                }
-
-                int getFd()
-                {return ptr->getFd();};
-/*                
-                void writeInAsyncBuffer(std::string&& str)
-                {   
-                    unet::thread::MutexLockGuard guard(lock);
-                    asyncbuffer.push_back(str);
-                }
-*/
                 void writeInAsyncBuffer(const std::string str)
                 {
                     unet::thread::MutexLockGuard guard(lock);
@@ -100,6 +75,7 @@ namespace unet
                 MessageCallBack readcallback,writecallback,drivedcallback;
                 std::vector<std::string> asyncbuffer;
                 unet::thread::MutexLock lock;
+                TcpConnectionPtrMap tcpconnectionptrmap;
         };
     }
 }
