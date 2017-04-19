@@ -38,7 +38,7 @@ namespace unet
                 void connection(InetAddress* addr_);
                 void start();
                 void getActiveChannels(ChannelList* channels);
-
+                
             private:
                 ConnectionCallBack connectioncallback;
                 std::unique_ptr<Epoller> epoller;

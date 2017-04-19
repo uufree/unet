@@ -23,7 +23,8 @@ namespace unet
 
             public:
                 ConnectorThread() : connector(new Connector()),
-                thread(new unet::thread::Thread)
+                thread(new unet::thread::Thread),
+                once(0)
                 {
                     thread->setThreadCallBack(std::bind(&ConnectorThread::loopStart,this));
                 };
@@ -36,7 +37,13 @@ namespace unet
                 {connector->setConnectionCallBack(cb);};
 
                 void setHandleAsyncBufferCallBack(const HandleAsyncBuffer& cb)
-                {connector->setHandleAsyncBufferCallBack(cb);};
+                {connector->setHandleAsyncBufferCallBack(cb);once++;};
+
+                bool isOnce()
+                {return once == 0;};
+
+                void connection(InetAddress* addr)
+                {connector->connection(addr);};
 /*
                 void createChannel()
                 {connector->createChannel();};
@@ -50,6 +57,7 @@ namespace unet
             private:
                 std::unique_ptr<unet::net::Connector> connector;
                 std::unique_ptr<unet::thread::Thread> thread;
+                int once;
         };
     }
 }

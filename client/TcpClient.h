@@ -21,7 +21,7 @@ namespace unet
             typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;
             
             public:
-                explicit TcpClient(InetAddress* serveraddr_);
+                explicit TcpClient();
                 TcpClient(const TcpClient& lhs) = delete;
                 TcpClient& operator=(const TcpClient& lhs) = delete;
                 ~TcpClient() {};
@@ -41,6 +41,17 @@ namespace unet
                 void start()
                 {connector->start();};
                 
+                void connection(InetAddress* addr)
+                {connector->connection(addr);};
+                
+                void closeConnection()
+                {
+                    if(tcpconnectionptrmap.size() == 1)
+                    {
+                        int fd = tcpconnectionptrmap.begin()->first;
+                        handleDiedTcpConnection(fd);
+                    }
+                }
 
                 void writeInAsyncBuffer(const std::string str)
                 {
@@ -69,9 +80,7 @@ namespace unet
                     std::cout << "发送完毕～" << std::endl; 
                 }
 
-                InetAddress* serveraddr;
                 std::unique_ptr<ConnectorThread> connector;
-                TcpConnectionPtr ptr;
                 MessageCallBack readcallback,writecallback,drivedcallback;
                 std::vector<std::string> asyncbuffer;
                 unet::thread::MutexLock lock;

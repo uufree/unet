@@ -11,13 +11,10 @@ namespace unet
 {
     namespace net
     {
-        TcpClient::TcpClient(InetAddress* serveraddr_) :
-            serveraddr(serveraddr_),
-            connector(new ConnectorThread()),
-            ptr(nullptr)
+        TcpClient::TcpClient() :
+            connector(new ConnectorThread())
         {
             connector->setConnectionCallBack(std::bind(&TcpClient::newConnectionCallBack,this,std::placeholders::_1));
-            connector->setHandleAsyncBufferCallBack(std::bind(&TcpClient::handleAsyncBuffer,this,ptr->getOutputBuffer()));     
         };
 
         Channel* TcpClient::newConnectionCallBack(int fd_)
@@ -34,6 +31,9 @@ namespace unet
             
             ptr->setHandleDiedTcpConnection(std::bind(&TcpClient::handleDiedTcpConnection,this,std::placeholders::_1));
             tcpconnectionptrmap.insert({fd_,ptr});
+            
+            if(connector->isOnce())
+                connector->setHandleAsyncBufferCallBack(std::bind(&TcpClient::handleAsyncBuffer,this,ptr->getOutputBuffer()));     
             
             return channel;
         }
