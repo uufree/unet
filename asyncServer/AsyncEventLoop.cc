@@ -22,8 +22,6 @@ namespace unet
             quit = false;
             while(!quit)
             {
-                ::sleep(1);
-                
                 activechannels.clear();
                     
                 if(activecallback)

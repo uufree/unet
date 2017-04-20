@@ -34,7 +34,6 @@ namespace unet
 
         Channel::~Channel()
         {
-            assert(handleeventing);
         }
 
         void Channel::handleEvent()

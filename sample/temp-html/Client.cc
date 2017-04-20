@@ -18,7 +18,12 @@ using namespace rapidjson;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {
-    
+/*    
+    char message[16];
+    inputbuffer->readInSocket(); 
+    inputbuffer->getCompleteMessageInBuffer(message);
+    printf("%s\n",message);
+*/
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
@@ -34,14 +39,14 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    TcpClient client(&serveraddr);
+    TcpClient client;
 
     client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setDrivedCallBack(std::bind(&drivedCallBack,std::placeholders::_1,std::placeholders::_2));
     
     client.start();
-    
+/*    
     char buf[256];
     FILE* fp = fopen("/home/uuchen/unet/sample/temp-html/temp.json","rb");
     FileReadStream is(fp,buf,sizeof(buf));   
@@ -49,9 +54,12 @@ int main(int argc,char** argv)
     docu.ParseStream(is);
     
     StringBuffer buffer;
-   
-    for(int i=0;i<10;++i)
+*/ 
+    client.connection(&serveraddr);
+    
+    for(int i=0;i<5;++i)
     {
+/*        
         Value& s = docu["temp"];
         s.SetInt(s.GetInt()+1);
         
@@ -60,12 +68,16 @@ int main(int argc,char** argv)
         docu.Accept(writer);
         
         client.writeInAsyncBuffer(buffer.GetString());
-        
-        sleep(2);
+*/
+        client.writeInAsyncBuffer("hello,server!");
+        sleep(1);
     }
-
-    fclose(fp);
     
+    client.closeConnection();
+    
+
+//    fclose(fp);
+       
     return 0;
 }
 

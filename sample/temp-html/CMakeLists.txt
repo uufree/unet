@@ -6,10 +6,11 @@ PROJECT(client)
 SET(CMAKE_C_COMPILER g++)
 INCLUDE_DIRECTORIES(/usr/include/pthread)
 
-SET(SERVER Server.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc  ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../asyncServer/AsyncAcceptor.cc ../../asyncServer/AsyncTcpServer.cc ../../asyncServer/AsyncEventLoop.cc
-)
+#SET(SERVER Server.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc  ../../EventLoop.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../mutilServer/Current.cc ../../mutilServer/EventLoopThread.cc ../../mutilServer/EventLoopThreadPool.cc ../../mutilServer/MutilAcceptor.cc ../../mutilServer/MutilTcpServer.cc)
 
-SET(CLIENT Client.cc ../../Buffer.cc ../../Channel.cc ../../ThreadPool.cc ../../Epoller.cc ../../client/EventLoop.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../client/Connector.cc  ../../client/TcpClient.cc)
+SET(SERVER Server.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc  ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../asyncServer/AsyncAcceptor.cc ../../asyncServer/AsyncTcpServer.cc ../../asyncServer/AsyncEventLoop.cc)
+
+SET(CLIENT Client.cc ../../Buffer.cc ../../Channel.cc ../../ThreadPool.cc ../../Epoller.cc ../../client/AsyncEventLoop.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../client/Connector.cc  ../../client/TcpClient.cc)
 
 
 ADD_DEFINITIONS("-g -Wall -o -lpthread -std=c++11")

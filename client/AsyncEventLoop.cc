@@ -23,9 +23,8 @@ namespace unet
             quit = false;
             while(!quit)
             {
-                ::sleep(1);
-                
-                handleasyncbuffer();
+                if(handleasyncbuffer)
+                    handleasyncbuffer();
 
                 activechannels.clear();
                     
@@ -37,9 +36,7 @@ namespace unet
                     eventhandling = true;
                     for(ChannelList::iterator iter=activechannels.begin();iter!=activechannels.end();++iter)
                     {
-                        std::cout << "pthread_self1(): " << pthread_self() << std::endl;
                         (*iter)->handleEvent();
-                        std::cout << "pthread_self2(): " << pthread_self() << std::endl;
                     }
                     eventhandling = false;
                 }

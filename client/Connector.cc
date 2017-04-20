@@ -15,7 +15,7 @@ namespace unet
     {
         Connector::Connector() : 
             epoller(new Epoller),
-            loop(new AsyncEventLoop),
+            loop(new AsyncEventLoop)
         {
             loop->setGetActiveChannelsCallBack(std::bind(&Connector::getActiveChannels,this,std::placeholders::_1));
         };

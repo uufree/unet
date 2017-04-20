@@ -163,40 +163,12 @@ AsyncTcpServerTest.cc.s:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/AsyncTcpServerTest.cc.s
 .PHONY : AsyncTcpServerTest.cc.s
 
-ClientTest.o: ClientTest.cc.o
-
-.PHONY : ClientTest.o
-
-# target to build an object file
-ClientTest.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/ClientTest.cc.o
-.PHONY : ClientTest.cc.o
-
-ClientTest.i: ClientTest.cc.i
-
-.PHONY : ClientTest.i
-
-# target to preprocess a source file
-ClientTest.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/ClientTest.cc.i
-.PHONY : ClientTest.cc.i
-
-ClientTest.s: ClientTest.cc.s
-
-.PHONY : ClientTest.s
-
-# target to generate assembly for a file
-ClientTest.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/ClientTest.cc.s
-.PHONY : ClientTest.cc.s
-
 home/uuchen/unet/Buffer.o: home/uuchen/unet/Buffer.cc.o
 
 .PHONY : home/uuchen/unet/Buffer.o
 
 # target to build an object file
 home/uuchen/unet/Buffer.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.o
 .PHONY : home/uuchen/unet/Buffer.cc.o
 
@@ -206,7 +178,6 @@ home/uuchen/unet/Buffer.i: home/uuchen/unet/Buffer.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/Buffer.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.i
 .PHONY : home/uuchen/unet/Buffer.cc.i
 
@@ -216,7 +187,6 @@ home/uuchen/unet/Buffer.s: home/uuchen/unet/Buffer.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/Buffer.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.s
 .PHONY : home/uuchen/unet/Buffer.cc.s
 
@@ -226,7 +196,6 @@ home/uuchen/unet/Channel.o: home/uuchen/unet/Channel.cc.o
 
 # target to build an object file
 home/uuchen/unet/Channel.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Channel.cc.o
 .PHONY : home/uuchen/unet/Channel.cc.o
 
@@ -236,7 +205,6 @@ home/uuchen/unet/Channel.i: home/uuchen/unet/Channel.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/Channel.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Channel.cc.i
 .PHONY : home/uuchen/unet/Channel.cc.i
 
@@ -246,7 +214,6 @@ home/uuchen/unet/Channel.s: home/uuchen/unet/Channel.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/Channel.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Channel.cc.s
 .PHONY : home/uuchen/unet/Channel.cc.s
 
@@ -256,7 +223,6 @@ home/uuchen/unet/Epoller.o: home/uuchen/unet/Epoller.cc.o
 
 # target to build an object file
 home/uuchen/unet/Epoller.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Epoller.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Epoller.cc.o
 .PHONY : home/uuchen/unet/Epoller.cc.o
 
@@ -266,7 +232,6 @@ home/uuchen/unet/Epoller.i: home/uuchen/unet/Epoller.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/Epoller.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Epoller.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Epoller.cc.i
 .PHONY : home/uuchen/unet/Epoller.cc.i
 
@@ -276,7 +241,6 @@ home/uuchen/unet/Epoller.s: home/uuchen/unet/Epoller.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/Epoller.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Epoller.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Epoller.cc.s
 .PHONY : home/uuchen/unet/Epoller.cc.s
 
@@ -286,7 +250,6 @@ home/uuchen/unet/File.o: home/uuchen/unet/File.cc.o
 
 # target to build an object file
 home/uuchen/unet/File.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/File.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/File.cc.o
 .PHONY : home/uuchen/unet/File.cc.o
 
@@ -296,7 +259,6 @@ home/uuchen/unet/File.i: home/uuchen/unet/File.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/File.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/File.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/File.cc.i
 .PHONY : home/uuchen/unet/File.cc.i
 
@@ -306,7 +268,6 @@ home/uuchen/unet/File.s: home/uuchen/unet/File.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/File.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/File.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/File.cc.s
 .PHONY : home/uuchen/unet/File.cc.s
 
@@ -316,7 +277,6 @@ home/uuchen/unet/Socket.o: home/uuchen/unet/Socket.cc.o
 
 # target to build an object file
 home/uuchen/unet/Socket.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Socket.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Socket.cc.o
 .PHONY : home/uuchen/unet/Socket.cc.o
 
@@ -326,7 +286,6 @@ home/uuchen/unet/Socket.i: home/uuchen/unet/Socket.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/Socket.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Socket.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Socket.cc.i
 .PHONY : home/uuchen/unet/Socket.cc.i
 
@@ -336,7 +295,6 @@ home/uuchen/unet/Socket.s: home/uuchen/unet/Socket.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/Socket.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Socket.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Socket.cc.s
 .PHONY : home/uuchen/unet/Socket.cc.s
 
@@ -346,7 +304,6 @@ home/uuchen/unet/TcpConnection.o: home/uuchen/unet/TcpConnection.cc.o
 
 # target to build an object file
 home/uuchen/unet/TcpConnection.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/TcpConnection.cc.o
 .PHONY : home/uuchen/unet/TcpConnection.cc.o
 
@@ -356,7 +313,6 @@ home/uuchen/unet/TcpConnection.i: home/uuchen/unet/TcpConnection.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/TcpConnection.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/TcpConnection.cc.i
 .PHONY : home/uuchen/unet/TcpConnection.cc.i
 
@@ -366,7 +322,6 @@ home/uuchen/unet/TcpConnection.s: home/uuchen/unet/TcpConnection.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/TcpConnection.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/TcpConnection.cc.s
 .PHONY : home/uuchen/unet/TcpConnection.cc.s
 
@@ -376,7 +331,6 @@ home/uuchen/unet/Thread.o: home/uuchen/unet/Thread.cc.o
 
 # target to build an object file
 home/uuchen/unet/Thread.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Thread.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Thread.cc.o
 .PHONY : home/uuchen/unet/Thread.cc.o
 
@@ -386,7 +340,6 @@ home/uuchen/unet/Thread.i: home/uuchen/unet/Thread.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/Thread.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Thread.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Thread.cc.i
 .PHONY : home/uuchen/unet/Thread.cc.i
 
@@ -396,7 +349,6 @@ home/uuchen/unet/Thread.s: home/uuchen/unet/Thread.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/Thread.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/Thread.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Thread.cc.s
 .PHONY : home/uuchen/unet/Thread.cc.s
 
@@ -406,7 +358,6 @@ home/uuchen/unet/ThreadPool.o: home/uuchen/unet/ThreadPool.cc.o
 
 # target to build an object file
 home/uuchen/unet/ThreadPool.cc.o:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/ThreadPool.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/ThreadPool.cc.o
 .PHONY : home/uuchen/unet/ThreadPool.cc.o
 
@@ -416,7 +367,6 @@ home/uuchen/unet/ThreadPool.i: home/uuchen/unet/ThreadPool.cc.i
 
 # target to preprocess a source file
 home/uuchen/unet/ThreadPool.cc.i:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/ThreadPool.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/ThreadPool.cc.i
 .PHONY : home/uuchen/unet/ThreadPool.cc.i
 
@@ -426,7 +376,6 @@ home/uuchen/unet/ThreadPool.s: home/uuchen/unet/ThreadPool.cc.s
 
 # target to generate assembly for a file
 home/uuchen/unet/ThreadPool.cc.s:
-	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/ThreadPool.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/ThreadPool.cc.s
 .PHONY : home/uuchen/unet/ThreadPool.cc.s
 
@@ -524,9 +473,6 @@ help:
 	@echo "... AsyncTcpServerTest.o"
 	@echo "... AsyncTcpServerTest.i"
 	@echo "... AsyncTcpServerTest.s"
-	@echo "... ClientTest.o"
-	@echo "... ClientTest.i"
-	@echo "... ClientTest.s"
 	@echo "... home/uuchen/unet/Buffer.o"
 	@echo "... home/uuchen/unet/Buffer.i"
 	@echo "... home/uuchen/unet/Buffer.s"

@@ -56,7 +56,6 @@ namespace unet
                 void writeInAsyncBuffer(const std::string str)
                 {
                     unet::thread::MutexLockGuard guard(lock);
-                    std::cout << "writeInAsyncBuffer: " << str << std::endl;
                     asyncbuffer.push_back(str);
                 }
 
@@ -74,10 +73,12 @@ namespace unet
                     for(auto iter=vec.begin();iter!=vec.end();++iter)
                         outputbuffer->appendInBuffer(iter->c_str());
                     
-                    std::cout << "将要发送～" << std::endl;
                     if(outputbuffer->getDataSize() > 0)
+                    {
+                        std::cout << "将要发送～" << std::endl; 
                         outputbuffer->writeInSocket();
-                    std::cout << "发送完毕～" << std::endl; 
+                        std::cout << "发送完毕～" << std::endl; 
+                    }
                 }
 
                 std::unique_ptr<ConnectorThread> connector;

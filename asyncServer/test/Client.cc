@@ -34,12 +34,13 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    TcpClient client(&serveraddr);
+    TcpClient client;
 
     client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setDrivedCallBack(std::bind(&drivedCallBack,std::placeholders::_1,std::placeholders::_2));
     
+    client.connection(&serveraddr);
     client.start();
     
     char buf[256];

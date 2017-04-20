@@ -20,32 +20,28 @@ namespace unet
         class TaskThreadPool final
         {
             typedef std::function<void()> Task;
-            typedef std::deque<Task> TaskQueue;
+            typedef std::vector<Task> TaskQueue;
             typedef std::vector<Task> TaskList;
             typedef std::vector<unet::net::Channel*> ChannelList;
-            typedef std::deque<unet::net::Channel*> ChannelQueue;
+            typedef std::vector<unet::net::Channel*> ChannelQueue;
             
             public:
-                TaskThreadPool(int size = 2) : pool1(size/2),pool2(size-size/2),lock()
+                TaskThreadPool(int size = 2) : pool(size),lock()
                 {
                     Thread thread(std::bind(&TaskThreadPool::ThreadFunc,this));
-                    pool1.setThreadCallBack(std::move(thread));
-                    Thread thread1(std::bind(&TaskThreadPool::ThreadFunc1,this));
-                    pool2.setThreadCallBack(std::move(thread1));
+                    pool.setThreadCallBack(std::move(thread));
                 }
 
                 TaskThreadPool(const TaskThreadPool& lhs) = delete;
                 TaskThreadPool& operator=(const TaskThreadPool& lhs) = delete;
                 ~TaskThreadPool()
                 {
-                    pool1.joinAll();
-                    pool2.joinAll();
+                    pool.joinAll();
                 }
 
                 void start()
                 {
-                    pool1.start();
-                    pool2.start();
+                    pool.start();
                 }
 /*                
                 void setThreadCallBack(const Thread& cb)
@@ -61,8 +57,11 @@ namespace unet
                 
                 void addInChannelQueue(ChannelList* lhs)
                 {
+                    
                     MutexLockGuard guard(lock);
-                    channelqueue.insert(channelqueue.end(),lhs->begin(),lhs->end());
+                    channelqueue.swap(*lhs);
+                    for(auto iter=channelqueue.begin();iter!=channelqueue.end();++iter)
+                        (*iter)->handleEvent();
                     lhs->clear();
                 } 
 
@@ -73,76 +72,48 @@ namespace unet
                     return lhs->size();
                 }
 
-                int getChannelInPool(ChannelQueue* lhs)
-                {
-                    MutexLockGuard guard(lock);
-                    lhs->swap(channelqueue);
-                    return lhs->size();
-                }
-
             private:
 
                 void ThreadFunc()
                 {
                     TaskQueue taskqueue;
+                    ChannelQueue channels;
                     Task task;
                     int queuesize = 0;
                     unet::net::Channel* channel_;
 
                     while(1)
-                    {
+                    { 
+                    /*    
+                        taskqueue.clear();
                         queuesize = getTaskInPool(&taskqueue);
                         for(int i=0;i<queuesize;++i)
                         {
-                            task = taskqueue.front();
-                            taskqueue.pop_front();
+                            task = taskqueue.back();
+                            taskqueue.pop_back();
                             task();
                         }
                         taskqueue.clear();
-
-                        queuesize = getChannelInPool(&channelqueue);
+                    */
+                        
+                        {
+                            thread::MutexLockGuard guard(lock);
+                            queuesize = channelqueue.size();
+                            if(queuesize != 0)
+                                channels.swap(channelqueue);
+                        }
                         for(int i=0;i<queuesize;++i)
                         {
-                            channel_ = channelqueue.front();
-                            channelqueue.pop_front();
+                            channel_ = channels[i];
+                            printf("%ld-----\n",pthread_self());
                             channel_->handleEvent();
                         }
-                        channelqueue.clear();
+                        channels.clear();
+                        channel_ = nullptr;
                     }
                 }
 
-                void ThreadFunc1()
-                {
-                    TaskQueue taskqueue;
-                    Task task;
-                    int queuesize = 0;
-                    unet::net::Channel* channel_;
-
-                    while(1)
-                    {
-                        queuesize = getChannelInPool(&channelqueue);
-                        for(int i=0;i<queuesize;++i)
-                        {
-                            channel_ = channelqueue.front();
-                            channelqueue.pop_front();
-                            channel_->handleEvent();
-                        }
-                        channelqueue.clear();
-                         
-                        queuesize = getTaskInPool(&taskqueue);
-                        for(int i=0;i<queuesize;++i)
-                        {
-                            task = taskqueue.front();
-                            taskqueue.pop_front();
-                            task();
-                        }
-                        taskqueue.clear();
-                    }
-                }
-
-
-
-                ThreadPool pool1,pool2;
+                ThreadPool pool;
                 TaskQueue queue;
                 ChannelQueue channelqueue;
                 MutexLock lock;

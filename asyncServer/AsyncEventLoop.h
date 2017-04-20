@@ -34,9 +34,6 @@ namespace unet
                 void setHandleActiveChannelsCallBack(const GetActiveChannelsCallBack& cb)
                 {handleactivechannels = cb;}
                 
-                void print()
-                {printf("WTF!\n");};
-
                 ChannelList* getChannelList();
                 
             private:

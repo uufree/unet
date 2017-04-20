@@ -46,7 +46,9 @@ namespace unet
                 {epoller->epoll(channels);};
                 
                 void addChannelInPool(ChannelList* channels)
-                {pool->addInChannelQueue(channels);};
+                {
+                    pool->addInChannelQueue(channels);
+                };
             
             private:
                 Channel* newConnectionCallBack(int fd_);

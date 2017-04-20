@@ -8,7 +8,7 @@ SET(CMAKE_C_COMPILER g++)
 INCLUDE_DIRECTORIES(/usr/include/pthread)
 
 SET(SERVER AsyncTcpServerTest.cc ../AsyncTcpServer.cc ../AsyncAcceptor.cc ../AsyncEventLoop.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc)
-SET(CLIENT ClientTest.cc  ../../Buffer.cc ../../Channel.cc ../../Epoller.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc)
+SET(CLIENT Client.cc  ../../Buffer.cc ../../Channel.cc ../../Epoller.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../client/AsyncEventLoop.cc ../../client/Connector.cc ../../client/TcpClient.cc)
 
 ADD_DEFINITIONS("-g -Wall -o -lpthread -std=c++11")
 
