@@ -40,7 +40,7 @@ namespace unet
 
                 void wait()
                 {
-                    assert(mutex.getPid() != 0);//mutex is locked
+//                    assert(mutex.getPid() != 0);//mutex is locked
                     pthread_cond_wait(&cond,mutex.getMutex());    
                 }
 

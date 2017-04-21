@@ -50,7 +50,7 @@ namespace unet
                 }
     
             private:
-                mutable Mutex mutex;
+                mutable MutexLock mutex;
                 Condition notzero;
                 int count;
         };

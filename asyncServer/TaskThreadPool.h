@@ -49,29 +49,42 @@ namespace unet
                     pool.setThreadCallBack(cb);
                 }
 */
+/*                
                 void addInTaskQueue(TaskList&& lhs)
                 {
                     MutexLockGuard guard(lock);
                     queue.insert(queue.end(),lhs.begin(),lhs.end());
                 }
-                
+*/                
                 void addInChannelQueue(ChannelList* lhs)
                 {
-                    
                     MutexLockGuard guard(lock);
                     channelqueue.swap(*lhs);
-                    for(auto iter=channelqueue.begin();iter!=channelqueue.end();++iter)
-                        (*iter)->handleEvent();
+                    std::cout << "addInChannelQueue: " << (*channelqueue.begin())->getFd() << std::endl;
+                    std::cout << "addInChannelQueue channelqueue.size: " << channelqueue.size() << std::endl;
                     lhs->clear();
-                } 
+                    sleep(1);
+                }
 
+                int getChannelInPool(ChannelList* lhs)
+                {
+                    MutexLockGuard guard(lock);
+                    std::cout << "getChannelInPool channelqueue.size: " << channelqueue.size() << std::endl;
+                    std::cout << "getChannelInPool lhs.size: " << lhs->size() << std::endl;
+                    channelqueue.swap(*lhs);
+                    channelqueue.clear();
+                    if(lhs->size() != 0)
+                        std::cout << "getChannelInPool: " << (*lhs->begin())->getFd() << std::endl;
+                    return lhs->size();
+                }
+/*
                 int getTaskInPool(TaskQueue* lhs)
                 {
                     MutexLockGuard guard(lock);
                     lhs->swap(queue);
                     return lhs->size();
                 }
-
+*/
             private:
 
                 void ThreadFunc()
@@ -84,7 +97,7 @@ namespace unet
 
                     while(1)
                     { 
-                    /*    
+/*                        
                         taskqueue.clear();
                         queuesize = getTaskInPool(&taskqueue);
                         for(int i=0;i<queuesize;++i)
@@ -94,19 +107,31 @@ namespace unet
                             task();
                         }
                         taskqueue.clear();
-                    */
-                        
+*/                                         
+/*                        
                         {
-                            thread::MutexLockGuard guard(lock);
+                            thread::MutexLockGuard guard(lock); 
                             queuesize = channelqueue.size();
+                            while(queuesize == 0)
+                                cond.wait();
+                            
                             if(queuesize != 0)
                                 channels.swap(channelqueue);
+
+                            std::cout << "channelqueue.size: " << channelqueue.size() << std::endl;
+                            std::cout << "channels.size: " << channels.size() << std::endl;
                         }
+*/                      
+                        queuesize = getChannelInPool(&channels);
+                        std::cout << "queuesize: " << queuesize << std::endl;
+                        for(int i=0;i<queuesize;++i)
+                            std::cout << "channel[i]->getFd: " << channels[i]->getFd() << std::endl;
                         for(int i=0;i<queuesize;++i)
                         {
                             channel_ = channels[i];
                             printf("%ld-----\n",pthread_self());
                             channel_->handleEvent();
+                            printf("%ld-----\n",pthread_self());
                         }
                         channels.clear();
                         channel_ = nullptr;

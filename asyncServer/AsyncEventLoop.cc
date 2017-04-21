@@ -30,7 +30,9 @@ namespace unet
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
+
                     handleactivechannels(&activechannels);
+                    
                     eventhandling = false;
                 }
             }

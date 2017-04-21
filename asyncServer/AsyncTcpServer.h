@@ -48,6 +48,7 @@ namespace unet
                 void addChannelInPool(ChannelList* channels)
                 {
                     pool->addInChannelQueue(channels);
+                    channels->clear();
                 };
             
             private:
