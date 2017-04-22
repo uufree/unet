@@ -18,7 +18,7 @@ using namespace rapidjson;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {
-/*    
+    
     char message[16];
     bzero(message,16);
 
@@ -34,15 +34,7 @@ void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
         printf("temp: %d\n",s.GetInt());
         bzero(message,16);
     }
-*/
-    char message[16];
-    bzero(message,16);
 
-    inputbuffer->readInSocket();
-    if(inputbuffer->getDataSize() > 0)
-        inputbuffer->getCompleteMessageInBuffer(message);
-//    outputbuffer->appendInBuffer("hello,client!");
-    printf("%s\n",message);
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
@@ -57,7 +49,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    unet::net::AsyncTcpServer server(&serveraddr,1);
+    unet::net::AsyncTcpServer server(&serveraddr,0);
 //    unet::net::MutilTcpServer server(&serveraddr,1); 
     
     server.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
@@ -67,26 +59,4 @@ int main(int argc,char** argv)
     server.start();
     return 0;
 }
-
-/*
-int main(int argc,char** argv)
-{
-    InetAddress serveraddr(7777);
-    int listenfd = socket::socket();
-    socket::bind(listenfd,&serveraddr);
-    socket::listen(listenfd);
-    
-    int confd = socket::accept(listenfd);
-
-    char message[16];
-    while(1)
-    {
-        ::read(confd,message,16);
-        printf("%s",message);
-        bzero(message,16);
-    }
-    return 0;
-}
-*/
-
 

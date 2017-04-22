@@ -31,8 +31,10 @@ namespace unet
                 {
                     eventhandling = true;
 
-                    handleactivechannels(&activechannels);
-                    
+//                    handleactivechannels(&activechannels);
+                    for(auto iter=activechannels.begin();iter!=activechannels.end();++iter)
+                        (*iter)->handleEvent();
+
                     eventhandling = false;
                 }
             }

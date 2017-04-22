@@ -58,7 +58,7 @@ namespace unet
         void Buffer::writeInSocket()
         {
             int n = ::write(fd,buffer+headindex,getDataSize());
-            
+
             std::cout << "writeInSocket : " << n << std::endl;
             
             if(n > 0)

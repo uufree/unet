@@ -38,7 +38,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 
 int main(int argc,char** argv)
 {
-    InetAddress serveraddr(7777);
+    InetAddress serveraddr("120.25.0.40",7777);
     TcpClient client;
 
     client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
