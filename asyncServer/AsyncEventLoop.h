@@ -29,7 +29,7 @@ namespace unet
                 void loop();
                 void setQuit();
                 void setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& cb)
-                {activecallback = cb;};//由Acceptor注
+                {activecallback = cb;};
                 
                 void setHandleActiveChannelsCallBack(const GetActiveChannelsCallBack& cb)
                 {handleactivechannels = cb;}

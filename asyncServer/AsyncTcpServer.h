@@ -25,7 +25,7 @@ namespace unet
             typedef std::vector<Channel*> ChannelList;
 
             public:
-                AsyncTcpServer(InetAddress* addr_,int size = 2);
+                explicit AsyncTcpServer(InetAddress* addr_,int size = 2);
                 AsyncTcpServer(const AsyncTcpServer& lhs) = delete;
                 AsyncTcpServer& operator=(const AsyncTcpServer& lhs) = delete;
                 ~AsyncTcpServer(){};
@@ -43,12 +43,14 @@ namespace unet
                 void start();
                 
                 void getActiveChannels(ChannelList* channels)
-                {epoller->epoll(channels);};
+                {
+                    epoller->epoll(channels);
+                };
                 
+                //maybe error
                 void addChannelInPool(ChannelList* channels)
                 {
                     pool->addInChannelQueue(channels);
-                    channels->clear();
                 };
             
             private:
@@ -56,10 +58,10 @@ namespace unet
                 void addInServerLoop(Channel* channel);
 
                 InetAddress* serveraddr;
-                std::unique_ptr<AsyncEventLoop> loop;
+                std::unique_ptr<AsyncEventLoop> loop;//异步事件loop
                 std::unique_ptr<Epoller> epoller;
                 std::unique_ptr<AsyncAcceptor> acceptor;
-                std::unique_ptr<unet::thread::TaskThreadPool> pool;
+                std::unique_ptr<unet::thread::TaskThreadPool> pool;//处理异步事件的线程池
                 TcpConnectionPtrMap tcpconnectionptrmap;
                 MessageCallBack readcallback,writecallback,drivedcallback;
                 thread::MutexLock lock;

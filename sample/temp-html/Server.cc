@@ -18,13 +18,13 @@ using namespace rapidjson;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {
-    
     char message[16];
     bzero(message,16);
 
     inputbuffer->readInSocket();
-    inputbuffer->getCompleteMessageInBuffer(message); 
-    
+    inputbuffer->getCompleteMessageInBuffer(message);
+    printf("%s\n",message);
+/*    
     if(message != nullptr)
     {
         Document docu;
@@ -34,6 +34,7 @@ void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
         printf("temp: %d\n",s.GetInt());
         bzero(message,16);
     }
+*/
 
 }
 
@@ -49,7 +50,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    unet::net::AsyncTcpServer server(&serveraddr,0);
+    unet::net::AsyncTcpServer server(&serveraddr,1);
 //    unet::net::MutilTcpServer server(&serveraddr,1); 
     
     server.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));

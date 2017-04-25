@@ -7,9 +7,11 @@
 
 #include"../Thread.h"
 #include"../Mutex.h"
-#include"../CurrentThread.h"
+#include"../Condition.h"
 #include<iostream>
 #include<unistd.h>
+
+//说明Mutex和Condition功能正常
 
 class node
 {
@@ -66,12 +68,10 @@ int main(int argc,char** argv)
     unet::thread::Thread thread(std::bind(&func,3,1,4));
     thread.start();
     
-    while(1)
-    {
-        mkl.wait();
-        std::cout << "main wake up!" << std::endl;
-        sleep(1);
-    }
+    mkl.wait();
+    std::cout << "main wake up!" << std::endl;
+    sleep(3);
+    
     return 0;
 }
 

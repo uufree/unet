@@ -31,6 +31,7 @@ namespace unet
             if(n < 0)
             {
                 perror("readv error\n");
+                closecallback();
             }
             else if(n == 0)
             {

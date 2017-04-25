@@ -18,11 +18,11 @@ namespace unet
             acceptor(new AsyncAcceptor(addr_)),
             pool(new thread::TaskThreadPool(size))
         {
-            acceptor->setNewConnectionCallBack(std::bind(&AsyncTcpServer::newConnectionCallBack,this,std::placeholders::_1));
-            acceptor->setAddInServerLoopCallBack(std::bind(&AsyncTcpServer::addInServerLoop,this,std::placeholders::_1));
+            acceptor->setNewConnectionCallBack(std::bind(&AsyncTcpServer::newConnectionCallBack,this,std::placeholders::_1));//处理新连接的回调
+            acceptor->setAddInServerLoopCallBack(std::bind(&AsyncTcpServer::addInServerLoop,this,std::placeholders::_1));//将一个新的channel加入loop
             
-            loop->setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::getActiveChannels,this,std::placeholders::_1));
-            loop->setHandleActiveChannelsCallBack(std::bind(&AsyncTcpServer::addChannelInPool,this,std::placeholders::_1));
+            loop->setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::getActiveChannels,this,std::placeholders::_1));//epoller和pool交互的方式
+            loop->setHandleActiveChannelsCallBack(std::bind(&AsyncTcpServer::addChannelInPool,this,std::placeholders::_1));//将活动的事件加入pool中
         }
         
         Channel* AsyncTcpServer::newConnectionCallBack(int fd_)
@@ -36,7 +36,7 @@ namespace unet
                 ptr->setWriteCallBack(writecallback);
             if(drivedcallback)
                 ptr->setDrivedCallBack(drivedcallback);
-            
+     
             ptr->setHandleDiedTcpConnection(std::bind(&AsyncTcpServer::handleDiedTcpConnection,this,std::placeholders::_1));
             tcpconnectionptrmap.insert({fd_,ptr});
             

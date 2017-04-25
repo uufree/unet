@@ -30,10 +30,16 @@ namespace unet
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
-
+                    
+    
 //                    handleactivechannels(&activechannels);
                     for(auto iter=activechannels.begin();iter!=activechannels.end();++iter)
-                        (*iter)->handleEvent();
+                    {
+                        if((*iter)->getFd() == 3)
+                            (*iter)->handleEvent();
+                        else
+                            handleactivechannels(&activechannels);
+                    }
 
                     eventhandling = false;
                 }

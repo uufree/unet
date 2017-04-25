@@ -45,7 +45,7 @@ namespace unet
 
             int accept(int sockfd)
             {
-                int connetfd = ::accept(sockfd,nullptr,nullptr);         
+                int connetfd = ::accept(sockfd,nullptr,nullptr);
                 assert(connetfd > 0);
                 return connetfd;
             }

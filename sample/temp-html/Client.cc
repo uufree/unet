@@ -18,12 +18,6 @@ using namespace rapidjson;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {
-/*    
-    char message[16];
-    inputbuffer->readInSocket(); 
-    inputbuffer->getCompleteMessageInBuffer(message);
-    printf("%s\n",message);
-*/
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
@@ -38,7 +32,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 
 int main(int argc,char** argv)
 {
-    InetAddress serveraddr("120.25.0.40",7777);
+    InetAddress serveraddr("127.0.0.1",7777);
     TcpClient client;
 
     client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
@@ -48,6 +42,7 @@ int main(int argc,char** argv)
     client.start();
 /*    
     char buf[256];
+    bzero(buf,256);
     FILE* fp = fopen("/home/uuchen/unet/sample/temp-html/temp.json","rb");
     FileReadStream is(fp,buf,sizeof(buf));   
     Document docu;

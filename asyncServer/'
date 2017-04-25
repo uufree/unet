@@ -57,32 +57,19 @@ namespace unet
                 }
 */               
                 //这种情况就属于muduo中阐述的第一种情况：将一个对象暴露在多个线程中
-                //must have error
                 void addInChannelQueue(ChannelList* lhs)//由server调用
                 {
-                    std::cout << "addInChannelQueue not have lock" << std::endl;
                     MutexLockGuard guard(lock);
-                    std::cout << "addInChannelQueue have lock" << std::endl;
-//                    channelqueue.swap(*lhs);
-                    channelqueue.insert(channelqueue.end(),lhs->cbegin(),lhs->cend());
+                    channelqueue.swap(*lhs);
 //                    std::cout << "addInChannelQueue: " << (*channelqueue.begin())->getFd() << std::endl;
-//                    lhs->clear();
-                    cond.notify();
+                    lhs->clear();
                 }
 
                 int getChannelInPool(ChannelList* lhs)//由线程调用
                 {
-                    std::cout << "getChannelInPool not have lock" << std::endl;
                     MutexLockGuard guard(lock);
-                    std::cout << "getChannelInPool have lock" << std::endl;
-                    
-                    while(channelqueue.size() == 0)
-                        cond.wait();
-                    
-                    std::cout << "getChannelInPool leave cond.wait" << std::endl;
-                    lhs->insert(lhs->end(),channelqueue.begin(),channelqueue.end());
-//                    channelqueue.swap(*lhs);
-//                    channelqueue.clear();
+                    channelqueue.swap(*lhs);
+                    channelqueue.clear();
                     if(lhs->size() != 0)
                         std::cout << "getChannelInPool: " << (*lhs->begin())->getFd() << std::endl;
                     return lhs->size();

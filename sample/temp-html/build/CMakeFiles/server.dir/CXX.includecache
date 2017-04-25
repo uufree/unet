@@ -235,6 +235,8 @@ AsyncAcceptor.h
 /home/uuchen/unet/Condition.h
 ../Channel.h
 /home/uuchen/unet/Channel.h
+../Condition.h
+/home/uuchen/unet/Condition.h
 
 /home/uuchen/unet/rapidjson/allocators.h
 rapidjson.h
