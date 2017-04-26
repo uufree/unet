@@ -47,7 +47,6 @@ namespace unet
                     epoller->epoll(channels);
                 };
                 
-                //maybe error
                 void addChannelInPool(ChannelList* channels)
                 {
                     pool->addInChannelQueue(channels);

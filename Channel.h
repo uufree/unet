@@ -27,13 +27,15 @@ namespace unet
     namespace net
     {
         
+        enum ChannelType{LISTEN,CONNECT,CLOCK};
+        
         class Channel final
         {
             typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
             typedef std::function<void()> EventCallBack; 
             typedef std::function<void(Channel*)> UpdateCallBack;
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;     
-            
+
             public:
                 explicit Channel(int fd_,bool hasconnection_ = true);
                 ~Channel();
@@ -97,6 +99,18 @@ namespace unet
                     if(ptr)
                         ptr->handleDrived();
                 }
+                
+                int asyncRead()
+                {
+                    int n = 0;
+                    TcpConnectionPtr ptr = tcpconnectionwptr.lock();
+                    if(ptr)
+                        n = ptr->asyncRead();
+                    return n;
+                }
+                
+                int getType()
+                {return type;};
 
                 //用std::move的特性，将shared_ptr<TcpConnection>交由TcpServer保管
                 TcpConnectionPtr&& getTcpConnectionPtr()
@@ -120,6 +134,7 @@ namespace unet
                 static const int KWriteEvent;
                 EventCallBack readcallback;//listenfd与timefd的回调
                 UpdateCallBack updatecallback;
+                ChannelType type;
         };
     }
 }

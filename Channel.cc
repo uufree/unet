@@ -21,15 +21,18 @@ namespace unet
         handleeventing(false),
         hasconnection(hasconnection_),
         tcpconnectionptr(new TcpConnection(fd_)),
-        tcpconnectionwptr(tcpconnectionptr)
+        tcpconnectionwptr(tcpconnectionptr),
+        type(CONNECT)
         {
             tcpconnectionptr->setWheetChannelCallBack(std::bind(&Channel::disableAll,this));
-            
+
             if(!hasconnection_)//如果是listenchannel,将ptr reset掉
             {
                 tcpconnectionptr.reset();
-                tcpconnectionwptr.reset();        
+                tcpconnectionwptr.reset();   
+                type = LISTEN;
             }
+            
         };
 
         Channel::~Channel()
@@ -38,7 +41,7 @@ namespace unet
 
         void Channel::handleEvent()
         {
-            if(hasconnection)
+            if(type == CONNECT)
             {//处理有TcpConnectionPtr的情况
                 handleeventing = true;
                 if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
@@ -49,7 +52,9 @@ namespace unet
                 {
                     TcpConnectionPtr wptr = tcpconnectionwptr.lock();
                     if(wptr)
+                    {
                         wptr->handleRead();
+                    }
                     else
                         handleClose();
                 }
@@ -67,8 +72,8 @@ namespace unet
                 revent = 0;
                 handleeventing = false;
             }
-            else
-            {//处理没有TcpConnection的情况，Listenfd等
+            else if(type == LISTEN)
+            {
                 handleeventing = true;
                 if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
                 {
@@ -83,6 +88,8 @@ namespace unet
                     handleClose();
                 handleeventing = false;
             }
+            else
+            {}
         }
         
         void Channel::handleClose()

@@ -25,7 +25,7 @@ namespace unet
             typedef std::vector<unet::net::Channel*> ChannelList;
             
             public:
-                explicit TaskThreadPool(int size = 2) : pool(size),lock(),cond(lock)
+                explicit TaskThreadPool(int size = 2) : pool(size),lock1(),lock2(),cond1(lock1),cond2(lock2)
                 {
                     Thread thread(std::bind(&TaskThreadPool::ThreadFunc,this));
                     pool.setThreadCallBack(std::move(thread));
@@ -43,58 +43,41 @@ namespace unet
                 {
                     pool.start();
                 }
-/*                
-                void setThreadCallBack(const Thread& cb)
-                {
-                    pool.setThreadCallBack(cb);
-                }
-*/
-/*                
+
                 void addInTaskQueue(TaskList&& lhs)
                 {
-                    MutexLockGuard guard(lock);
+                    MutexLockGuard guard(lock2);
                     queue.insert(queue.end(),lhs.begin(),lhs.end());
+                    cond2.notify();
                 }
-*/               
-                //这种情况就属于muduo中阐述的第一种情况：将一个对象暴露在多个线程中
-                //must have error
+
                 void addInChannelQueue(ChannelList* lhs)//由server调用
                 {
-                    std::cout << "addInChannelQueue not have lock" << std::endl;
-                    MutexLockGuard guard(lock);
-                    std::cout << "addInChannelQueue have lock" << std::endl;
-//                    channelqueue.swap(*lhs);
-                    channelqueue.insert(channelqueue.end(),lhs->cbegin(),lhs->cend());
-//                    std::cout << "addInChannelQueue: " << (*channelqueue.begin())->getFd() << std::endl;
-//                    lhs->clear();
-                    cond.notify();
+                    MutexLockGuard guard(lock1);
+                    channelqueue.swap(*lhs);
+                    cond1.notify();
                 }
 
                 int getChannelInPool(ChannelList* lhs)//由线程调用
                 {
-                    std::cout << "getChannelInPool not have lock" << std::endl;
-                    MutexLockGuard guard(lock);
-                    std::cout << "getChannelInPool have lock" << std::endl;
+                    MutexLockGuard guard(lock1); 
+                    while(channelqueue.empty())
+                        cond1.wait();
                     
-                    while(channelqueue.size() == 0)
-                        cond.wait();
-                    
-                    std::cout << "getChannelInPool leave cond.wait" << std::endl;
-                    lhs->insert(lhs->end(),channelqueue.begin(),channelqueue.end());
-//                    channelqueue.swap(*lhs);
-//                    channelqueue.clear();
-                    if(lhs->size() != 0)
-                        std::cout << "getChannelInPool: " << (*lhs->begin())->getFd() << std::endl;
+                    channelqueue.swap(*lhs);
                     return lhs->size();
                 }
-/*
-                int getTaskInPool(TaskQueue* lhs)
+
+                int getTaskInPool(TaskList* lhs)
                 {
-                    MutexLockGuard guard(lock);
+                    MutexLockGuard guard(lock2);
+                    while(queue.empty())
+                        cond2.wait();
+
                     lhs->swap(queue);
                     return lhs->size();
                 }
-*/
+
             private:
 
                 void ThreadFunc()
@@ -115,42 +98,19 @@ namespace unet
                             taskqueue.pop_back();
                             task();
                         }
-                        taskqueue.clear();
-*/                                         
-/*                        
-                        {
-                            thread::MutexLockGuard guard(lock); 
-                            queuesize = channelqueue.size();
-                            while(queuesize == 0)
-                                cond.wait();
-                            
-                            if(queuesize != 0)
-                                channels.swap(channelqueue);
-
-                            std::cout << "channelqueue.size: " << channelqueue.size() << std::endl;
-                            std::cout << "channels.size: " << channels.size() << std::endl;
-                        }
-*/                     
-                        queuesize = getChannelInPool(&channels);
-//                        for(int i=0;i<queuesize;++i)
-//                            std::cout << "channel[i]->getFd: " << channels[i]->getFd() << std::endl;
-                        for(int i=0;i<queuesize;++i)
-                        {
-//                            printf("%ld-----\n",pthread_self());
-                            
-                            std::cout << "channel.getFd: " << channels[i]->getFd() << std::endl;
-                            channels[i]->handleEvent();
-//                            printf("%ld-----\n",pthread_self());
-                        }
+*/                    
                         channels.clear();
+                        queuesize = getChannelInPool(&channels);
+                        for(int i=0;i<queuesize;++i)
+                            channels[i]->handleEvent();
                     }
                 }
 
                 ThreadPool pool;
                 TaskList queue;
                 ChannelList channelqueue;
-                MutexLock lock;
-                Condition cond;
+                MutexLock lock1,lock2;
+                Condition cond1,cond2;
         };
     }
 }

@@ -17,13 +17,12 @@ using namespace unet::thread;
 using namespace rapidjson;
 
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
-{
-    char message[16];
-    bzero(message,16);
+{   
+    char message[32];
+    bzero(message,32);
 
-    inputbuffer->readInSocket();
     inputbuffer->getCompleteMessageInBuffer(message);
-    printf("%s\n",message);
+    printf("%ld----%s\n",pthread_self(),message);
 /*    
     if(message != nullptr)
     {
@@ -34,8 +33,7 @@ void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
         printf("temp: %d\n",s.GetInt());
         bzero(message,16);
     }
-*/
-
+*/   
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
@@ -50,7 +48,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    unet::net::AsyncTcpServer server(&serveraddr,1);
+    unet::net::AsyncTcpServer server(&serveraddr,2);
 //    unet::net::MutilTcpServer server(&serveraddr,1); 
     
     server.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));

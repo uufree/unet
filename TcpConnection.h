@@ -50,6 +50,10 @@ namespace unet
 
                 void handleChannel();//不关注所有事件的回调
                 
+                int asyncRead()
+                {
+                    return inputbuffer.readInSocket();
+                }
 
                 int getFd()//返回自己关注的描述符
                 {return confd.getFd();};

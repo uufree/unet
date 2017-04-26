@@ -44,11 +44,13 @@ CMakeFiles/client.dir/Client.cc.o: ../Client.cc
 CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.o: /home/uuchen/unet/Buffer.cc
 CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.o: /home/uuchen/unet/Buffer.h
 CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.o: /home/uuchen/unet/File.h
+CMakeFiles/client.dir/home/uuchen/unet/Buffer.cc.o: /home/uuchen/unet/Mutex.h
 
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/Buffer.h
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/Channel.cc
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/Channel.h
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/InetAddress.h
+CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/Mutex.h
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/Socket.h
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/TcpConnection.h
 CMakeFiles/client.dir/home/uuchen/unet/Channel.cc.o: /home/uuchen/unet/Typedef.h
@@ -72,6 +74,7 @@ CMakeFiles/client.dir/home/uuchen/unet/Socket.cc.o: /home/uuchen/unet/Socket.h
 
 CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o: /home/uuchen/unet/Buffer.h
 CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o: /home/uuchen/unet/InetAddress.h
+CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o: /home/uuchen/unet/Mutex.h
 CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o: /home/uuchen/unet/Socket.h
 CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o: /home/uuchen/unet/TcpConnection.cc
 CMakeFiles/client.dir/home/uuchen/unet/TcpConnection.cc.o: /home/uuchen/unet/TcpConnection.h

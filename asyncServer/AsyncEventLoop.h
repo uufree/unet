@@ -19,7 +19,10 @@ namespace unet
             typedef std::vector<Channel*> ChannelList;
             typedef std::function<void(ChannelList*)> GetActiveChannelsCallBack;
             typedef std::function<void()> TaskFunc;
-            
+            typedef ChannelList::iterator Iter;
+            typedef std::vector<Iter> IterList;
+            typedef IterList::iterator IterIter;
+
             public:                                    
                 AsyncEventLoop();
                 AsyncEventLoop(const AsyncEventLoop&) = delete;
@@ -42,6 +45,9 @@ namespace unet
                 bool eventhandling;
                 ChannelList activechannels;
                 GetActiveChannelsCallBack activecallback,handleactivechannels;
+                Iter iter;
+                IterList iterlist;
+                IterIter iteriter;
         };
     }
 }

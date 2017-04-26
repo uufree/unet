@@ -40,7 +40,7 @@ int main(int argc,char** argv)
     client.setDrivedCallBack(std::bind(&drivedCallBack,std::placeholders::_1,std::placeholders::_2));
     
     client.start();
-/*    
+    
     char buf[256];
     bzero(buf,256);
     FILE* fp = fopen("/home/uuchen/unet/sample/temp-html/temp.json","rb");
@@ -49,7 +49,7 @@ int main(int argc,char** argv)
     docu.ParseStream(is);
     
     StringBuffer buffer;
-*/ 
+ 
     client.connection(&serveraddr);
     
     for(int i=0;i<5;++i)
@@ -60,8 +60,7 @@ int main(int argc,char** argv)
         
         buffer.Clear();
         Writer<StringBuffer> writer(buffer);
-        docu.Accept(writer);
-        
+        docu.Accept(writer)        
         client.writeInAsyncBuffer(buffer.GetString());
 */
         client.writeInAsyncBuffer("hello,server!");
@@ -70,8 +69,7 @@ int main(int argc,char** argv)
     
     client.closeConnection();
     
-
-//    fclose(fp);
+    fclose(fp);
        
     return 0;
 }

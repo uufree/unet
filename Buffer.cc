@@ -15,8 +15,10 @@ namespace unet
 {
     namespace net
     {
-        void Buffer::readInSocket()
+        int Buffer::readInSocket()
         {
+            unet::thread::MutexLockGuard guard(lock);
+            
             char extrabuf[65536];
             bzero(extrabuf,65536);
             struct iovec vec[2];
@@ -24,7 +26,7 @@ namespace unet
             vec[0].iov_len = getFreeSize();
             vec[1].iov_base = extrabuf;
             vec[1].iov_len = 65536;
-
+            
             int n = ::readv(fd,vec,getFreeSize());
             printf("readv n: %d\n",n);
 
@@ -42,7 +44,7 @@ namespace unet
                 tailindex += n;
             }
             else
-            {   
+            {    
                 tailindex += getFreeSize();
                 int size = n - getFreeSize();
                 while(size > getFreeSize())
@@ -54,10 +56,12 @@ namespace unet
                 strcpy(buffer+tailindex,extrabuf);
                 tailindex += size;
             }
+            return n;
         }
             
         void Buffer::writeInSocket()
         {
+            unet::thread::MutexLockGuard guard(lock);
             int n = ::write(fd,buffer+headindex,getDataSize());
 
             std::cout << "writeInSocket : " << n << std::endl;
@@ -81,6 +85,7 @@ namespace unet
         //通用操作
         void Buffer::appendInBuffer(const char* message)
         {
+            unet::thread::MutexLockGuard guard(lock);
             int size = strlen(message);
             if(size+2 > getFreeSize())
             {
@@ -103,6 +108,7 @@ namespace unet
         
         void Buffer::getCompleteMessageInBuffer(char* message)
         {
+            unet::thread::MutexLockGuard guard(lock);
             char* ch = strstr(buffer+headindex,"\r\n");
             
             if(ch != NULL)

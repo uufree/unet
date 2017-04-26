@@ -23,23 +23,38 @@ namespace unet
             while(!quit)
             {
                 activechannels.clear();
-                    
+                iterlist.clear();
+
                 if(activecallback)
                     activecallback(&activechannels);
-                
+
                 if(!activechannels.empty())
                 {
                     eventhandling = true;
-                    
     
-//                    handleactivechannels(&activechannels);
-                    for(auto iter=activechannels.begin();iter!=activechannels.end();++iter)
+                    for(iter=activechannels.begin();iter!=activechannels.end();++iter)
                     {
-                        if((*iter)->getFd() == 3)
+                        if((*iter)->getType() == LISTEN)
+                        {
                             (*iter)->handleEvent();
-                        else
-                            handleactivechannels(&activechannels);
+                            iterlist.push_back(iter); 
+                        }
+                        else if((*iter)->getType() == CONNECT)
+                        {   
+                            if((*iter)->asyncRead() == 0)
+                                iterlist.push_back(iter);
+                        }
+                        else//留给CLOCK
+                        {}
                     }
+                    
+                    if(!iterlist.empty())
+                    {
+                        for(iteriter=iterlist.begin();iteriter!=iterlist.end();++iteriter)
+                            activechannels.erase(*iteriter);
+                    }
+                    
+                    handleactivechannels(&activechannels);
 
                     eventhandling = false;
                 }

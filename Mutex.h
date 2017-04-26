@@ -65,7 +65,6 @@ namespace unet
             
                 ~MutexLock()
                 {
-                    assert(pid == 0);
                     ::pthread_mutex_destroy(&mutex);
                 }
 
