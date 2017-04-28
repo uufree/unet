@@ -12,7 +12,9 @@ namespace unet
     namespace thread
     {
         EventLoopThread::EventLoopThread() : current(new Current),thread(new Thread)
-        {};
+        {
+            thread->setThreadCallBack(std::bind(&EventLoopThread::loop,this,current.get()));
+        };
 
         EventLoopThread::EventLoopThread(const EventLoopThread& lhs) :
             current(lhs.current.get()),

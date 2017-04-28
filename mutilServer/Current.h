@@ -15,7 +15,7 @@ namespace unet
 {
     namespace thread
     {
-        //这个类是为了将Epoller和EventLoop聚合起来
+        //这个类是为了将Epoller和EventLoop聚合起来，形成的中间类
         class Current final
         {
             typedef std::vector<unet::net::Channel*> ChannelList;

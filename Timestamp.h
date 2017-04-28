@@ -1,12 +1,18 @@
 /*************************************************************************
-	> File Name: Time.h
+	> File Name: Timestamp.h
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年02月27日 星期一 16时17分32秒
  ************************************************************************/
 
-#ifndef _TIME_H
-#define _TIME_H
+#ifndef _TIMESTAMP_H
+#define _TIMESTAMP_H
+
+#include<time.h>
+#include<sys/time.h>
+#include<unistd.h>
+#include<stdint.h>
+#include<iostream>
 
 namespace unet
 {
@@ -19,17 +25,33 @@ namespace unet
                 {
                     struct timeval tv;
                     ::gettimeofday(&tv,NULL);
-                    microseconds = tv.sec*KMicroseconds + tv.tv_usec;
+                    microseconds = tv.tv_sec*KMicroseconds + tv.tv_usec;
                 }
 
-                explicit Timestamp(int64_t microseconds_) : 
+                Timestamp(int64_t microseconds_) : 
                     microseconds(microseconds_)
                 {};
 
-                explicit Timestamp(Timestamp& rhs) :
+                Timestamp(Timestamp& rhs) :
                     microseconds(rhs.microseconds)
                 {};
+                
 
+                void addTime(double seconds)
+                {
+                    microseconds += seconds * KMicroseconds;
+                }
+                
+                bool operator<(const Timestamp& lhs)
+                {
+                    return microseconds<lhs.microseconds;
+                };
+
+                bool operator=(const Timestamp& rhs)
+                {
+                    return microseconds == rhs.microseconds;
+                }
+        
                 void swap(Timestamp& rhs)
                 {
                     std::swap(microseconds,rhs.microseconds);
@@ -45,26 +67,11 @@ namespace unet
             private:
                 int64_t microseconds;
         };
-
-        inline bool operator<(const Timestamp& lhs,const Timestamp& rhs)
-        {
-            return lhs.getTime() < rhs.getTime();
-        }
-
-        inline bool operator==(const Timestamp& lhs,const Timestamp& rhs)
-        {
-            return lhs.getTime() == rhs.getTime();
-        }
-        
-        inline Timestamp addTime(Timestamp& lhs,double seconds)
-        {
-            return Timestamp(lhs.getTime()+seconds*KMicroseconds);
-        }
         
         inline double timedifference(const Timestamp& lhs,const Timestamp& rhs)
         {
             int64_t diff = lhs.getTime() - rhs.getTime();
-            return static<double>(diff/Timestamp::KMicroseconds);
+            return static_cast<double>(diff/Timestamp::KMicroseconds);
         }
     }
 }

@@ -19,68 +19,31 @@ namespace unet
             typedef std::function<void()> ThreadFunc;
             typedef std::vector<pthread_t> EventLoopThreadList;
             typedef std::vector<unet::net::Epoller*> EpollerList;
+            typedef EpollerList::iterator EpollerListIter;
+            typedef std::vector<EventLoopThread> LoopThreadList;
 
             public:
-                EventLoopThreadPool(int size = 2);
+                explicit EventLoopThreadPool(int size = 2);
                 EventLoopThreadPool(const EventLoopThreadPool& lhs) = delete;
                 EventLoopThreadPool& operator=(const EventLoopThreadPool& lhs) = delete;
                 ~EventLoopThreadPool();
            
         //public interface
-                
-                void setThreadCallBack(EventLoopThread&& cb)
-                {
-                    thread = cb;
-                }
-
-                void setThreadCallBack(const EventLoopThread& cb)
-                {
-                    thread = cb;
-                }
-
                 void start();
                 void joinAll(); 
 
                 void addInChannelMap(unet::net::Channel* channel);
 
             private:
-                EventLoopThread thread;
+//                LoopThreadList threads;
+                EventLoopThread* threads;
                 const int threadsize;
                 EventLoopThreadList threadlist;
                 EpollerList epollerlist;
+                EpollerListIter iter;
         };
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
 

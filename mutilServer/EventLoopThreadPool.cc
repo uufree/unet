@@ -14,23 +14,23 @@ namespace unet
         EventLoopThreadPool::EventLoopThreadPool(int size) :
             threadsize(size)
         {
-            thread.setThreadCallBack();
-        };
-        
+            threads = new EventLoopThread[threadsize];
+        }
+
         EventLoopThreadPool::~EventLoopThreadPool()
         {
-            for(auto iter=threadlist.begin();iter!=threadlist.end();++iter)
-                ::pthread_detach(*iter);
+            delete [] threads; 
         }
 
         void EventLoopThreadPool::start()
         {
             for(int i=0;i<threadsize;++i)
             {
-                thread.start();
-                threadlist.push_back(thread.getThreadId());
-                epollerlist.push_back(thread.getEpoller());
+                threadlist.push_back(threads[i].getThreadId());
+                epollerlist.push_back(threads[i].getEpoller());
+                threads[i].start();
             }
+            iter = epollerlist.begin();
         }
 
         void EventLoopThreadPool::joinAll()
@@ -41,15 +41,14 @@ namespace unet
 
         void EventLoopThreadPool::addInChannelMap(unet::net::Channel* channel)
         {
-            EpollerList::iterator iter = epollerlist.begin();
+            for(auto it=epollerlist.begin();it!=epollerlist.end();++it)              (*it)->getInfo();
             
-            for(auto it=epollerlist.begin();it!=epollerlist.end();++it)
-            {
-                if((*iter)->getConSize() <= (*it)->getConSize())
-                    iter = it;
-            }
-
             (*iter)->addInChannelMap(channel);
+            if(iter != epollerlist.end())
+                ++iter;
+            
+            for(auto it=epollerlist.begin();it!=epollerlist.end();++it)              (*it)->getInfo();
+            
         }
     }
 }

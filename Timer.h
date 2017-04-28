@@ -8,18 +8,23 @@
 #ifndef _TIMER_H
 #define _TIMER_H
 
+#include"Timestamp.h"
+#include<functional>
+
 namespace unet
 {
     namespace time
     {
         class Timer final
         {
+            typedef std::function<void()> TimeCallBack;
+            
             public:
-                explicit Timer(const TimeCallBack& callback_,bool repeat_,double repeattime) : callback(callback_),
-                repeat(repeat_),repeattime(repeattime_),
-                time(Timestamp())
+                explicit Timer(const TimeCallBack& callback_,bool repeat_,double repeattime_) : callback(callback_),
+                repeat(repeat_),repeattime(repeattime_)
                 {
-                    addTime(time,repeattime_);
+                    time = Timestamp();
+                    time.addTime(repeattime_);
                 };
 
                 Timer(const Timer& lhs) = delete;
@@ -40,13 +45,10 @@ namespace unet
                 void restart()
                 {
                     if(repeat)
-                        addTime(time,repeattime);
+                        time.addTime(repeattime);
                 }
 
             private:
-                
-                typedef std::functor<void()> TimeCallBack;
-
                 const TimeCallBack callback;
                 bool repeat;
                 double repeattime;

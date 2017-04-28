@@ -10,7 +10,7 @@
 
 #include"../Thread.h"
 #include"Current.h"
-
+//将current聚合类和线程类封装在一起，形成一条单独的线程
 namespace unet
 {
     namespace thread
@@ -18,7 +18,7 @@ namespace unet
         class EventLoopThread final
         {
             public:
-                EventLoopThread();
+                explicit EventLoopThread();
                 EventLoopThread(const EventLoopThread& lhs);
                 EventLoopThread(EventLoopThread&& lhs);
                 EventLoopThread& operator=(const EventLoopThread& lhs);

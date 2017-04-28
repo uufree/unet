@@ -12,12 +12,10 @@ using namespace unet::thread;
 
 int main(int argc,char** argv)
 {
-    EventLoopThread thread;
-    thread.setThreadCallBack();
-    EventLoopThread thread1;
-    thread1 = thread;
-
-    thread1.start();
+    EventLoopThread* threads = new EventLoopThread[4];
+    
+    for(int i=0;i<4;++i)
+        threads[i].start();
 
     sleep(10);
     return 0;

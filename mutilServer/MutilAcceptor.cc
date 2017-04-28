@@ -45,7 +45,7 @@ namespace unet
             assert(confd >= 0);
             socket::setNonBlockAndCloseOnExec(confd);
             
-            Channel* channel;
+            Channel* channel = nullptr;
             if(newconnectioncallback)
                 channel = newconnectioncallback(confd);//获得新的channel
             else

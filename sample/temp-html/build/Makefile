@@ -280,6 +280,33 @@ home/uuchen/unet/Epoller.cc.s:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/Epoller.cc.s
 .PHONY : home/uuchen/unet/Epoller.cc.s
 
+home/uuchen/unet/EventLoop.o: home/uuchen/unet/EventLoop.cc.o
+
+.PHONY : home/uuchen/unet/EventLoop.o
+
+# target to build an object file
+home/uuchen/unet/EventLoop.cc.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/EventLoop.cc.o
+.PHONY : home/uuchen/unet/EventLoop.cc.o
+
+home/uuchen/unet/EventLoop.i: home/uuchen/unet/EventLoop.cc.i
+
+.PHONY : home/uuchen/unet/EventLoop.i
+
+# target to preprocess a source file
+home/uuchen/unet/EventLoop.cc.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/EventLoop.cc.i
+.PHONY : home/uuchen/unet/EventLoop.cc.i
+
+home/uuchen/unet/EventLoop.s: home/uuchen/unet/EventLoop.cc.s
+
+.PHONY : home/uuchen/unet/EventLoop.s
+
+# target to generate assembly for a file
+home/uuchen/unet/EventLoop.cc.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/EventLoop.cc.s
+.PHONY : home/uuchen/unet/EventLoop.cc.s
+
 home/uuchen/unet/File.o: home/uuchen/unet/File.cc.o
 
 .PHONY : home/uuchen/unet/File.o
@@ -430,87 +457,6 @@ home/uuchen/unet/ThreadPool.cc.s:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/ThreadPool.cc.s
 .PHONY : home/uuchen/unet/ThreadPool.cc.s
 
-home/uuchen/unet/asyncServer/AsyncAcceptor.o: home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncAcceptor.o
-
-# target to build an object file
-home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o
-.PHONY : home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o
-
-home/uuchen/unet/asyncServer/AsyncAcceptor.i: home/uuchen/unet/asyncServer/AsyncAcceptor.cc.i
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncAcceptor.i
-
-# target to preprocess a source file
-home/uuchen/unet/asyncServer/AsyncAcceptor.cc.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.i
-.PHONY : home/uuchen/unet/asyncServer/AsyncAcceptor.cc.i
-
-home/uuchen/unet/asyncServer/AsyncAcceptor.s: home/uuchen/unet/asyncServer/AsyncAcceptor.cc.s
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncAcceptor.s
-
-# target to generate assembly for a file
-home/uuchen/unet/asyncServer/AsyncAcceptor.cc.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.s
-.PHONY : home/uuchen/unet/asyncServer/AsyncAcceptor.cc.s
-
-home/uuchen/unet/asyncServer/AsyncEventLoop.o: home/uuchen/unet/asyncServer/AsyncEventLoop.cc.o
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncEventLoop.o
-
-# target to build an object file
-home/uuchen/unet/asyncServer/AsyncEventLoop.cc.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncEventLoop.cc.o
-.PHONY : home/uuchen/unet/asyncServer/AsyncEventLoop.cc.o
-
-home/uuchen/unet/asyncServer/AsyncEventLoop.i: home/uuchen/unet/asyncServer/AsyncEventLoop.cc.i
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncEventLoop.i
-
-# target to preprocess a source file
-home/uuchen/unet/asyncServer/AsyncEventLoop.cc.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncEventLoop.cc.i
-.PHONY : home/uuchen/unet/asyncServer/AsyncEventLoop.cc.i
-
-home/uuchen/unet/asyncServer/AsyncEventLoop.s: home/uuchen/unet/asyncServer/AsyncEventLoop.cc.s
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncEventLoop.s
-
-# target to generate assembly for a file
-home/uuchen/unet/asyncServer/AsyncEventLoop.cc.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncEventLoop.cc.s
-.PHONY : home/uuchen/unet/asyncServer/AsyncEventLoop.cc.s
-
-home/uuchen/unet/asyncServer/AsyncTcpServer.o: home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncTcpServer.o
-
-# target to build an object file
-home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o
-.PHONY : home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o
-
-home/uuchen/unet/asyncServer/AsyncTcpServer.i: home/uuchen/unet/asyncServer/AsyncTcpServer.cc.i
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncTcpServer.i
-
-# target to preprocess a source file
-home/uuchen/unet/asyncServer/AsyncTcpServer.cc.i:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.i
-.PHONY : home/uuchen/unet/asyncServer/AsyncTcpServer.cc.i
-
-home/uuchen/unet/asyncServer/AsyncTcpServer.s: home/uuchen/unet/asyncServer/AsyncTcpServer.cc.s
-
-.PHONY : home/uuchen/unet/asyncServer/AsyncTcpServer.s
-
-# target to generate assembly for a file
-home/uuchen/unet/asyncServer/AsyncTcpServer.cc.s:
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.s
-.PHONY : home/uuchen/unet/asyncServer/AsyncTcpServer.cc.s
-
 home/uuchen/unet/client/AsyncEventLoop.o: home/uuchen/unet/client/AsyncEventLoop.cc.o
 
 .PHONY : home/uuchen/unet/client/AsyncEventLoop.o
@@ -592,6 +538,141 @@ home/uuchen/unet/client/TcpClient.cc.s:
 	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/unet/client/TcpClient.cc.s
 .PHONY : home/uuchen/unet/client/TcpClient.cc.s
 
+home/uuchen/unet/mutilServer/Current.o: home/uuchen/unet/mutilServer/Current.cc.o
+
+.PHONY : home/uuchen/unet/mutilServer/Current.o
+
+# target to build an object file
+home/uuchen/unet/mutilServer/Current.cc.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/Current.cc.o
+.PHONY : home/uuchen/unet/mutilServer/Current.cc.o
+
+home/uuchen/unet/mutilServer/Current.i: home/uuchen/unet/mutilServer/Current.cc.i
+
+.PHONY : home/uuchen/unet/mutilServer/Current.i
+
+# target to preprocess a source file
+home/uuchen/unet/mutilServer/Current.cc.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/Current.cc.i
+.PHONY : home/uuchen/unet/mutilServer/Current.cc.i
+
+home/uuchen/unet/mutilServer/Current.s: home/uuchen/unet/mutilServer/Current.cc.s
+
+.PHONY : home/uuchen/unet/mutilServer/Current.s
+
+# target to generate assembly for a file
+home/uuchen/unet/mutilServer/Current.cc.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/Current.cc.s
+.PHONY : home/uuchen/unet/mutilServer/Current.cc.s
+
+home/uuchen/unet/mutilServer/EventLoopThread.o: home/uuchen/unet/mutilServer/EventLoopThread.cc.o
+
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThread.o
+
+# target to build an object file
+home/uuchen/unet/mutilServer/EventLoopThread.cc.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/EventLoopThread.cc.o
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThread.cc.o
+
+home/uuchen/unet/mutilServer/EventLoopThread.i: home/uuchen/unet/mutilServer/EventLoopThread.cc.i
+
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThread.i
+
+# target to preprocess a source file
+home/uuchen/unet/mutilServer/EventLoopThread.cc.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/EventLoopThread.cc.i
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThread.cc.i
+
+home/uuchen/unet/mutilServer/EventLoopThread.s: home/uuchen/unet/mutilServer/EventLoopThread.cc.s
+
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThread.s
+
+# target to generate assembly for a file
+home/uuchen/unet/mutilServer/EventLoopThread.cc.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/EventLoopThread.cc.s
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThread.cc.s
+
+home/uuchen/unet/mutilServer/EventLoopThreadPool.o: home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.o
+
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThreadPool.o
+
+# target to build an object file
+home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.o
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.o
+
+home/uuchen/unet/mutilServer/EventLoopThreadPool.i: home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.i
+
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThreadPool.i
+
+# target to preprocess a source file
+home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.i
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.i
+
+home/uuchen/unet/mutilServer/EventLoopThreadPool.s: home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.s
+
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThreadPool.s
+
+# target to generate assembly for a file
+home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.s
+.PHONY : home/uuchen/unet/mutilServer/EventLoopThreadPool.cc.s
+
+home/uuchen/unet/mutilServer/MutilAcceptor.o: home/uuchen/unet/mutilServer/MutilAcceptor.cc.o
+
+.PHONY : home/uuchen/unet/mutilServer/MutilAcceptor.o
+
+# target to build an object file
+home/uuchen/unet/mutilServer/MutilAcceptor.cc.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/MutilAcceptor.cc.o
+.PHONY : home/uuchen/unet/mutilServer/MutilAcceptor.cc.o
+
+home/uuchen/unet/mutilServer/MutilAcceptor.i: home/uuchen/unet/mutilServer/MutilAcceptor.cc.i
+
+.PHONY : home/uuchen/unet/mutilServer/MutilAcceptor.i
+
+# target to preprocess a source file
+home/uuchen/unet/mutilServer/MutilAcceptor.cc.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/MutilAcceptor.cc.i
+.PHONY : home/uuchen/unet/mutilServer/MutilAcceptor.cc.i
+
+home/uuchen/unet/mutilServer/MutilAcceptor.s: home/uuchen/unet/mutilServer/MutilAcceptor.cc.s
+
+.PHONY : home/uuchen/unet/mutilServer/MutilAcceptor.s
+
+# target to generate assembly for a file
+home/uuchen/unet/mutilServer/MutilAcceptor.cc.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/MutilAcceptor.cc.s
+.PHONY : home/uuchen/unet/mutilServer/MutilAcceptor.cc.s
+
+home/uuchen/unet/mutilServer/MutilTcpServer.o: home/uuchen/unet/mutilServer/MutilTcpServer.cc.o
+
+.PHONY : home/uuchen/unet/mutilServer/MutilTcpServer.o
+
+# target to build an object file
+home/uuchen/unet/mutilServer/MutilTcpServer.cc.o:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/MutilTcpServer.cc.o
+.PHONY : home/uuchen/unet/mutilServer/MutilTcpServer.cc.o
+
+home/uuchen/unet/mutilServer/MutilTcpServer.i: home/uuchen/unet/mutilServer/MutilTcpServer.cc.i
+
+.PHONY : home/uuchen/unet/mutilServer/MutilTcpServer.i
+
+# target to preprocess a source file
+home/uuchen/unet/mutilServer/MutilTcpServer.cc.i:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/MutilTcpServer.cc.i
+.PHONY : home/uuchen/unet/mutilServer/MutilTcpServer.cc.i
+
+home/uuchen/unet/mutilServer/MutilTcpServer.s: home/uuchen/unet/mutilServer/MutilTcpServer.cc.s
+
+.PHONY : home/uuchen/unet/mutilServer/MutilTcpServer.s
+
+# target to generate assembly for a file
+home/uuchen/unet/mutilServer/MutilTcpServer.cc.s:
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/unet/mutilServer/MutilTcpServer.cc.s
+.PHONY : home/uuchen/unet/mutilServer/MutilTcpServer.cc.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -617,6 +698,9 @@ help:
 	@echo "... home/uuchen/unet/Epoller.o"
 	@echo "... home/uuchen/unet/Epoller.i"
 	@echo "... home/uuchen/unet/Epoller.s"
+	@echo "... home/uuchen/unet/EventLoop.o"
+	@echo "... home/uuchen/unet/EventLoop.i"
+	@echo "... home/uuchen/unet/EventLoop.s"
 	@echo "... home/uuchen/unet/File.o"
 	@echo "... home/uuchen/unet/File.i"
 	@echo "... home/uuchen/unet/File.s"
@@ -632,15 +716,6 @@ help:
 	@echo "... home/uuchen/unet/ThreadPool.o"
 	@echo "... home/uuchen/unet/ThreadPool.i"
 	@echo "... home/uuchen/unet/ThreadPool.s"
-	@echo "... home/uuchen/unet/asyncServer/AsyncAcceptor.o"
-	@echo "... home/uuchen/unet/asyncServer/AsyncAcceptor.i"
-	@echo "... home/uuchen/unet/asyncServer/AsyncAcceptor.s"
-	@echo "... home/uuchen/unet/asyncServer/AsyncEventLoop.o"
-	@echo "... home/uuchen/unet/asyncServer/AsyncEventLoop.i"
-	@echo "... home/uuchen/unet/asyncServer/AsyncEventLoop.s"
-	@echo "... home/uuchen/unet/asyncServer/AsyncTcpServer.o"
-	@echo "... home/uuchen/unet/asyncServer/AsyncTcpServer.i"
-	@echo "... home/uuchen/unet/asyncServer/AsyncTcpServer.s"
 	@echo "... home/uuchen/unet/client/AsyncEventLoop.o"
 	@echo "... home/uuchen/unet/client/AsyncEventLoop.i"
 	@echo "... home/uuchen/unet/client/AsyncEventLoop.s"
@@ -650,6 +725,21 @@ help:
 	@echo "... home/uuchen/unet/client/TcpClient.o"
 	@echo "... home/uuchen/unet/client/TcpClient.i"
 	@echo "... home/uuchen/unet/client/TcpClient.s"
+	@echo "... home/uuchen/unet/mutilServer/Current.o"
+	@echo "... home/uuchen/unet/mutilServer/Current.i"
+	@echo "... home/uuchen/unet/mutilServer/Current.s"
+	@echo "... home/uuchen/unet/mutilServer/EventLoopThread.o"
+	@echo "... home/uuchen/unet/mutilServer/EventLoopThread.i"
+	@echo "... home/uuchen/unet/mutilServer/EventLoopThread.s"
+	@echo "... home/uuchen/unet/mutilServer/EventLoopThreadPool.o"
+	@echo "... home/uuchen/unet/mutilServer/EventLoopThreadPool.i"
+	@echo "... home/uuchen/unet/mutilServer/EventLoopThreadPool.s"
+	@echo "... home/uuchen/unet/mutilServer/MutilAcceptor.o"
+	@echo "... home/uuchen/unet/mutilServer/MutilAcceptor.i"
+	@echo "... home/uuchen/unet/mutilServer/MutilAcceptor.s"
+	@echo "... home/uuchen/unet/mutilServer/MutilTcpServer.o"
+	@echo "... home/uuchen/unet/mutilServer/MutilTcpServer.i"
+	@echo "... home/uuchen/unet/mutilServer/MutilTcpServer.s"
 .PHONY : help
 
 
