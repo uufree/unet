@@ -23,8 +23,6 @@ namespace unet
                 explicit Timer(const TimeCallBack& callback_,bool repeat_,double repeattime_) : callback(callback_),
                 repeat(repeat_),repeattime(repeattime_)
                 {
-                    time = Timestamp();
-                    time.addTime(repeattime_);
                 };
 
                 Timer(const Timer& lhs) = delete;
@@ -40,12 +38,6 @@ namespace unet
                 bool isRepeat()
                 {
                     return repeat;
-                }
-
-                void restart()
-                {
-                    if(repeat)
-                        time.addTime(repeattime);
                 }
 
             private:

@@ -14,7 +14,7 @@ namespace unet
         AsyncAcceptor::AsyncAcceptor(unet::net::InetAddress* addr_):
             serveraddr(addr_),
             listenfd(socket::socket()),
-            listenchannel(new Channel(listenfd,false)),
+            listenchannel(new Channel(listenfd,LISTEN)),
             listening(false),
             channel_(nullptr)
         {

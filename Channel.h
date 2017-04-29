@@ -37,7 +37,7 @@ namespace unet
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;     
 
             public:
-                explicit Channel(int fd_,bool hasconnection_ = true);
+                explicit Channel(int fd_,ChannelType type_);
                 ~Channel();
                 Channel(const Channel& lhs) = delete;
                 Channel& operator=(const Channel& lhs)  = delete;
@@ -125,7 +125,6 @@ namespace unet
                 int event;//关注的事件
                 int revent;//正在发生的事件
                 bool handleeventing;
-                bool hasconnection;
                 TcpConnectionPtr tcpconnectionptr;
                 TcpConnectionWptr tcpconnectionwptr;
 

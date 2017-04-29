@@ -15,7 +15,7 @@ namespace unet
             pool(new unet::thread::EventLoopThreadPool(size)),
             serveraddr(addr_),
             listenfd(socket::socket()),
-            listenchannel(new Channel(listenfd,false)),
+            listenchannel(new Channel(listenfd,LISTEN)),
             listening(false)
         {
             int fd = socket::socket();

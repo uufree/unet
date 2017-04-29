@@ -20,6 +20,7 @@ namespace unet
     {
         class Timestamp final
         {
+            
             public:
                 explicit Timestamp()
                 {
@@ -32,6 +33,8 @@ namespace unet
                     microseconds(microseconds_)
                 {};
 
+                friend bool operator<(const Timestamp& lhs,Timestamp& rhs);
+                
                 Timestamp(Timestamp& rhs) :
                     microseconds(rhs.microseconds)
                 {};
@@ -41,13 +44,14 @@ namespace unet
                 {
                     microseconds += seconds * KMicroseconds;
                 }
-                
+/*                
                 bool operator<(const Timestamp& lhs)
                 {
                     return microseconds<lhs.microseconds;
                 };
+*/
 
-                bool operator=(const Timestamp& rhs)
+                bool operator==(const Timestamp& rhs)
                 {
                     return microseconds == rhs.microseconds;
                 }
@@ -68,7 +72,12 @@ namespace unet
                 int64_t microseconds;
         };
         
-        inline double timedifference(const Timestamp& lhs,const Timestamp& rhs)
+        bool operator<(const Timestamp& lhs,Timestamp& rhs)
+        {
+            return lhs.microseconds < rhs.microseconds;
+        }
+        
+        inline double timedifference(const Timestamp& lhs,Timestamp& rhs)
         {
             int64_t diff = lhs.getTime() - rhs.getTime();
             return static_cast<double>(diff/Timestamp::KMicroseconds);

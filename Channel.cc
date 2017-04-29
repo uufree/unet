@@ -14,25 +14,23 @@ namespace unet
         const int Channel::KReadEvent = POLLIN;
         const int Channel::KWriteEvent = POLLOUT;
         
-        Channel::Channel(int fd_,bool hasconnection_) : 
+        Channel::Channel(int fd_,ChannelType type_) : 
         fd(fd_),
         event(0),
         revent(0),
         handleeventing(false),
-        hasconnection(hasconnection_),
         tcpconnectionptr(new TcpConnection(fd_)),
         tcpconnectionwptr(tcpconnectionptr),
-        type(CONNECT)
+        type(type_)
         {
             tcpconnectionptr->setWheetChannelCallBack(std::bind(&Channel::disableAll,this));
 
-            if(!hasconnection_)//如果是listenchannel,将ptr reset掉
+            if(type == LISTEN || type == CLOCK)//如果是listenchannel,将ptr reset掉
             {
                 tcpconnectionptr.reset();
                 tcpconnectionwptr.reset();   
-                type = LISTEN;
             }
-            
+            type = type_;
         };
 
         Channel::~Channel()
@@ -88,13 +86,28 @@ namespace unet
                     handleClose();
                 handleeventing = false;
             }
+            else if(type == CLOCK)
+            {
+                handleeventing = true;
+                if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
+                    handleClose();
+                else if(revent & POLLIN)
+                {
+                    if(readcallback)
+                        readcallback();
+                }
+                else
+                    handleClose();
+            }
             else
-            {}
+            {
+                perror("此Channel没有注册类型");
+            }
         }
         
         void Channel::handleClose()
         {//处理正常关闭的情况
-            if(hasconnection)
+            if(type == CONNECT)
             {   
                 TcpConnectionPtr conptr(tcpconnectionwptr.lock());
                 if(conptr)

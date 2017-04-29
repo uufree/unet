@@ -8,32 +8,48 @@
 #ifndef _TIMERQUEUE_H
 #define _TIMERQUEUE_H
 
+#include"Timer.h"
+#include"Timestamp.h"
+#include<set>
+#include<memory>
+#include"Channel.h"
+#include"Mutex.h"
+
 namespace unet
 {
     namespace time
     {
         class TimerQueue final
         {
+            typedef std::pair<Timestamp,Timer*> Entry;
+            typedef std::set<Entry> TimerList;
+            typedef std::unique_ptr<unet::net::Channel> ClockChannel;
+            typedef std::function<void(Channel*)> AddInServerLoop;
+
             public:
-                TimerQueue(EventLoop* loop_);
+                TimerQueue();
                 TimerQueue(const TimerQueue& lhs) = delete;
-                TimerQueue& operator(const TimerQueue& lhs) = delete;
+                TimerQueue& operator=(const TimerQueue& lhs) = delete;
                 ~TimerQueue();
 
                 void addTimer(Timer* timer_);
-            
-            private:
-                typedef std::pair<Timestamp,Timer*> Entry;
-                typedef std::set<Entry> TimerList;
-                
-                void addTimerInLoop(Timer* timer_);
-                void 
 
-                EventLoop* loop;
-                Channel timefdchannel;
+                void setAddInServerLoopCallBack(const AddInServerLoop& cb)
+                {addinserverloop = cb;};
+/*                
+                void addInServerLoop()
+                {channelcallback(timefdchannel.get());};
+*/
+            private:
+                void handleRead();
+
+                const int timefd;
+                ClockChannel timefdchannel;
                 TimerList activetimers;
                 bool handlecalbacking;
-                MutexLock mutexlock;//其他线程会向这个定时器线程写事件
+                Timer* nowtimer;
+                unet::thread::MutexLock lock;
+                AddInServerLoop addinserverloop;
         };
 
     }

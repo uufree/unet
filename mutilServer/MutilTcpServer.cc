@@ -15,10 +15,13 @@ namespace unet
         MutilTcpServer::MutilTcpServer(InetAddress* addr_,int size) :
             current(new thread::Current),
             serveraddr(addr_),
-            acceptor(new MutilAcceptor(addr_,size))
+            acceptor(new MutilAcceptor(addr_,size)),
+            timerqueue(new time::TimerQueue())
         {
             acceptor->setNewConnectionCallBack(std::bind(&MutilTcpServer::newConnectionCallBack,this,std::placeholders::_1));
             acceptor->setAddInServerLoopCallBack(std::bind(&MutilTcpServer::addInServerLoop,this,std::placeholders::_1));
+ 
+            timerqueue->setAddInServerLoopCallBack(std::bind(&MutilTcpServer::addInServerLoop,this,std::placeholders::_1));
         };
         
         MutilTcpServer::~MutilTcpServer()
@@ -29,7 +32,7 @@ namespace unet
 
         Channel* MutilTcpServer::newConnectionCallBack(int fd_)
         {
-            Channel* channel = new Channel(fd_,true);
+            Channel* channel = new Channel(fd_,CONNECT);
             TcpConnectionPtr ptr(channel->getTcpConnectionPtr());
 
             if(readcallback)
@@ -47,6 +50,7 @@ namespace unet
 
         void MutilTcpServer::addInServerLoop(Channel* channel)
         {
+            unet::thread::MutexLockGuard guard(mutex);
             current->addInEpoller(channel);
         };
         
