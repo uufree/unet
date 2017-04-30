@@ -62,7 +62,6 @@ namespace unet
                     if(iter->second->isRepeat())
                     {
                         nowtimer = iter->second;
-                        iter->second->addTimer(now);
                         activetimers.insert({now,nowtimer});
                     }                        
                     activetimers.erase(iter);

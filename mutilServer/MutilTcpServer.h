@@ -9,7 +9,7 @@
 #define _MUTILTCPSERVER_H
 
 #include"MutilAcceptor.h"
-#include"../TimerQueue.h"
+//#include"../TimerQueue.h"
 
 namespace unet
 {   
@@ -50,7 +50,7 @@ namespace unet
                 std::unique_ptr<MutilAcceptor> acceptor;
                 TcpConnectionPtrMap tcpconnectionptrmap;
                 MessageCallBack readcallback,writecallback,drivedcallback;
-                std::unique_ptr<unet::time::TimerQueue> timerqueue;
+//                std::unique_ptr<unet::time::TimerQueue> timerqueue;
                 thread::MutexLock mutex;
         };
     }

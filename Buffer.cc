@@ -207,7 +207,10 @@ namespace unet
                 if(n > 0)
                     continue;
                 else if(n == 0)
+                {
+                    ::chmod(filename,S_IRUSR|S_IWUSR);
                     return 1;
+                }
                 else
                     break;
             }

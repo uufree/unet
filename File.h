@@ -48,7 +48,7 @@ namespace unet
             const std::string& getFilename() const 
             {return filename;}
 
-            const int getFd() const
+            int getFd() const
             {return fd;}
 
         private:

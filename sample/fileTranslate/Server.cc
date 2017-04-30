@@ -21,7 +21,6 @@ using namespace unet::net;
 void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 {//服务端被动处理事务（适用于短连接）,只能在fd资源和内存资源中二选一
     outputbuffer->readInSocket();
-//    outputbuffer->recvFile("/home/uuchen/chenuu.jpeg");
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
@@ -37,7 +36,7 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 int main(int argc,char** argv)
 {
     InetAddress serveraddr(7777);
-    MutilTcpServer server(&serveraddr);
+    MutilTcpServer server(&serveraddr,1);
 
     server.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
     server.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));

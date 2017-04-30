@@ -11,17 +11,16 @@ namespace unet
 {
     namespace net
     {
-        
         MutilTcpServer::MutilTcpServer(InetAddress* addr_,int size) :
             current(new thread::Current),
             serveraddr(addr_),
-            acceptor(new MutilAcceptor(addr_,size)),
-            timerqueue(new time::TimerQueue())
+            acceptor(new MutilAcceptor(addr_,size))
+//            timerqueue(new time::TimerQueue())
         {
             acceptor->setNewConnectionCallBack(std::bind(&MutilTcpServer::newConnectionCallBack,this,std::placeholders::_1));
             acceptor->setAddInServerLoopCallBack(std::bind(&MutilTcpServer::addInServerLoop,this,std::placeholders::_1));
  
-            timerqueue->setAddInServerLoopCallBack(std::bind(&MutilTcpServer::addInServerLoop,this,std::placeholders::_1));
+//            timerqueue->setAddInServerLoopCallBack(std::bind(&MutilTcpServer::addInServerLoop,this,std::placeholders::_1));
         };
         
         MutilTcpServer::~MutilTcpServer()

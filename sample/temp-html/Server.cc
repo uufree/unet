@@ -24,8 +24,8 @@ void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 //如果是用异步的server，删除掉readInSocket()    
     inputbuffer->readInSocket();
     inputbuffer->getCompleteMessageInBuffer(message);
-    std::cout << message << std::endl;
-/*    
+//    std::cout << message << std::endl;
+    
     if(message != nullptr)
     {
         Document docu;
@@ -33,9 +33,8 @@ void readCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
         Value& s = docu["temp"];
         printf("%s\n",message);
         printf("temp: %d\n",s.GetInt());
-        bzero(message,16);
-    }
-*/   
+        bzero(message,32);
+    }   
 }
 
 void writeCallBack(Buffer* inputbuffer,Buffer* outputbuffer)

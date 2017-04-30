@@ -1,3 +1,0 @@
-/home/uuchen/unet/mutilServer/test/CMakeFiles/edit_cache.dir
-/home/uuchen/unet/mutilServer/test/CMakeFiles/rebuild_cache.dir
-/home/uuchen/unet/mutilServer/test/CMakeFiles/server.dir

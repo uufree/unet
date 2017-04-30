@@ -14,6 +14,8 @@
 #include<iostream>
 #include<functional>
 #include"Mutex.h"
+#include<sys/types.h>
+#include<sys/stat.h>
 //目前版本只支持固定大小的数据传输
 
 namespace unet

@@ -15,6 +15,8 @@
 #include"Channel.h"
 #include"Mutex.h"
 
+//将常数时间和其所对应的事件封装起来，并以set的方式进行排序
+
 namespace unet
 {
     namespace time
@@ -24,7 +26,7 @@ namespace unet
             typedef std::pair<Timestamp,Timer*> Entry;
             typedef std::set<Entry> TimerList;
             typedef std::unique_ptr<unet::net::Channel> ClockChannel;
-            typedef std::function<void(Channel*)> AddInServerLoop;
+            typedef std::function<void(unet::net::Channel*)> AddInServerLoop;
 
             public:
                 TimerQueue();
@@ -36,10 +38,7 @@ namespace unet
 
                 void setAddInServerLoopCallBack(const AddInServerLoop& cb)
                 {addinserverloop = cb;};
-/*                
-                void addInServerLoop()
-                {channelcallback(timefdchannel.get());};
-*/
+            
             private:
                 void handleRead();
 

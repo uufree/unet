@@ -19,7 +19,7 @@ namespace unet
 
         Channel* TcpClient::newConnectionCallBack(int fd_)
         {
-            Channel* channel = new Channel(fd_,true);
+            Channel* channel = new Channel(fd_,CONNECT);
             TcpConnectionPtr ptr(channel->getTcpConnectionPtr());
 
             if(readcallback)

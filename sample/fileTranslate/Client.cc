@@ -42,15 +42,21 @@ void drivedCallBack(Buffer* inputbuffer,Buffer* outputbuffer)
 
 int main(int argc,char** argv)
 {
-    InetAddress addr(7777);
-    TcpClient client(&addr);//主动处理事件的能力发生在client对象的构建过程中。server对象可以，但是client不行
+    InetAddress addr("127.0.0.1",7777);
+    TcpClient client;//主动处理事件的能力发生在client对象的构建过程中。server对象可以，但是client不行
     
     client.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setWriteCallBack(std::bind(&writeCallBack,std::placeholders::_1,std::placeholders::_2));
     client.setDrivedCallBack(std::bind(&drivedCallBack,std::placeholders::_1,std::placeholders::_2));
     client.start();
    
-    sleep(10);
+    client.connection(&addr);
+    
+    while(1)
+    {
+        //应用层的GUI代码
+    }
+    
     return 0;
 }
 

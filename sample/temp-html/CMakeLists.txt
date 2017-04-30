@@ -6,7 +6,7 @@ PROJECT(client)
 SET(CMAKE_C_COMPILER g++)
 INCLUDE_DIRECTORIES(/usr/include/pthread)
 
-SET(SERVER Server.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc  ../../EventLoop.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../mutilServer/Current.cc ../../mutilServer/EventLoopThread.cc ../../mutilServer/EventLoopThreadPool.cc ../../mutilServer/MutilAcceptor.cc ../../mutilServer/MutilTcpServer.cc)
+SET(SERVER Server.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc   ../../EventLoop.cc ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../mutilServer/Current.cc ../../mutilServer/EventLoopThread.cc ../../mutilServer/EventLoopThreadPool.cc ../../mutilServer/MutilAcceptor.cc ../../mutilServer/MutilTcpServer.cc)
 
 #SET(SERVER Server.cc ../../Buffer.cc ../../Channel.cc ../../Epoller.cc  ../../File.cc ../../Socket.cc ../../TcpConnection.cc ../../Thread.cc ../../ThreadPool.cc ../../asyncServer/AsyncAcceptor.cc ../../asyncServer/AsyncTcpServer.cc ../../asyncServer/AsyncEventLoop.cc)
 

@@ -54,16 +54,16 @@ int main(int argc,char** argv)
     
     for(int i=0;i<5;++i)
     {
-/*        
+        
         Value& s = docu["temp"];
         s.SetInt(s.GetInt()+1);
         
         buffer.Clear();
         Writer<StringBuffer> writer(buffer);
-        docu.Accept(writer)        
+        docu.Accept(writer);        
         client.writeInAsyncBuffer(buffer.GetString());
-*/
-        client.writeInAsyncBuffer("hello,server!");
+
+//        client.writeInAsyncBuffer("hello,server!");
         sleep(1);
     }
     
