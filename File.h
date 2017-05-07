@@ -19,6 +19,8 @@
 #include<string.h>
 #include<dirent.h>
 #include<iostream>
+#include<vector>
+#include"Mutex.h"
 
 namespace unet
 {
@@ -56,6 +58,25 @@ namespace unet
             std::string filename;
             bool opened,closed;
             int readsize,writesize;
+    };
+
+    class Directory final
+    {
+        public:
+            explicit Directory(const char* path);
+            Directory(const Directory& lhs) = delete;
+            Directory& operator=(const Directory& lhs) = delete;
+            ~Directory();
+            
+            char* getDirBuffer() const;
+            void update();
+            void addInDirectoryList(const char* filename);
+
+        private:
+            std::string directorypath;
+            std::vector<std::string> directorylist;
+            char* directorybuffer;
+            thread::MutexLock lock;
     };
 }
             

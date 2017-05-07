@@ -83,6 +83,9 @@ namespace unet
                 int getFd()
                 {return fd;};
                 
+                void setFd(int fd_)
+                {fd =  fd_;};
+
                 void setHandleCloseCallBack(const CloseCallBack& cb)
                 {closecallback = cb;};
 
