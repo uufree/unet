@@ -47,16 +47,19 @@ namespace unet
             class Socket final
             {//用RAII处理sockfd
                 enum SocketType{CONNECT,LISTEN};
+                
+                friend bool operator==(const Socket& lhs,const Socket& rhs);
+                
                 public:
                     explicit Socket(SocketType type_);
+                    explicit Socket(int connectfd);
+
                     explicit Socket(const Socket& socketfd_);
                     explicit Socket(Socket&& socketfd);
-                    bool operator==(const Socket& lhs);
+                    Socket& operator=(const Socket& lhs);
+                    Socket& operator=(Socket&& lhs);
                     ~Socket();
                     
-                    const Socket& operator=(const Socket& lhs) = delete;
-                    const Socket& operator=(const Socket&& lhs) = delete;
-
                     int getFd() const
                     {  
                         assert(socketfd >= 0);
@@ -101,6 +104,14 @@ namespace unet
                     mutable int socketfd;
                     unsigned char bit;
             };
+            
+            bool operator==(const Socket& lhs,const Socket& rhs)
+            {
+                if(rhs.socketfd == lhs.socketfd && rhs.bit == lhs.bit && rhs.type == lhs.type)
+                    return true;
+                else
+                    return false;
+            }
 
             int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
             void listen(int socketfd);
@@ -120,6 +131,10 @@ namespace unet
             void setNonBlockAndCloseOnExec(Socket& sock);
             void setReuseAddr(Socket& sock);
             void setReusePort(Socket& sock);
+            
+            void listen(Socket& lhs);
+            void connect(Socket& lhs,InetAddress* addr);
+            void bind(Socket& lhs,InetAddress* addr);
         }
     }
 }

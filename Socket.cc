@@ -19,6 +19,11 @@ namespace unet
                 bit(0x00)
             {};
 
+            Socket::Socket(int connectfd) : type(CONNECT),
+                socketfd(connectfd),
+                bit(0x00)
+            {};
+
             Socket::Socket(const Socket& lhs) : type(lhs.type),
                 socketfd(lhs.socketfd),
                 bit(lhs.bit)
@@ -28,6 +33,32 @@ namespace unet
                 socketfd(std::move(lhs.socketfd)),
                 bit(std::move(lhs.bit))
             {};
+
+            Socket& Socket::operator=(const Socket& lhs)
+            {
+                if(lhs == *this)
+                    return *this;
+                else
+                {
+                    close(socketfd);
+                    this->socketfd = lhs.socketfd;
+                    this->bit = lhs.bit;
+                }
+                return *this;
+            }
+
+            Socket& Socket::operator=(Socket&& lhs)
+            {
+                if(lhs == *this)
+                    return *this;
+                else
+                {
+                    close(socketfd);
+                    this->socketfd = std::move(lhs.socketfd);
+                    this->bit = std::move(lhs.bit);
+                }
+                return *this;
+            }
             
             Socket::~Socket()
             {
@@ -163,6 +194,21 @@ namespace unet
             {
                 setReusePort(sock.getFd());
                 sock.setReusePortBit();
+            }
+            
+            void listen(Socket& lhs)
+            {
+                listen(lhs.getFd());
+            }
+
+            void connect(Socket& lhs,InetAddress* addr)
+            {
+                connect(lhs.getFd(),addr);
+            }
+
+            void bind(Socket& lhs,InetAddress* addr)
+            {
+                bind(lhs.getFd(),addr);
             }
 
         }
