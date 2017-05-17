@@ -20,60 +20,62 @@ namespace unet
 {
     namespace net
     {
-        class InetAddress final
-        {   
-            public:
+        namespace socket
+        {
+            class InetAddress final
+            {   
                 static const int IPV4SIZE = 16;
                 static const int IPV6SIZE = 32;
-                
-                InetAddress(const InetAddress& addr) = delete;
-                InetAddress& operator=(const InetAddress& addr_) = delete;
-                ~InetAddress() {};
+                friend bool operator==(const InetAddress& lhs,const InetAddress& rhs);
 
-                explicit InetAddress(uint16_t port)
-                {
-                    bzero(&addr,sizeof(addr));
-                    addr.sin_port = htons(port);
-                    addr.sin_family = AF_INET;
-                    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-                };
+                public:
+                    explicit InetAddress(int port);            
+                    explicit InetAddress(uint16_t port);
+                    explicit InetAddress(const std::string& ip,int port);
+                    explicit InetAddress(const std::string& ip,uint16_t port);
 
-                explicit InetAddress(const std::string& ip,uint16_t port) : ip_(ip)
-                {  
-                    bzero(&addr,sizeof(addr));
-                    addr.sin_port = htons(port);
-                    addr.sin_family = AF_INET;
-                    inet_pton(AF_INET,ip.c_str(),&addr.sin_addr.s_addr);
-//                    addr.sin_addr.s_addr = htonl(addr.sin_addr.s_addr);
-                };   
+                    InetAddress(const InetAddress& lhs); 
+                    InetAddress(InetAddress&& lhs);
+                    InetAddress& operator=(const InetAddress& lhs);
+                    InetAddress& operator=(InetAddress&& lhs);
+                    ~InetAddress();
+                    
 
-                std::string getIpString()
-                {
-                    return ip_;
-                };
+                    const std::string& getIpString() const
+                    {return ip;};
+                    
+                    const sockaddr_in& getSockaddr() const
+                    {return addr;}
             
-                uint32_t getIp() 
-                {
-                    in_addr_t addr_ = ntohl(addr.sin_addr.s_addr);
-                    return static_cast<uint32_t>(addr_);
-                };   
+                    uint32_t getIp() const
+                    {
+                        in_addr_t addr_ = ntohl(addr.sin_addr.s_addr);
+                        return static_cast<uint32_t>(addr_);
+                    };   
 
-                uint16_t getPort() 
-                {
+                    uint16_t getPort() 
+                    {
+                        in_port_t port = ntohs(addr.sin_port);
+                        return static_cast<uint16_t>(port);
+                    };
 
-                    in_port_t port = ntohs(addr.sin_port);
-                    return static_cast<uint16_t>(port);
-                };
 
-                sockaddr_in getSockaddr() const
-                {
-                    return addr;
-                }
+                private:
+                    void init(uint16_t port);
+                
+                private:
+                    struct sockaddr_in addr;
+                    std::string ip = "INADDR_ANY";
+            };
 
-            private:
-                struct sockaddr_in addr;
-                std::string ip_ = "INADDR_ANY";//网络字节序的准换有问题，所以只能这么写
-        };
+            bool operator==(const InetAddress& lhs,const InetAddress& rhs)
+            {
+                if(lhs.addr.sin_port == rhs.addr.sin_port && lhs.ip == rhs.ip && lhs.addr.sin_port == rhs.addr.sin_port && lhs.addr.sin_addr.s_addr == rhs.addr.sin_addr.s_addr)
+                    return true;
+                else
+                    return false;
+            }
+        }
     }
 }
 

@@ -8,8 +8,6 @@
 #ifndef _FILE_H
 #define _FILE_H
 
-//这个类的作用是封装文件描述符的操作，拒绝使用C++提供的stringstream
-
 #include<assert.h>
 #include<errno.h>
 #include<unistd.h>
@@ -24,60 +22,63 @@
 
 namespace unet
 {
-    class File final
+    namespace file
     {
-        public:
-            explicit File(const char* filename_);
-            File(const File&) = delete;
-            File& operator=(const File&) = delete;
-            ~File()
-            {
-                assert(!closed);
-                assert(::close(fd) == 0);
-            }
+        class File final
+        {
+            public:
+                explicit File(const char* filename_);
+                File(const File&) = delete;
+                File& operator=(const File&) = delete;
+                ~File()
+                {
+                    assert(!closed);
+                    assert(::close(fd) == 0);
+                }
 
-            void readn(char* cptr,size_t nbytes);
+                void readn(char* cptr,size_t nbytes);
             
-            int getReadSize() const
-            {return readsize;};
+                int getReadSize() const
+                {return readsize;};
             
 
-            void writen(char* cptr,size_t nbytes);
+                void writen(char* cptr,size_t nbytes);
     
-            int getWriteSize() const
-            {return writesize;};
+                int getWriteSize() const
+                {return writesize;};
 
-            const std::string& getFilename() const 
-            {return filename;}
+                const std::string& getFilename() const 
+                {return filename;}
 
-            int getFd() const
-            {return fd;}
+                int getFd() const
+                {return fd;}
 
-        private:
-            int fd;
-            std::string filename;
-            bool opened,closed;
-            int readsize,writesize;
-    };
+            private:
+                int fd;
+                std::string filename;
+                bool opened,closed;
+                int readsize,writesize;
+        };
 
-    class Directory final
-    {
-        public:
-            explicit Directory(const char* path);
-            Directory(const Directory& lhs) = delete;
-            Directory& operator=(const Directory& lhs) = delete;
-            ~Directory();
+        class Directory final
+        {
+            public:
+                explicit Directory(const char* path);
+                Directory(const Directory& lhs) = delete;
+                Directory& operator=(const Directory& lhs) = delete;
+                ~Directory();
             
-            char* getDirBuffer() const;
-            void update();
-            void addInDirectoryList(const char* filename);
+                char* getDirBuffer() const;
+                void update();
+                void addInDirectoryList(const char* filename);
 
-        private:
-            std::string directorypath;
-            std::vector<std::string> directorylist;
-            char* directorybuffer;
-            thread::MutexLock lock;
-    };
+            private:
+                std::string directorypath;
+                std::vector<std::string> directorylist;
+                char* directorybuffer;
+                thread::MutexLock lock;
+        };
+    }
 }
             
 #endif
