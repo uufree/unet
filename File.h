@@ -20,64 +20,67 @@
 #include<vector>
 #include"Mutex.h"
 
+//约定只能使用全局地址
+
 namespace unet
 {
     namespace file
     {
         class File final
         {
+            friend bool operator==(const File& lhs,const File& rhs);
+            enum OperatorType{O_WRITE,O_C_WRITE,O_READ,N_WRITE};
+
             public:
-                explicit File(const char* filename_);
-                File(const File&) = delete;
-                File& operator=(const File&) = delete;
-                ~File()
-                {
-                    assert(!closed);
-                    assert(::close(fd) == 0);
-                }
+                explicit File(const char* filename_,OperatorType type_);
+                explicit File(const std::string& filename_,OperatorType type_);
 
-                void readn(char* cptr,size_t nbytes);
-            
-                int getReadSize() const
-                {return readsize;};
-            
-
-                void writen(char* cptr,size_t nbytes);
-    
-                int getWriteSize() const
-                {return writesize;};
+                File(File& lhs);
+                File(File&& lhs);
+                File& operator=(File& lhs);
+                File& operator=(File&& lhs);
+                ~File();  
 
                 const std::string& getFilename() const 
                 {return filename;}
+                
+                const std::string& getGlobalFilename() const
+                {return g_filename;}
+
+                const std::string& getFileowner() const
+                {return fileowner;};
+
+                const std::string getFiletype() const
+                {return filetype;};
+                
+                void setSeekZero() const
+                {};
 
                 int getFd() const
                 {return fd;}
+                
+                bool isOpened() const
+                {return opened;};
+
+            private:
+                void init();
+                int switchOperatorType(OperatorType type_);
 
             private:
                 int fd;
+                bool opened;
                 std::string filename;
-                bool opened,closed;
-                int readsize,writesize;
+                std::string g_filename;
+                std::string fileowner;
+                std::string filetype;
+                OperatorType type;
         };
+        
+        int readn(int fd,char* cptr,size_t nbytes);
+        int writen(int fd,char* cptr,size_t nbytes);
 
-        class Directory final
-        {
-            public:
-                explicit Directory(const char* path);
-                Directory(const Directory& lhs) = delete;
-                Directory& operator=(const Directory& lhs) = delete;
-                ~Directory();
-            
-                char* getDirBuffer() const;
-                void update();
-                void addInDirectoryList(const char* filename);
-
-            private:
-                std::string directorypath;
-                std::vector<std::string> directorylist;
-                char* directorybuffer;
-                thread::MutexLock lock;
-        };
+        void readn(const File& lhs,char* cptr,size_t nbytes);
+        void writen(const File& lhs,char* cptr,size_t nbytes);
     }
 }
             

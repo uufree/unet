@@ -18,6 +18,7 @@
 #include<netinet/tcp.h>
 #include<fcntl.h>
 #include<unistd.h>
+#include"error.h"
 /*在Socket类中用8位来标志socket属性，最高的两位保留不用，从左到右依次为：
  * used
  * keepalive
@@ -30,14 +31,6 @@
 
 namespace unet
 {
-    inline void handleError(int saveErrno)
-    {   
-        char buf[128];
-        bzero(buf,128);
-        perror(strerror_r(saveErrno,buf,128));
-        exit(1);
-    }
-
     namespace net
     {
         namespace socket

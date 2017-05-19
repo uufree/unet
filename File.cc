@@ -6,153 +6,242 @@
  ************************************************************************/
 
 #include"File.h"
+#include"error.h"
 
 namespace unet
 {
-    File::File(const char* filename_)
-    {
-        char* index = strrchr(const_cast<char*>(filename_),'/');
-        char buf[64];
-        bzero(buf,64);
-        if(index != NULL)
+    namespace file
+    { 
+        File::File(const char* filename_,OperatorType type_) :       opened(false),
+            g_filename(filename_),
+            type(type_)
         {
-            ++index;
-            filename = index;
-
-            int size = strlen(filename_) - strlen(index);
-            strncpy(buf,filename_,size);
+            init();
         }
-        else
-        {
-            filename = filename_;
-            buf[0] = '/';
-        }
-        
-        bool isoldfile = false;
-        DIR* dp;
-        struct dirent* dirp;
 
-        if((dp=opendir(buf)) != NULL)
+        File::File(const std::string& filename_,OperatorType type_) : opened(false),
+        g_filename(filename_),
+        type(type_)
         {
-            while((dirp=readdir(dp)) != NULL)
+            init();
+        }
+             
+        void File::init()
+        {
+            char* index = strrchr(const_cast<char*>(g_filename.c_str()),'/');
+            char buf[64];
+            bzero(buf,64);
+            if(index != NULL)
             {
-                if((strcmp(dirp->d_name,index)) == 0)
-                    isoldfile = true;
+                ++index;
+                filename = index;
             }
+            else
+            {
+                perror("请输入全局地址");
+                exit(1);
+            }
+            
+            fd = switchOperatorType(type);     
+            
+            //获得文件的所有者和类型信息         
         }
 
-        
-        if(!isoldfile)
-            fd = ::open(filename_,O_RDWR|O_APPEND|O_CLOEXEC|O_CREAT|O_EXCL|O_TRUNC);
-        else
-            fd = ::open(filename_,O_RDWR|O_APPEND);
-        
-        assert(fd >= 0);
-        
-        opened = true;
-        closed = false;
-
-    }
-    
-    void File::readn(char* cptr,size_t nbytes)
-    {
-        int nleft,nread;
-        
-        readsize = 0;
-        nleft = nbytes;
-
-        while(nleft > 0)
+        int File::switchOperatorType(OperatorType type_)
         {
-            if((nread=read(fd,cptr,nleft)) < 0)
+            int fd;
+            switch (type_)
             {
-                if(errno == EINTR)
-                    nread = 0;
-                else
+                case O_WRITE:
                 {
-                    perror("readn error!\n");
-                    exit(0);
+                    fd = ::open(g_filename.c_str(),O_RDWR|O_APPEND);    
+                    if(fd < 0)
+                        unet::handleError(errno);
+                    opened = true;
+                    break;
+                }
+                case O_READ:
+                {
+                    fd = ::open(g_filename.c_str(),O_READ);
+                    if(fd < 0)
+                        unet::handleError(errno);
+                    opened = true;
+                    break;
+                }
+                case O_C_WRITE:
+                {
+                    fd = ::open(g_filename.c_str(),O_TRUNC|O_APPEND|O_RDWR);
+                    if(fd < 0)
+                        unet::handleError(errno);
+                    opened = true;
+                    break;
+                }
+                case N_WRITE:
+                {
+                    fd = ::open(g_filename.c_str(),O_CREAT|O_RDWR|O_APPEND);
+                    if(fd < 0)
+                        unet::handleError(errno);
+                    opened = true;
+                    break;
                 }
             }
-            else if(nread == 0)
-                break;
-            nleft -= nread;
-            cptr += nread;
+            return fd;
         }
-        readsize = nbytes - nleft;
-    }
-            
-    void File::writen(char* cptr,size_t nbytes)
-    {
-        int nleft,nwriten;
-    
-        nleft = nbytes;
         
-        writesize = 0;
-        while(nleft > 0)
+        File::File(File& lhs) : opened(false),
+            filename(lhs.filename),
+            g_filename(lhs.g_filename),
+            fileowner(lhs.fileowner),
+            filetype(lhs.filetype),
+            type(lhs.type)
         {
-            if((nwriten=write(fd,cptr,nleft)) <= 0)
+            fd = switchOperatorType(type);
+            opened = true;
+            
+            if(::close(lhs.fd) < 0)
+                unet::handleError(errno);
+            lhs.opened = false;
+
+            setSeekZero();
+        }
+        
+        File::File(File&& lhs) : opened(false),
+            filename(std::move(lhs.filename)),
+            g_filename(std::move(lhs.filename)),
+            fileowner(lhs.fileowner),
+            filetype(lhs.filetype),
+            type(lhs.type)
+        {
+            fd = switchOperatorType(type);
+            opened = true;
+            
+            if(::close(lhs.fd) < 0)
+                unet::handleError(errno);
+            lhs.opened = false;
+
+            setSeekZero();
+        }
+        
+        File& File::operator=(File& lhs)
+        {
+            if(*this == lhs)
+                return *this;
+
+            if(::close(this->fd) < 0)
+                unet::handleError(errno);
+            this->opened = false;
+            
+            if(::close(lhs.fd) < 0)
+                unet::handleError(errno);
+            this->opened = false;
+
+            this->filename = lhs.filename;
+            this->g_filename = lhs.g_filename;
+            this->fileowner = lhs.fileowner;
+            this->filetype = lhs.type;
+            this->fd = switchOperatorType(this->type);
+            this->opened = true;
+
+            setSeekZero();
+            return *this;
+        }
+
+        File& File::operator=(File&& lhs)
+        {
+            if(*this == lhs)
+                return *this;
+
+            if(::close(this->fd) < 0)
+                unet::handleError(errno);
+            this->opened = false;
+            
+            if(::close(lhs.fd) < 0)
+                unet::handleError(errno);
+            this->opened = false;
+
+            this->filename = std::move(lhs.filename);
+            this->g_filename = std::move(lhs.g_filename);
+            this->fileowner = std::move(lhs.fileowner);
+            this->filetype = std::move(lhs.type);
+            this->fd = switchOperatorType(this->type);
+            this->opened = true;
+
+            setSeekZero();
+            return *this;
+        }
+        
+        File::~File()
+        {
+            if(opened)
             {
-                if(nwriten<0 && errno!=EINTR)
+                if(::close(fd) < 0)
+                    unet::handleError(errno);
+            }
+        }
+       
+        int readn(int fd,char* cptr,size_t nbytes)
+        {
+            int nleft,nread;
+        
+            int readsize = 0;
+            nleft = nbytes;
+
+            while(nleft > 0)
+            {
+                if((nread=read(fd,cptr,nleft)) < 0)
+                {
+                    if(errno == EINTR)
+                        nread = 0;
+                    else
+                    {
+                        perror("readn error!\n");
+                        exit(0);
+                    }
+                }
+                else if(nread == 0)
+                    break;
+                nleft -= nread;
+                cptr += nread;
+            }
+            readsize = nbytes - nleft;
+            return readsize;
+        }
+            
+        int writen(int fd,char* cptr,size_t nbytes)
+        {
+            int nleft,nwriten;
+    
+            nleft = nbytes;
+            int writesize = 0;
+            while(nleft > 0)
+            {
+                if((nwriten=write(fd,cptr,nleft)) <= 0)
+                {
+                    if(nwriten<0 && errno!=EINTR)
                     nwriten = 0;
-                else
-                {
-                    perror("writen error!\n");
-                    exit(0);
+                    else
+                    {
+                        perror("writen error!\n");
+                        exit(0);
+                    }
                 }
+                nleft -= nwriten;
+                cptr += nwriten;
             }
-            nleft -= nwriten;
-            cptr += nwriten;
+            writesize  = nbytes - nleft;
+            return writesize;
         }
-        writesize  = nbytes - nleft;
-    }
 
-    Directory::Directory(const char* path) : directorypath(path),
-        lock()
-    {
-        directorybuffer = new char[4096];
-        update();
-    }
-
-    Directory::~Directory()
-    {
-        delete [] directorybuffer;
-    }
-    
-    char* Directory::getDirBuffer() const 
-    {
-        return directorybuffer;
-    }
-
-    void Directory::update()
-    {
-        thread::MutexLockGuard guard(lock);
-        DIR* dp = NULL;
-        struct dirent* drip = NULL;
-
-        assert((dp=::opendir(directorypath.c_str())) != NULL);
-
-        while((drip=readdir(dp)) != NULL)
+        void readn(const File& lhs,char* cptr,size_t nbytes)
         {
-            if((strcmp(drip->d_name,".")==0) || (strcmp(drip->d_name,"..")==0))
-                continue;
-            
-            directorylist.push_back(drip->d_name);
+            if(lhs.isOpened())
+                readn(lhs.getFd(),cptr,nbytes);
         }
-        memset(directorybuffer,'\0',4096);
 
-        for(auto iter=directorylist.cbegin();iter!=directorylist.cend();++iter)
+        void writen(const File& lhs,char* cptr,size_t nbytes)
         {
-            strcat(directorybuffer,iter->c_str());
-            strcat(directorybuffer,"\t");
+            if(lhs.isOpened())
+                writen(lhs.getFd(),cptr,nbytes);
         }
     }
-
-    void Directory::addInDirectoryList(const char* filename)
-    {
-        thread::MutexLockGuard guard(lock);
-        directorylist.push_back(filename);
-        strcat(directorybuffer,filename);
-        strcat(directorybuffer,"\t");
-    }
-    
 }
