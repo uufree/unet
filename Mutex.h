@@ -11,6 +11,7 @@
 #include<pthread.h>
 #include<sys/syscall.h>
 #include<unistd.h>
+#include"error.h"
 
 namespace unet
 {
@@ -29,26 +30,30 @@ namespace unet
             public:
                 explicit MutexLock() : pid(0)
                 {
-                    pthread_mutex_init(&mutex,NULL);
+                    if(pthread_mutex_init(&mutex,NULL) < 0)
+                        unet::handleError(errno);
                 };
+            
+                ~MutexLock()
+                {
+                    if(pthread_mutex_destroy(&mutex) < 0)
+                        unet::handleError(errno);
+                }
 
                 MutexLock(const MutexLock&) = delete;
                 MutexLock& operator=(const MutexLock&) = delete;
                 MutexLock(MutexLock&&) = delete;
+                MutexLock& operator=(MutexLock&&) = delete;
 
                 bool isLockInThisThread() const
                 {
                     return pid == now::pid();
                 };
 
-                const pid_t getPid()
-                {
-                    return pid;
-                }
-
                 void lock()
                 {
-                    ::pthread_mutex_lock(&mutex);
+                    if(pthread_mutex_lock(&mutex) < 0)
+                        handleError(errno);
                     pid = now::pid();
                 };
 
@@ -59,14 +64,10 @@ namespace unet
 
                 void unlock()
                 {
+                    if(pthread_mutex_unlock(&mutex) < 0)
+                        handleError(errno);
                     pid = 0;
-                    ::pthread_mutex_unlock(&mutex);
                 };
-            
-                ~MutexLock()
-                {
-                    ::pthread_mutex_destroy(&mutex);
-                }
 
             private:
                 pid_t pid;
@@ -89,10 +90,11 @@ namespace unet
                 MutexLockGuard(MutexLockGuard&) = delete;
                 MutexLockGuard& operator=(const MutexLockGuard&) = delete;   
                 MutexLockGuard(MutexLockGuard&&) = delete;
+                MutexLockGuard& operator=(MutexLockGuard&&) = delete;
 
             private:
                 MutexLock& mutex;
-        }; 
+        };
     }
 }
 

@@ -11,48 +11,48 @@
 #include<pthread.h>
 #include<functional>
 #include<assert.h>
-
+#include<iostream>
+#include"error.h"
 
 namespace unet
 {
     namespace thread
     {
+        typedef std::function<void()> ThreadFunc;
         void* runInThread(void* arg);
 
         class Thread final
         {
-            typedef std::function<void()> ThreadFunc;
-            
             public:
-                explicit Thread() : threadid(0)
-                {};
-                
-                explicit Thread(const ThreadFunc& lhs) : threadid(0)
-                {threadfunc = lhs;};
-
+                explicit Thread();
+                explicit Thread(const ThreadFunc& lhs);
+           
                 Thread(const Thread& lhs);
                 Thread(Thread&& lhs);
                 Thread& operator=(const Thread& lhs);
                 Thread& operator=(Thread&& lhs);
+
                 ~Thread();
                 
-                int start();
-                int join();
+                void start();
+                void join();
+            
+                bool isStart() const 
+                {return isstart;};
 
                 void setThreadCallBack(const ThreadFunc& cb)
                 {threadfunc = cb;};
 
-                pthread_t getThreadId()
+                pthread_t getThreadId() const 
                 {return threadid;};  
 
             private:
                 pthread_t threadid;
+                bool isstart;
                 ThreadFunc threadfunc;
         };
     }
-
 }
-            
-            
+                        
 #endif
 

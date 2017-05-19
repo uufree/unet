@@ -8,7 +8,6 @@
 #ifndef _CONDITION_H
 #define _CONDITION_H
 
-#include<pthread.h>
 #include"Mutex.h"
 
 namespace unet
@@ -20,55 +19,45 @@ namespace unet
             public:
                 explicit Condition(MutexLock& mutex_) : mutex(mutex_)
                 {
-                    pthread_cond_init(&cond,NULL);
+                    if(pthread_cond_init(&cond,NULL) < 0)
+                        unet::handleError(errno);
                 }
+            
+                Condition(const Condition& lhs) = delete;
+                Condition(Condition&& lhs) = delete;
+                Condition& operator=(const Condition& lhs) = delete;
+                Condition& operator=(Condition&& lhs) = delete;
 
                 ~Condition()
                 {
-                    pthread_cond_destroy(&cond);
+                    if(pthread_cond_destroy(&cond) < 0)
+                        unet::handleError(errno);
                 }
 
                 void notify()
                 {
-                    pthread_cond_signal(&cond);
+                    if(pthread_cond_signal(&cond) < 0)
+                        unet::handleError(errno);
                 }
 
                 void notifyAll()
                 {
-                    pthread_cond_broadcast(&cond);
+                    if(pthread_cond_broadcast(&cond) < 0)
+                        unet::handleError(errno);
                 }
 
                 void wait()
                 {
-//                    assert(mutex.getPid() != 0);//mutex is locked
-                    pthread_cond_wait(&cond,mutex.getMutex());    
+                    if(pthread_cond_wait(&cond,mutex.getMutex()) < 0)
+                        unet::handleError(errno);
                 }
-
+    
             private:
                 MutexLock& mutex;
                 pthread_cond_t cond;
         };
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
 

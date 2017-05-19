@@ -16,6 +16,8 @@ namespace unet
     {
         class Directory final
         {
+            friend bool operator==(const Directory& lhs,const Directory& rhs);
+
             public:
                 explicit Directory(const char* path);
                 explicit Directory(const std::string& lhs);
@@ -27,17 +29,25 @@ namespace unet
                 ~Directory();
             
                 const std::string& getDirBuffer() const;
-                void update();
                 void addInDirectoryList(const std::string& filename);
+
+            private:
+                void update(const std::string& lhs);
 
             private:
                 std::string directorypath;
                 std::vector<std::string> directorylist;
-                std::string buffer;
+                std::string directoryBuffer;
         };
+
+        bool operator==(const Directory& lhs,const Directory& rhs)
+        {
+            if(lhs.directorypath == rhs.directorypath)
+                return true;
+            else
+                return false;
+        }
     }
-
-
 }
 
 #endif

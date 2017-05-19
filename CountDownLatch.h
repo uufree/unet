@@ -23,6 +23,7 @@ namespace unet
                 CountDownLatch(const CountDownLatch&) = delete;
                 CountDownLatch(CountDownLatch&&) = delete;
                 CountDownLatch& operator=(const CountDownLatch&) = delete;
+                CountDownLatch& operator=(CountDownLatch&&) = delete;
 
                 void countDown()
                 {

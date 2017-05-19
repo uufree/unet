@@ -9,8 +9,9 @@
 #define _THREADPOOL_H
 
 #include"Thread.h"
+#include"Mutex.h"
+#include"Condition.h"
 #include<deque>
-#include<map>
 #include<memory>
 
 namespace unet
@@ -20,66 +21,55 @@ namespace unet
         class ThreadPool final
         {
             typedef std::function<void()> ThreadFunc;
-            typedef std::map<pthread_t,Thread> ThreadMap;
+            typedef std::deque<ThreadFunc> TaskQueue;
 
             public:
-                ThreadPool(int size);
+                explicit ThreadPool(int size = 2) : 
+                    started(false),
+                    threadsize(size),
+                    threadlistptr(new Thread[size]),
+                    mutex(),
+                    cond(mutex)
+                {};
+
+                explicit ThreadPool(int size,const ThreadFunc& cb) : 
+                    started(false),
+                    threadsize(size),
+                    threadlistptr(new Thread[size]),
+                    threadfunc(cb),
+                    mutex(),
+                    cond(mutex)
+                {};
                 
-                ThreadPool(const ThreadPool& lhs) = delete;
-                ThreadPool& operator=(const ThreadPool& lhs) = delete;
+                ThreadPool(const ThreadPool& lhs);
+                ThreadPool(ThreadPool&& lhs);
+                ThreadPool& operator=(const ThreadPool& lhs);
                 
                 ~ThreadPool();
 
 //public interface
-                void setThreadCallBack(Thread&& cb)
+                void setThreadCallBack(const ThreadFunc& cb)
                 {
-                    thread = cb;
-                };
-
-                void setThreadCallBack(const Thread& cb)
-                {
-                    thread = cb;
+                    if(!started)
+                        threadfunc = cb;
                 }
 
                 void start();
                 void joinAll();
+                void addInTaskQueue(const ThreadFunc& task);
+                ThreadFunc getTaskInTaskQueue();
 
             private:
+                bool started;
                 const int threadsize;
-                ThreadMap threadmap;
-                Thread thread;
+                Thread* threadlistptr;
+                ThreadFunc threadfunc;
+                TaskQueue taskqueue;
+                MutexLock mutex;
+                Condition cond;
         };
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
 

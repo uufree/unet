@@ -7,38 +7,86 @@
 
 #include"ThreadPool.h"
 
-namespace unet
+namespace thread
 {
-    namespace thread
+    ThreadPool::~ThreadPool()
     {
-        ThreadPool::ThreadPool(int size) : 
-        threadsize(size)
-        {};
+        started = false;
+        for(int i=0;i<threadsize;++i)
+            ::pthread_detach(threadlistptr[i].getThreadId());
 
-        ThreadPool::~ThreadPool()
-        {
-            for(auto iter=threadmap.begin();iter!=threadmap.end();++iter)
-            {
-                ::pthread_detach(iter->first);
-            }
-        }
+        delete [] threadlistptr;
+    }
+    
+    ThreadPool::ThreadPool(const ThreadPool& lhs) : 
+        started(false),
+        threadsize(lhs.threadsize),
+        threadlistptr(new Thread[threadsize]),
+        threadfunc(lhs.threadfunc),
+        mutex(),
+        cond(mutex)
+    {};
+    
+    ThreadPool::ThreadPool(ThreadPool&& lhs) : 
+        started(false),
+        threadsize(lhs.threadsize),
+        threadlistptr(new Thread[threadsize]),
+        threadfunc(lhs.threadfunc),
+        mutex(),
+        cond(mutex)
+    {};
 
-        void ThreadPool::start()
+    ThreadPool& ThreadPool::operator=(const ThreadPool& lhs)
+    {
+        assert(!started);
+        delete [] threadlistptr;
+        threadlistptr = new Thread[threadsize];
+            
+        threadfunc = lhs.threadfunc;
+        taskqueue.clear();
+
+        return *this;
+    }
+
+    void ThreadPool::start()
+    {
+        if(!started)
         {
             for(int i=0;i<threadsize;++i)
             {
-                thread.start();
-                threadmap.insert({thread.getThreadId(),thread});
+                threadlistptr[i].setThreadCallBack(threadfunc);
+                threadlistptr[i].start();
             }
+            started = true;
         }
+    }
 
-        void ThreadPool::joinAll()
+    void ThreadPool::joinAll()
+    {
+        assert(started);
+        for(int i=0;i<threadsize;++i)
+            threadlistptr[i].join();
+    }
+
+    void ThreadPool::addInTaskQueue(const ThreadFunc& task)
+    {
+        if(started)
         {
-            for(auto iter=threadmap.begin();iter!=threadmap.end();++iter)
-            {
-                ::pthread_join(iter->first,NULL);
-                threadmap.erase(iter);
-            }
+            MutexLockGuard guard(mutex);
+            taskqueue.push_back(task);
+        
+            cond.notify();
         }
+    }
+
+    ThreadFunc ThreadPool::getTaskInTaskQueue()
+    {
+        MutexLockGuard guard(mutex);
+        while(taskqueue.empty())
+            cond.wait();
+        
+        ThreadFunc func(taskqueue.front());
+        taskqueue.pop_front();
+        return func;
     }
 }

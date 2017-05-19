@@ -6,63 +6,79 @@
  ************************************************************************/
 
 #include"Thread.h"
-#include<pthread.h>
+#include<iostream>
 
 namespace unet
 {
     namespace thread
-    {
+    {    
         void* runInThread(void* arg)
         {
-            typedef std::function<void ()> ThreadFunc;
             ThreadFunc* thread(static_cast<ThreadFunc*>(arg));
-
             (*thread)();
             return 0;
         };
-       
-        Thread::Thread(const Thread& lhs)
-        {
-            threadfunc = lhs.threadfunc;
-            threadid = lhs.threadid;
-        }
 
-        Thread::Thread(Thread&& lhs)
+        Thread::Thread() : threadid(0),
+            isstart(false)
+        {};
+
+        Thread::Thread(const ThreadFunc& lhs) : threadid(0),
+            isstart(false),
+            threadfunc(lhs)
+        {};
+       
+        Thread::~Thread()
         {
-            
-            threadfunc = lhs.threadfunc;
-            threadid = lhs.threadid;
+            if(isstart)
+                assert(::pthread_detach(threadid) == 0 && threadid != 0);
         }
+    
+        Thread::Thread(const Thread& lhs) : threadid(0),
+            isstart(false),
+            threadfunc(lhs.threadfunc)
+        {};
+
+        Thread::Thread(Thread&& lhs) : threadid(0),
+            isstart(false),
+            threadfunc(lhs.threadfunc)
+        {};
 
         Thread& Thread::operator=(const Thread& lhs)
         {
+            threadid = 0;
+            isstart = false;
+            threadfunc = lhs.threadfunc;
 
-            this->threadfunc = lhs.threadfunc;
-            this->threadid = lhs.threadid;
             return *this;
         }
 
         Thread& Thread::operator=(Thread&& lhs)
         {
+            threadid = 0;
+            isstart = false;
 
-            this->threadfunc = lhs.threadfunc;
-            this->threadid = lhs.threadid;
+            threadfunc = std::move(lhs.threadfunc);
             return *this;
         }
 
-        Thread::~Thread()
+        void Thread::start()
         {
-            ::pthread_detach(threadid);
+            if(!isstart)
+            {
+                 assert(::pthread_create(&threadid,NULL,runInThread,&threadfunc) == 0);
+                 isstart = true;
+            }
         }
 
-        int Thread::start()
+        void Thread::join()
         {
-            return pthread_create(&threadid,NULL,unet::thread::runInThread,&threadfunc);
-        }
-
-        int Thread::join()
-        {
-            return pthread_join(threadid,NULL);
+            if(isstart)
+            {
+                assert(::pthread_join(threadid,NULL) == 0 && threadid != 0);
+                threadid = 0;
+                isstart = false;
+            }
         }
     }
 }

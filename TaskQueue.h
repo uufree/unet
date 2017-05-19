@@ -27,6 +27,7 @@ namespace unet
                 TaskQueue(const TaskQueue&) = delete;
                 TaskQueue(TaskQueue&&) = delete;
                 TaskQueue& operator=(const TaskQueue&) = delete;
+                TaskQueue& operator=(TaskQueue&&) = delete;     
                 ~TaskQueue() {};
 
                 void put(const T& task)
@@ -43,17 +44,17 @@ namespace unet
                     MutexLockGuard guard(mutex);
                     queue.push_back(task);
                     notempty.notify();
-                }
+                }   
 #endif                
             
                 T get()
                 {
                     MutexLockGuard guard(mutex);
-                
+                    
                     while(queue.empty())
                     {
                         notempty.wait();
-                    }
+                    }   
                     assert(!queue.empty());
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -65,7 +66,7 @@ namespace unet
                     return retu;
                 }
 
-                size_t size()
+                size_t size() const
                 {
                     MutexLockGuard guard(mutex);
                     return queue.size();
@@ -78,10 +79,6 @@ namespace unet
         };
     }
 }
-
-
-
-
 
 
 #endif

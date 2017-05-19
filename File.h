@@ -76,6 +76,14 @@ namespace unet
                 OperatorType type;
         };
         
+        bool operator==(const File& lhs,const File& rhs)
+        {
+            if(lhs.fd == rhs.fd && lhs.g_filename == rhs.g_filename && lhs.filetype == rhs.filetype)
+                return true;
+            else
+                return false;
+        }
+
         int readn(int fd,char* cptr,size_t nbytes);
         int writen(int fd,char* cptr,size_t nbytes);
 
