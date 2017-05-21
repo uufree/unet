@@ -13,7 +13,6 @@
 #include<malloc.h>
 #include<iostream>
 #include<functional>
-#include"Mutex.h"
 #include<sys/types.h>
 #include<sys/stat.h>
 //目前版本只支持固定大小的数据传输
@@ -27,7 +26,7 @@ namespace unet
             typedef std::function<void()> CloseCallBack;
 
             public:
-                explicit Buffer(int fd_) : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0),fd(fd_),lock()
+                explicit Buffer(int fd_) : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0),fd(fd_)
             {
                 buffer = static_cast<char*>(malloc(KBufferSize));
                 bzero(buffer,KBufferSize);
@@ -98,7 +97,6 @@ namespace unet
                 int key;
                 int fd;
                 CloseCallBack closecallback;
-                unet::thread::MutexLock lock;
         };        
     }
 }

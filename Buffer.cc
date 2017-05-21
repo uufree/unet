@@ -17,8 +17,6 @@ namespace unet
     {
         int Buffer::readInSocket()
         {
-            unet::thread::MutexLockGuard guard(lock);
-            
             char extrabuf[65536];
             bzero(extrabuf,65536);
             struct iovec vec[2];
@@ -85,7 +83,6 @@ namespace unet
         //通用操作
         void Buffer::appendInBuffer(const char* message)
         {
-            unet::thread::MutexLockGuard guard(lock);
             int size = strlen(message);
             if(size+2 > getFreeSize())
             {
@@ -108,7 +105,6 @@ namespace unet
         
         void Buffer::getCompleteMessageInBuffer(char* message)
         {
-            unet::thread::MutexLockGuard guard(lock);
             char* ch = strstr(buffer+headindex,"\r\n");
             
             if(ch != NULL)
