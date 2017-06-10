@@ -8,6 +8,7 @@
 #ifndef _BUFFER_H
 #define _BUFFER_H
 
+#include<string>
 #include<string.h>
 #include<sys/uio.h>
 #include<malloc.h>
@@ -23,80 +24,47 @@ namespace unet
     {
         class Buffer final
         {
-            typedef std::function<void()> CloseCallBack;
-
+            friend bool operator==(const Buffer& lhs,const Buffer& rhs);
+            
             public:
-                explicit Buffer(int fd_) : buffer(nullptr),KBufferSize(1024),level(KBufferSize/2),headindex(0),tailindex(0),key(0),fd(fd_)
-            {
-                buffer = static_cast<char*>(malloc(KBufferSize));
-                bzero(buffer,KBufferSize);
-            };
-
+                explicit Buffer(int fd_,int bufferSize = 4096);
                 Buffer(const Buffer& lhs) = delete;
+                Buffer(Buffer&& lhs);
                 Buffer& operator=(const Buffer& lhs) = delete;
-
-                ~Buffer()
-                {
-                    free(buffer);
-                };
+                Buffer& operator=(Buffer&& lhs);
+                ~Buffer();
+                
+                void swap(Buffer& lhs);
 
                 //public interface
                 int readInSocket();
-                void writeInSocket();
+                int writeInSocket();
                 
-                //通用操作
                 void appendInBuffer(const char* message);
+                void appendInBuffer(const std::string& message);
+                
                 void getCompleteMessageInBuffer(char* message);
+                void getCompleteMessageInBuffer(std::string& message);
+                std::string&& getCompleteMessageInBuffer();
                 
                 //针对File
-                int readInSocket(int size);
-                int sendFile(const char* filename,int size=1024);
-                int recvFile(const char* filename,int size=1024);
-                
-                int getDataSize() const 
-                {return tailindex - headindex;};
+                void sendFile(const char* filename);
+                void sendFile(const std::string& filename); 
+                void recvFile(const char* filename);
+                void recvFile(const std::string& filename);
+            
+            private:
 
-                void getData() const
-                {
-                    printf("%s\n",buffer+headindex);
-                }
-        
-                int getFreeSize() const 
-                {return KBufferSize - tailindex;};
-
-                bool needMove() const
-                {return headindex >= level;};
-
-                int getHeadIndex() const 
-                {return headindex;};
-
-                int getTailIndex() const 
-                {return tailindex;};
-
-                int getBufferSize() const 
-                {return KBufferSize;};
-               
-                bool getKey() const
-                {return key;};
-                
-                int getFd()
-                {return fd;};
-                
-                void setFd(int fd_)
-                {fd =  fd_;};
-
-                void setHandleCloseCallBack(const CloseCallBack& cb)
-                {closecallback = cb;};
 
             private:
-                char* buffer;
-                int KBufferSize;
-                int level;
-                int headindex;
-                int tailindex;
-                int key;
                 int fd;
-                CloseCallBack closecallback;
+                std::string buffer;
+                int bufferSize;
+
+                size_t readIndex;
+                int readSize;
+                size_t writeIndex;
+                int writeSize;
         };        
     }
 }
