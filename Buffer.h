@@ -39,10 +39,8 @@ namespace unet
                 //public interface
                 int readInSocket();
                 int writeInSocket();
-                
                 void appendInBuffer(const char* message);
                 void appendInBuffer(const std::string& message);
-                
                 void getCompleteMessageInBuffer(char* message);
                 void getCompleteMessageInBuffer(std::string& message);
                 std::string&& getCompleteMessageInBuffer();
@@ -54,31 +52,18 @@ namespace unet
                 void recvFile(const std::string& filename);
             
             private:
-
+                int getFreeSize()
+                {return bufferSize - dataSize;};
 
             private:
                 int fd;
                 std::string buffer;
                 int bufferSize;
-
-                size_t readIndex;
-                int readSize;
-                size_t writeIndex;
-                int writeSize;
+                int dataSize;
+                int dataIndex;
         };        
     }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 #endif
