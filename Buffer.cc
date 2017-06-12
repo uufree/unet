@@ -6,10 +6,11 @@
  ************************************************************************/
 
 #include"Buffer.h"
-#include<unistd.h>
-#include<stdio.h>
-#include<stdlib.h>
 #include"error.h"
+
+#include<iostream>
+#include<string.h>
+#include<unistd.h>
 
 namespace unet
 {
@@ -61,6 +62,84 @@ namespace unet
                 return true;
             return false;
         };
+        
+        int Buffer::getFreeSize(int size)
+        {
+            /* 0:freeSize足够但是末尾空间不够
+             * 1:freeSize足够并且末尾空间也足够
+             *-1:freeSize不够
+             * */
+            
+            int asize = bufferSize - dataSize;
+            int bsize = bufferSize - dataSize - dataIndex;
+
+            if(asize >= size && bsize <= size)
+                return 0;//不重新分配空间+移动元素
+                    
+            if(asize >= size && bsize >= size)
+                return 1;//直接插入
+
+            if(asize < size)
+                return -1;//增大空间+移动元素
+
+            return -1;
+        };
+
+        bool Buffer::needToMove()
+        {
+            return dataIndex >= (bufferSize/2);
+        }
+
+        void Buffer::handleBufferSpace(int size,const std::string& str)
+        {//只修改bufferSize,其余不管
+            int n = getFreeSize(size);
+            
+        read:
+            switch (n)
+            {
+                case -1:
+                {
+                    while((n=getFreeSize(size)) == -1)
+                    {
+                        bufferSize *= 2;
+                        buffer.reserve(bufferSize);
+                    }
+                    goto read;
+                }   
+                case 0:
+                {
+                    std::string str;
+                    str.reserve(bufferSize);
+                    str.insert(0,buffer,dataIndex,dataSize);
+                    buffer.swap(str);
+                    
+                    dataIndex = 0;
+                }
+                case 1:
+                {
+                    buffer.append(str);
+                    break;
+                }
+            }
+
+            dataSize += size;
+        }
+
+        void Buffer::handleBufferSpace(int size)
+        {
+            dataSize -= size;
+            dataIndex += size;
+            
+            if(needToMove())
+            {
+                bufferSize /= 2;
+
+                std::string str;
+                str.reserve(bufferSize);
+                str.insert(0,buffer,dataIndex,dataSize);
+                buffer.swap(str);
+            }
+        }
 
         int Buffer::readInSocket()
         {
@@ -70,17 +149,7 @@ namespace unet
             std::cout << "read n: " << n << std::endl;
 
             if(n > 0)
-            {
-                if(getFreeSize() >= n)
-                    buffer.append(extraBuffer);
-                else
-                {
-                    bufferSize *= 2;
-                    buffer.reserve(bufferSize);
-                }
-
-                dataSize += n;
-            }
+                handleBufferSpace(n,extraBuffer);
             else if(n == 0)
             {}
             else
@@ -94,20 +163,7 @@ namespace unet
             int n = ::write(fd,buffer.c_str(),buffer.size()); 
             
             if(n > 0)
-            {
-                dataSize -= n;
-                dataIndex += n;
-
-                if(dataIndex >= bufferSize/2)
-                {   
-                    bufferSize /= 2;
-
-                    std::string str;
-                    str.reserve(bufferSize);
-                    str.insert(0,buffer,dataIndex,dataSize);
-                    buffer.swap(str);
-                }
-            }
+                handleBufferSpace(n);
             else if(n == 0)
             {}
             else
@@ -118,14 +174,29 @@ namespace unet
         
         void Buffer::appendInBuffer(const char* message)
         {
-            int size = strlen(message);
-            
-            if(getFreeSize() >= size)
-            {
-
-            }
-                
+            handleBufferSpace(strlen(message),message);  
         }
 
+        void Buffer::appendInBuffer(const std::string& message)
+        {
+            handleBufferSpace(message.size(),message);
+        }
+
+        void Buffer::getCompleteMessageInBuffer(std::string& message)
+        {
+            size_t index = buffer.find_first_of("\r\n");
+            message.clear();
+
+            if(index != std::string::npos)
+                message.append(buffer,dataIndex,index); 
+        }
+
+        std::string&& Buffer::getCompleteMessageInBuffer()
+        {
+            size_t index = buffer.find_first_of("\r\n");
+            std::string str(buffer,dataIndex,index);
+
+            return std::move(str);
+        }
     }
 }

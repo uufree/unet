@@ -12,6 +12,12 @@
 #include"Buffer.h"
 #include"Socket.h"
 
+/* 设计宗旨：TcpConnection描述一个连接，内部状态机表征状态 
+ * 1.管理socket的生命期
+ * 2.
+
+*/
+
 namespace unet
 {
     namespace net
@@ -25,8 +31,13 @@ namespace unet
             public:        
                 explicit TcpConnection(int fd_);
                 TcpConnection(const TcpConnection& lhs) = delete;
+                TcpConnection(TcpConnection&& lhs);
                 TcpConnection& operator=(const TcpConnection& lhs) = delete;
+                TcpConnection& operator=(TcpConnection&& lhs);
                 ~TcpConnection() {};
+                
+                void swap(TcpConnection& lhs,TcpConnection& rhs);
+
 //public interface
                 void setReadCallBack(const MessageCallBack& cb)
                 {readcallback = cb;};//由TcpServer注册
@@ -68,9 +79,9 @@ namespace unet
                 void handleAsyncBuffer();
 
             private:
-                socket::Socket confd;//处理已连接套接字的关闭问题
-                Buffer outputbuffer;//消息输出的buffer
-                Buffer inputbuffer;//消息输入的buffer
+                socket::Socket confd;
+                Buffer outputbuffer;
+                Buffer inputbuffer;
                 MessageCallBack readcallback, writecallback,drivedcallback;
                 HandleDiedTcpConnection handlediedtcpconnection;
                 WheetChannelCallBack wheetchannel;

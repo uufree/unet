@@ -18,6 +18,16 @@
 
 //由于listenchannel与普通的channel不同（没有TcpConnection）,用一个bool类型进行判断
 
+/* 设计理念：Channel只关注fd上的事件的处理
+ * 1.
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
 #include"TcpConnection.h"
 
 class Channel;
