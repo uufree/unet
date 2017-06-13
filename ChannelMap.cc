@@ -5,5 +5,15 @@
 	> Created Time: 2017年06月12日 星期一 22时34分54秒
  ************************************************************************/
 
-#include<iostream>
+#include"ChannelMap.h"
+
+namespace unet
+{
+    namespace net
+    {
+        ChannelMap::ChannelMap() : lock()
+        {};
+
+    }
+}
 

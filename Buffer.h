@@ -51,8 +51,8 @@ namespace unet
                 void recvFile(const std::string& filename);
 */            
             private:
-                inline int getFreeSize(int size);//得到几种不同情况的freeSize
-                inline bool needToMove();//是否需要移动
+                inline int getFreeSize(int size) const;//得到几种不同情况的freeSize
+                inline bool needToMove() const;//是否需要移动
                 inline void handleBufferSpace(int size,const std::string& str);//处理往Buffer中写的情况
                 inline void handleBufferSpace(int size);//处理从Buffer中拿出的情况
             

@@ -28,28 +28,16 @@ namespace unet
         class MutexLock final
         {
             public:
-                explicit MutexLock() : pid(0)
-                {
-                    if(pthread_mutex_init(&mutex,NULL) < 0)
-                        unet::handleError(errno);
-                };
-            
-                ~MutexLock()
-                {
-                    if(pthread_mutex_destroy(&mutex) < 0)
-                        unet::handleError(errno);
-                }
-
+                explicit MutexLock();
                 MutexLock(const MutexLock&) = delete;
                 MutexLock& operator=(const MutexLock&) = delete;
-                MutexLock(MutexLock&&) = delete;
-                MutexLock& operator=(MutexLock&&) = delete;
+                MutexLock(MutexLock&& lhs);
+                MutexLock& operator=(MutexLock&& lhs);
+                ~MutexLock();
+                    
+                void swap(MutexLock& lhs) = delete;
 
-                bool isLockInThisThread() const
-                {
-                    return pid == now::pid();
-                };
-
+                inline bool isLockInThisThread() const;
                 void lock()
                 {
                     if(pthread_mutex_lock(&mutex) < 0)
