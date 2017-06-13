@@ -48,7 +48,7 @@ namespace unet
 
                 void wait()
                 {
-                    if(pthread_cond_wait(&cond,mutex.getMutex()) < 0)
+                    if(pthread_cond_wait(&cond,&mutex.getMutex()) < 0)
                         unet::handleError(errno);
                 }
     

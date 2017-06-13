@@ -43,15 +43,34 @@ namespace unet
         }
         
         void MutexLock::lock()
-        {}
+        {        
+            if(pthread_mutex_lock(&mutex) < 0)
+                    handleError(errno);
+                pid = now::pid();
+        }
 
         void MutexLock::unlock()
-        {}
+        {
+            if(pthread_mutex_unlock(&mutex) < 0)
+                handleError(errno);
+            pid = 0;
+        }
 
         pthread_mutex_t& MutexLock::getMutex()
-        {}
+        {
+            return mutex;
+        }
         
-        
+        MutexLockGuard::MutexLockGuard(MutexLock& mutex_) :
+            mutex(mutex_)
+        {
+            mutex.lock();
+        }
+
+        MutexLockGuard::~MutexLockGuard()
+        {
+            mutex.unlock();
+        }
         
 
     }

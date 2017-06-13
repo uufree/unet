@@ -38,25 +38,10 @@ namespace unet
                 void swap(MutexLock& lhs) = delete;
 
                 inline bool isLockInThisThread() const;
-                void lock()
-                {
-                    if(pthread_mutex_lock(&mutex) < 0)
-                        handleError(errno);
-                    pid = now::pid();
-                };
-
-                pthread_mutex_t* getMutex()
-                {
-                    return &mutex;
-                };
-
-                void unlock()
-                {
-                    if(pthread_mutex_unlock(&mutex) < 0)
-                        handleError(errno);
-                    pid = 0;
-                };
-
+                inline void lock();
+                inline pthread_mutex_t& getMutex();
+                inline void unlock();
+            
             private:
                 pid_t pid;
                 pthread_mutex_t mutex;
@@ -65,20 +50,14 @@ namespace unet
         class MutexLockGuard final
         {
             public:
-                explicit MutexLockGuard(MutexLock& mutex_) : mutex(mutex_)
-                {
-                    mutex.lock();
-                }
-
-                ~MutexLockGuard()
-                {
-                    mutex.unlock();
-                }
+                explicit MutexLockGuard(MutexLock& mutex_);
+                ~MutexLockGuard();
             
                 MutexLockGuard(MutexLockGuard&) = delete;
                 MutexLockGuard& operator=(const MutexLockGuard&) = delete;   
                 MutexLockGuard(MutexLockGuard&&) = delete;
                 MutexLockGuard& operator=(MutexLockGuard&&) = delete;
+                void swap(MutexLockGuard& lhs) = delete;
 
             private:
                 MutexLock& mutex;

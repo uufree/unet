@@ -7,4 +7,37 @@
 
 #ifndef _TCPCONNECTIONMAP_H
 #define _TCPCONNECTIONMAP_H
+
+#include"TcpConnection.h"
+#include<map>
+
+namespace unet
+{
+    namespace net
+    {
+        class TcpConnectionMap final
+        {
+            public:
+                TcpConnectionMap();
+                TcpConnectionMap(const TcpConnectionMap&) = delete;
+                TcpConnectionMap(TcpConnectionMap&& lhs);
+                TcpConnectionMap& operator=(const TcpConnectionMap&) = delete;
+                TcpConnectionMap& operator=(TcpConnectionMap&& lhs);
+                ~TcpConnectionMap();
+
+                void swap(TcpConnectionMap& lhs) = delete;
+
+                void size() const;
+                bool empty() const;
+                void insert(int fd);
+                void erase(int fd);
+
+            private:
+                std::map<int,TcpConnection&&> tcpConnectionMap;
+        };
+    }
+}
+
+
+
 #endif
