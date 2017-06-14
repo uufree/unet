@@ -13,10 +13,6 @@
 
 //struct epoll_event;
 
-//用的是Poll,因为epoll老是莫名其妙的报错，检查errno也没用
-
-//用map保存Channel，维护map和channel对应的pollfd
-
 struct pollfd;
 
 namespace unet
