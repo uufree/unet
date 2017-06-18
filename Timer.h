@@ -12,7 +12,6 @@
 #include<functional>
 
 //表示一个常数时间所对应的事件
-
 namespace unet
 {
     namespace time
