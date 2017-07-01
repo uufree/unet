@@ -8,12 +8,8 @@
 #ifndef _EPOLLER_H
 #define _EPOLLER_H
 
-#include"Channel.h"
-#include"Mutex.h"
-
-//struct epoll_event;
-
-struct pollfd;
+#include"ChannelMap.h"
+#include<sys/epoll.h>
 
 namespace unet
 {
@@ -24,40 +20,25 @@ namespace unet
             static const int timeoutMs = 200;//默认poll阻塞200ms
             static const int KNoneEvent = 0;
 
-//            typedef std::vector<struct epoll_event> EventList;
-            typedef std::vector<struct pollfd> EventList;
-            typedef std::map<int,Channel*> ChannelMap;
-            typedef std::vector<Channel*> ChannelList;
+            typedef std::vector<struct epoll_event> EventList;
+            typedef std::vector<Channel&> ChannelList;
 
             public:    
                 explicit Epoller();
                 Epoller(const Epoller&) = delete;
-                Epoller operator=(const Epoller&) = delete;
+                Epoller& operator=(const Epoller&) = delete;
+                Epoller(Epoller&& lhs);
+                Epoller& operator=(Epoller&& lhs);
                 ~Epoller();
-//public interface 
-                //将poll中有事件发生的channel放进channellist
-                void epoll(ChannelList* channels);
-                bool hasChannel(Channel* channel_) const;
-                void removeChannel(Channel* channel_);
-                void updateChannel(Channel* channel_); 
-                void addInChannelMap(Channel* channel_);
-                
-                int getConSize() const 
-                {return channelmap.size();};
 
-                void getInfo() const;
+                void epoll(ChannelList& channelList,ChannelMap& channelMap);
             
             private:
+                void getActiveEvents(int activeEvents,ChannelMap& channelMap,ChannelList& channelList);
 
-                void update(Channel* channel_);
-
-                //将pollfd与channel做映射
-                void getActiveEvents(int activeEvents,ChannelList* channels);
-
-                EventList eventlist;//保存epollfd的数组
-//                int epollfd;//内核维护的epollfd表
-                ChannelMap channelmap;//保存Channel的Map
-                unet::thread::MutexLock mutex;
+            private:
+                EventList eventList;//保存epollfd的数组
+                int epollfd;//内核维护的epollfd表
         };    
     }
 }

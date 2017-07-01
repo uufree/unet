@@ -6,67 +6,40 @@
  ************************************************************************/
 
 #include"Epoller.h"
+#include"error.h"
 
 namespace unet
 {
     namespace net
     {
-/*        Epoller::Epoller() :
-            epollfd(::epoll_create(10000))
-        {//创建一个内核维护的epollfd
+        Epoller::Epoller() : epollfd(::epoll_create(65536))
+        {
             if(epollfd < 0)
-            {
-                std::cerr << "epollfd create errno" << std::endl;
-                exit(0);
-            }
-        }                     */
+                unet::handleError(errno);
+        }                     
   
-        Epoller::Epoller()
-        {}
-
         Epoller::~Epoller()
-        {//关闭epollfd
-//            ::close(epollfd);
+        {
+            ::close(epollfd);
         }
 
-        void Epoller::epoll(ChannelList* channels)
-        {//将epoll中活动的事件对应的channel传递进channels
-//            eventlist.clear();
-//            int activeEvents = ::epoll_wait(epollfd,&*eventlist.begin(),static_cast<int>(channelmap.size()),timeoutMs);
-            
-            int activeEvents = ::poll(&*eventlist.begin(),eventlist.size(),timeoutMs);//获得活动的事件
-            int savedErrno = errno;    
+        void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap)
+        {
+            int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),static_cast<int>(eventList.size()),timeoutMs);
 
             if(activeEvents > 0)
-                getActiveEvents(activeEvents,channels);
+                getActiveEvents(activeEvents,channelMap,channelList);
             else if(activeEvents == 0)
-                printf("%ld--nothing happended!\n",pthread_self());
+                std::cout << "nothing happened!" << std::endl; 
             else
-            {
-                if(savedErrno != EINTR)
-                {
-                    printf("poll mistake!\n");
-                    exit(0);
-                }
-            }
+                unet::handleError(errno);
         }
 
-
-        void Epoller::getActiveEvents(int activeEvents,ChannelList* channels)
+        void Epoller::getActiveEvents(int activeEvents,ChannelMap& channelMap,ChannelList& channeList)
         {
-            int fd;
-            for(EventList::iterator iter=eventlist.begin();iter!=eventlist.end();++iter)
-            {   
-                if((iter->revents & POLLIN) || iter->revents & POLLOUT)
-                {
-                    fd = iter->fd;//转换然后在map中寻找，加入list
-                    channelmap[fd]->setRevent(iter->revents);
-                    assert(channelmap.find(fd) != channelmap.end());
-                    channels->push_back(channelmap[fd]);
-                    --activeEvents;
-                    if(activeEvents == 0)
-                        break;
-                }
+            for(int i=0;i<activeEvents;++i)
+            {
+                if(eventList[i].events & EPO)
             }
         }
         
