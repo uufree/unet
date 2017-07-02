@@ -13,7 +13,6 @@
 #include<unistd.h>
 #include<stdint.h>
 #include<iostream>
-//将时间封装为微秒级的长整数
 
 namespace unet
 {
