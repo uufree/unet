@@ -45,7 +45,7 @@ namespace unet
         class Channel final
         {
             typedef std::function<void()> ReadCallBack;
-            typedef std::function<void()> CloseCallBack;
+            typedef std::function<void(int)> CloseCallBack;
 
             public:
                 explicit Channel(int fd_,ChannelType type_);

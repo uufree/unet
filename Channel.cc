@@ -44,12 +44,12 @@ namespace unet
         void Channel::handleEvent(TcpConnectionMap& tcpconnectionMap)
         {
             if(type == LISTEN || type == CLOCK)
-            {//处理有TcpConnectionPtr的情况
+            {
                 handleEventing = true;
                 if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
                     if(closeCallBack)
-                        closeCallBack();
+                        closeCallBack(fd);
                     else
                         perror("没有注册CloseCallBack\n");
                 }
@@ -63,7 +63,7 @@ namespace unet
                 else
                 {
                     if(closeCallBack)
-                        closeCallBack();
+                        closeCallBack(fd);
                     else
                         perror("没有注册CloseCallBack\n");
                 }
@@ -79,12 +79,12 @@ namespace unet
                 if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
                     if(closeCallBack)
-                        closeCallBack();
+                        closeCallBack(fd);
                     else
                         perror("没有注册CloseCallBack\n");
                 }
                 else if(revent & EPOLLIN)
-                {
+                {//存在无法正常关闭connection的问题
                     connection.handleRead();
                 }
                 else if(revent & EPOLLOUT)
@@ -94,7 +94,7 @@ namespace unet
                 else
                 {
                     if(closeCallBack)
-                        closeCallBack();
+                        closeCallBack(fd);
                     else
                         perror("没有注册CloseCallBack\n");
                 }
