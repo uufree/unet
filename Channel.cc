@@ -10,94 +10,97 @@ namespace unet
 {
     namespace net
     {
-        const int Channel::KNoneEvent = 0;//关注的事件的处理方式
-        const int Channel::KReadEvent = POLLIN;
-        const int Channel::KWriteEvent = POLLOUT;
         
         Channel::Channel(int fd_,ChannelType type_) : 
-        fd(fd_),
-        event(0),
-        revent(0),
-        handleeventing(false),
-        tcpconnectionptr(new TcpConnection(fd_)),
-        tcpconnectionwptr(tcpconnectionptr),
-        type(type_)
-        {
-            tcpconnectionptr->setWheetChannelCallBack(std::bind(&Channel::disableAll,this));
+            fd(fd_),
+            event(0),
+            revent(0),
+            handleEventing(false),
+            type(type_)
+        {};
 
-            if(type == LISTEN || type == CLOCK)//如果是listenchannel,将ptr reset掉
-            {
-                tcpconnectionptr.reset();
-                tcpconnectionwptr.reset();   
-            }
-            type = type_;
-        };
+        Channel::Channel(Channel&& lhs) : 
+            fd(lhs.fd),
+            event(lhs.event),
+            revent(lhs.revent),
+            handleEventing(false),
+            type(lhs.type)
+        {};
 
-        Channel::~Channel()
+        Channel& Channel::operator=(Channel&& lhs)
         {
+            fd = lhs.fd;
+            event = lhs.event;
+            revent = lhs.revent;
+            handleEventing = lhs.handleEventing;
+            type = lhs.type;
+            
+            return *this;
         }
 
-        void Channel::handleEvent()
+        Channel::~Channel()
+        {};
+
+        void Channel::handleEvent(TcpConnectionMap& tcpconnectionMap)
         {
-            if(type == CONNECT)
+            if(type == LISTEN || type == CLOCK)
             {//处理有TcpConnectionPtr的情况
-                handleeventing = true;
-                if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
+                handleEventing = true;
+                if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
-                    handleClose();
-                }
-                else if(revent & POLLIN)
-                {
-                    TcpConnectionPtr wptr = tcpconnectionwptr.lock();
-                    if(wptr)
-                    {
-                        wptr->handleRead();
-                    }
+                    if(closeCallBack)
+                        closeCallBack();
                     else
-                        handleClose();
+                        perror("没有注册CloseCallBack\n");
                 }
-                else if(revent & POLLOUT)
+                else if(revent & EPOLLIN)
                 {
-                    TcpConnectionPtr wptr = tcpconnectionwptr.lock();
-                    if(wptr)
-                        wptr->handleWrite();
+                    if(readCallBack)
+                        readCallBack();
                     else
-                        handleClose();
+                        perror("没有注册ReadCallBack\n");
                 }
                 else
-                    handleClose();
+                {
+                    if(closeCallBack)
+                        closeCallBack();
+                    else
+                        perror("没有注册CloseCallBack\n");
+                }
 
                 revent = 0;
-                handleeventing = false;
+                handleEventing = false;
             }
-            else if(type == LISTEN)
+            else if(type == CONNECT)
             {
-                handleeventing = true;
-                if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
+                handleEventing = true;
+                TcpConnection& connection = tcpconnectionMap.find(fd);
+                
+                if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
-                    handleClose();
+                    if(closeCallBack)
+                        closeCallBack();
+                    else
+                        perror("没有注册CloseCallBack\n");
                 }
-                else if(revent & POLLIN)
+                else if(revent & EPOLLIN)
                 {
-                    if(readcallback)
-                        readcallback();
+                    connection.handleRead();
+                }
+                else if(revent & EPOLLOUT)
+                {
+                    connection.handleWrite();
                 }
                 else
-                    handleClose();
-                handleeventing = false;
-            }
-            else if(type == CLOCK)
-            {
-                handleeventing = true;
-                if((revent & POLLHUP) || (revent & POLLRDHUP) || (revent & POLLERR))
-                    handleClose();
-                else if(revent & POLLIN)
                 {
-                    if(readcallback)
-                        readcallback();
+                    if(closeCallBack)
+                        closeCallBack();
+                    else
+                        perror("没有注册CloseCallBack\n");
                 }
-                else
-                    handleClose();
+
+                revent = 0;
+                handleEventing = false;
             }
             else
             {
@@ -105,18 +108,35 @@ namespace unet
             }
         }
         
-        void Channel::handleClose()
-        {//处理正常关闭的情况
-            if(type == CONNECT)
-            {   
-                TcpConnectionPtr conptr(tcpconnectionwptr.lock());
-                if(conptr)
-                {
-                    conptr->handleClose();
-                }
-            }
-            disableAll();//这个函数里面会有一个更新的操作
-        }
+        int Channel::getFd() const
+        {return fd;};
+
+        void Channel::setEvent()
+        {event = KWriteEvent & KReadEvent;};
+
+        int Channel::getEvent() const
+        {return event;};
+
+        void Channel::setRevent(int revent_)
+        {revent = revent_;};
+        
+        int Channel::getType() const
+        {return type;};
+
+        void Channel::setReadCallBack(const ReadCallBack& lhs)
+        {readCallBack = lhs;};
+
+        void Channel::setcloseCallBack(const CloseCallBack& lhs)
+        {closeCallBack = lhs;};
+
+        bool Channel::isNoneEvent() const
+        {return event == KNoneEvent;};
+
+        bool Channel::isReading() const
+        {return event == KReadEvent;};
+
+        bool Channel::isWriting() const
+        {return event == KWriteEvent;};
     }
 }
 

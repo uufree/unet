@@ -12,9 +12,8 @@ namespace unet
 {
     namespace net
     {
-        Epoller::Epoller(ChannelMap& channelMap_) : 
-            epollfd(::epoll_create(65536)),
-            channelMap(channelMap_)
+        Epoller::Epoller() : 
+            epollfd(::epoll_create(65536))
         {
             if(epollfd < 0)
                 unet::handleError(errno);
@@ -25,19 +24,19 @@ namespace unet
             ::close(epollfd);
         }
 
-        void Epoller::epoll(ChannelList& channelList)
+        void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap)
         {
             int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),static_cast<int>(eventList.size()),timeoutMs);
 
             if(activeEvents > 0)
-                getActiveEvents(activeEvents,channelList);
+                getActiveEvents(activeEvents,channelList,channelMap);
             else if(activeEvents == 0)
                 std::cout << "nothing happened!" << std::endl; 
             else
                 unet::handleError(errno);
         }
 
-        void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList)
+        void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList,ChannelMap& channelMap)
         {//将事件源中的Channel的事件描述进行设置，然后将已有事件发生的Channel传递给ChannelList
             int fd;
             for(int i=0;i<activeEvents;++i)
@@ -47,6 +46,8 @@ namespace unet
                     fd = eventList[i].data.fd;
                     Channel& channel = channelMap.findChannel(fd); 
                     channel.setRevent(eventList[i].events);
+
+                    channeList.push_back(channel);
                 }
             }
         }

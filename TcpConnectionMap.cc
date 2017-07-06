@@ -24,7 +24,7 @@ namespace unet
             return *this;
         }
 
-        void TcpConnectionMap::size() const
+        int TcpConnectionMap::size() const
         {
             return tcpConnectionMap.size();
         }
@@ -44,7 +44,11 @@ namespace unet
         {
             tcpConnectionMap.erase(fd);
         }
-
+        
+        TcpConnection& TcpConnectionMap::find(int fd)
+        {
+            return tcpConnectionMap[fd];
+        }
 
     }
 }

@@ -28,7 +28,7 @@
  */
 
 
-#include"TcpConnection.h"
+#include"TcpConnectionMap.h"
 
 class Channel;
 
@@ -36,114 +36,48 @@ namespace unet
 {
     namespace net
     {
+        static const int KNoneEvent = 0;//关注的事件的处理方式
+        static const int KReadEvent = EPOLLIN;
+        static const int KWriteEvent = EPOLLOUT;
         
         enum ChannelType{LISTEN,CONNECT,CLOCK};
         
         class Channel final
         {
-            typedef std::weak_ptr<TcpConnection> TcpConnectionWptr;
-            typedef std::function<void()> EventCallBack; 
-            typedef std::function<void(Channel*)> UpdateCallBack;
-            typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;     
+            typedef std::function<void()> ReadCallBack;
+            typedef std::function<void()> CloseCallBack;
 
             public:
                 explicit Channel(int fd_,ChannelType type_);
-                ~Channel();
                 Channel(const Channel& lhs) = delete;
+                Channel(Channel&& lhs);
                 Channel& operator=(const Channel& lhs)  = delete;
+                Channel& operator=(Channel&& lhs);
+                ~Channel();
                 
-//public interface
-                void handleEvent();//处理事件的主体函数
-                void handleClose();//处理关闭事件
-
-                void setReadCallBack(const EventCallBack& cb)
-                {readcallback = cb;};//在没有TcpConnection的情况下由Listenfd和Timefd注册
-
-                void setUpdateCallBack(const UpdateCallBack& cb)
-                {updatecallback = cb;};//Epoller注册的
-
-                int getFd() const 
-                {return fd;};//得到fd
-
-                //设置关注的事件，默认关注读写事件，看情况关闭写事件
-                void setEvent() {event = KWriteEvent && KReadEvent;};
+                void handleEvent(TcpConnectionMap& tcpconnectionMap);//处理事件的主体函数
                 
-                //得到关注的事件
-                int getEvent() const 
-                {return event;};
+                inline int getFd() const; 
+                inline void setEvent();
+                inline int getEvent() const;
+                inline void setRevent(int revent_); 
+                inline int getType() const;
+                inline void setReadCallBack(const ReadCallBack& lhs);
+                inline void setcloseCallBack(const CloseCallBack& lhs);
 
-                //设置正在发生的事件
-                void setRevent(int revent_) 
-                {revent = revent_;};
-
-                //用于判断现在关注什么事件
-                bool isNoneEvent() const {return event== KNoneEvent;};
-                bool isReading() const {return event == KReadEvent;};
-                bool isWriting() const {return event == KWriteEvent;};
-
-                //不关注之后立刻在epoller中更新
-                //不关注读事件
-                void disableReading() 
-                {
-                    event|=~KReadEvent;
-                    updatecallback(this);//更新操作是关键
-                };
-
-                //不关注写事件
-                void disableWriting() 
-                {
-                    event|=~KWriteEvent;
-                    updatecallback(this);
-                };
-
-                //不关注所有的事件
-                void disableAll()
-                {
-                    event = KNoneEvent;
-                    updatecallback(this);
-                }
-                
-                void handleDrived()
-                {//如果提升成功，立刻处理由TcpServer注册的事件
-                    TcpConnectionPtr ptr = tcpconnectionwptr.lock();
-                    if(ptr)
-                        ptr->handleDrived();
-                }
-                
-                int asyncRead()
-                {
-                    int n = 0;
-                    TcpConnectionPtr ptr = tcpconnectionwptr.lock();
-                    if(ptr)
-                        n = ptr->asyncRead();
-                    return n;
-                }
-                
-                int getType()
-                {return type;};
-
-                //用std::move的特性，将shared_ptr<TcpConnection>交由TcpServer保管
-                TcpConnectionPtr&& getTcpConnectionPtr()
-                {return std::move(tcpconnectionptr);};
-                
-                //设置Channel关注的fd
-                void setFd(int fd_)
-                {fd = fd_;};
+                inline bool isNoneEvent() const;
+                inline bool isReading() const;
+                inline bool isWriting() const;
                 
             private:
                 int fd;
                 int event;//关注的事件
                 int revent;//正在发生的事件
-                bool handleeventing;
-                TcpConnectionPtr tcpconnectionptr;
-                TcpConnectionWptr tcpconnectionwptr;
-
-                static const int KNoneEvent;
-                static const int KReadEvent;
-                static const int KWriteEvent;
-                EventCallBack readcallback;//listenfd与timefd的回调
-                UpdateCallBack updatecallback;
+                bool handleEventing;
                 ChannelType type;
+
+                ReadCallBack readCallBack;
+                CloseCallBack closeCallBack;
         };
     }
 }

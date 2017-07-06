@@ -27,10 +27,11 @@ namespace unet
 
                 void swap(TcpConnectionMap& lhs) = delete;
 
-                void size() const;
+                int size() const;
                 bool empty() const;
                 void insert(int fd);
                 void erase(int fd);
+                TcpConnection& find(int fd);
 
             private:
                 std::map<int,TcpConnection&&> tcpConnectionMap;
