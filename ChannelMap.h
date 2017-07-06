@@ -37,6 +37,8 @@ namespace unet
                 bool empty() const;
                 void insert(int fd,ChannelType type);
                 void erase(int fd);
+                
+                Channel& findChannel(int fd);
 
             private:
                 std::set<int> channelList;

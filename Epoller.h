@@ -24,21 +24,22 @@ namespace unet
             typedef std::vector<Channel&> ChannelList;
 
             public:    
-                explicit Epoller();
+                explicit Epoller(ChannelMap& lhs);
                 Epoller(const Epoller&) = delete;
                 Epoller& operator=(const Epoller&) = delete;
                 Epoller(Epoller&& lhs);
                 Epoller& operator=(Epoller&& lhs);
                 ~Epoller();
 
-                void epoll(ChannelList& channelList,ChannelMap& channelMap);
+                void epoll(ChannelList& channelList);
             
             private:
-                void getActiveEvents(int activeEvents,ChannelMap& channelMap,ChannelList& channelList);
+                void getActiveEvents(int activeEvents,ChannelList& channelList);
 
             private:
                 EventList eventList;//保存epollfd的数组
                 int epollfd;//内核维护的epollfd表
+                ChannelMap& channelMap;//持有事件源但是没有修改数据源的能力
         };    
     }
 }

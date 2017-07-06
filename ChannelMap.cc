@@ -51,6 +51,11 @@ namespace unet
             channelMap.erase(fd);
         }
 
+        Channel& ChannelMap::findChannel(int fd)
+        {
+           return channelMap[fd]; 
+        }
+
     }
 }
 
