@@ -7,12 +7,14 @@
 
 #include"Epoller.h"
 #include"error.h"
+#include"EventList.h"
 
 namespace unet
 {
     namespace net
     {
-        Epoller::Epoller() : 
+        Epoller::Epoller(EventList& events) :
+            eventList(events),
             epollfd(::epoll_create(65536))
         {
             if(epollfd < 0)
@@ -26,7 +28,7 @@ namespace unet
 
         void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap)
         {
-            int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),static_cast<int>(eventList.size()),timeoutMs);
+            int activeEvents = ::epoll_wait(epollfd,&*eventList.getEventList().begin(),static_cast<int>(eventList.size()),timeoutMs);
 
             if(activeEvents > 0)
                 getActiveEvents(activeEvents,channelList,channelMap);
@@ -37,15 +39,16 @@ namespace unet
         }
 
         void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList,ChannelMap& channelMap)
-        {//将事件源中的Channel的事件描述进行设置，然后将已有事件发生的Channel传递给ChannelList
+        {
             int fd;
+            auto events = eventList.getEventList();
             for(int i=0;i<activeEvents;++i)
             {
-                if((eventList[i].events & EPOLLIN) || (eventList[i].events & EPOLLOUT))
+                if((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT))
                 {
-                    fd = eventList[i].data.fd;
+                    fd = events[i].data.fd;
                     Channel& channel = channelMap.findChannel(fd); 
-                    channel.setRevent(eventList[i].events);
+                    channel.setRevent(events[i].events);
 
                     channeList.push_back(channel);
                 }

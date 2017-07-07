@@ -16,34 +16,88 @@ namespace unet
             listenfd(socket::socket()),
             listening(false)
         {
-            Channel listenChannel(socket::socket(),LISTEN);
-            listenChannel.setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
+            socket::bind(listenfd,&serveraddr);
+            socket::listen(listenfd);
+        }
 
-            handleChannelCallBack(std::move(listenChannel));
+        AsyncAcceptor::AsyncAcceptor(AsyncAcceptor&& lhs) :
+            serveraddr(lhs.serveraddr),
+            listenfd(std::move(lhs.listenfd)),
+            listening(false),
+            insertChannelCallBack(std::move(lhs.insertChannelCallBack)),
+            eraseChannelCallBack(std::move(lhs.eraseChannelCallBack))
+        {
+            lhs.stopListen();
+        };
+
+        AsyncAcceptor& AsyncAcceptor::operator=(AsyncAcceptor&& lhs)
+        {
+            lhs.stopListen();
+            
+            serveraddr = lhs.serveraddr;
+            listenfd = std::move(lhs.listenfd);
+            listening = false;
+            insertChannelCallBack = std::move(lhs.insertChannelCallBack);
+            eraseChannelCallBack = std::move(lhs.eraseChannelCallBack);
+            
+            return *this;
         }
 
         AsyncAcceptor::~AsyncAcceptor()
         {
-            ::close(listenfd);
-        }
+            if(!listening)
+                eraseChannelCallBack(listenfd.getFd());
+        };
 
         void AsyncAcceptor::listen()
         {
-            listening = true;
-            socket::listen(listenfd);
-            addinserverloop(listenchannel);
+            Channel channel(listenfd.getFd(),LISTEN);
+            channel.setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
+            
+            if(!listening)
+            {
+                listening = true;
+                
+                if(insertChannelCallBack)
+                    insertChannelCallBack(std::move(channel));
+                else
+                    perror("not register InsertChannelCallBack\n");
+            }
         }
+
+        void AsyncAcceptor::stopListen()
+        {
+            if(listening)
+            {
+                listening = false;
+
+                if(eraseChannelCallBack)
+                    eraseChannelCallBack(listenfd.getFd());
+                else 
+                    perror("not register EraseChannelCallBack\n");
+            }
+        }
+
+        bool AsyncAcceptor::listened() const
+        {return listening;};
+
+        void AsyncAcceptor::setInsertChannelCallBack(const InsertChannelCallBack& cb)
+        {insertChannelCallBack = cb;};
+
+        void AsyncAcceptor::setEraseChannelCallBack(const EraseChannelCallBack& cb)
+        {eraseChannelCallBack = cb;};
 
         void AsyncAcceptor::handleRead()
         {
-            int confd = socket::accept(listenfd);
+            int confd = socket::accept(listenfd.getFd());
             assert(confd >= 0);
             socket::setNonBlockAndCloseOnExec(confd);
-
-            if(newconnectioncallback)
-                channel_ = newconnectioncallback(confd);
+            Channel channel(confd,CONNECT);
             
-            addinserverloop(channel_);
+            if(insertChannelCallBack)
+                insertChannelCallBack(std::move(channel));
+            else
+                perror("not register InsertChannelCallBack\n");
         }
     }
 }

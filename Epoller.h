@@ -14,17 +14,16 @@
 namespace unet
 {
     namespace net
-    { 
+    {
+        class EventList;
+        static const int timeoutMs = 200;//默认poll阻塞200ms
+        
         class Epoller final
         {
-            static const int timeoutMs = 200;//默认poll阻塞200ms
-            static const int KNoneEvent = 0;
-
-            typedef std::vector<struct epoll_event> EventList;
             typedef std::vector<Channel&> ChannelList;
 
             public:    
-                explicit Epoller();
+                explicit Epoller(EventList& events);
                 Epoller(const Epoller&) = delete;
                 Epoller& operator=(const Epoller&) = delete;
                 Epoller(Epoller&& lhs);
@@ -37,7 +36,7 @@ namespace unet
                 void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap);
 
             private:
-                EventList eventList;//保存epollfd的数组
+                EventList& eventList;//保存epollfd的数组
                 int epollfd;//内核维护的epollfd表
         };    
     }

@@ -8,7 +8,6 @@
 #ifndef _ASYNCACCEPTOR_H
 #define _ASYNCACCEPTOR_H
 
-#include<functional>
 #include"../Channel.h"
 
 
@@ -18,8 +17,9 @@ namespace unet
     {
         class AsyncAcceptor final
         {
-            typedef std::function<void(Channel&&)> HandleChannelCallBack;
-            
+            typedef std::function<void(Channel&&)> InsertChannelCallBack;
+            typedef std::function<void(int)> EraseChannelCallBack;
+
             public:
                 explicit AsyncAcceptor(socket::InetAddress& addr_);
                 AsyncAcceptor(const AsyncAcceptor& lhs) = delete;
@@ -29,18 +29,21 @@ namespace unet
                 ~AsyncAcceptor();
 
                 void listen();
+                void stopListen();
                 inline bool listened() const;
-                inline void setHandleChannelCallBack(const HandleChannelCallBack& cb);
+                inline void setInsertChannelCallBack(const InsertChannelCallBack& cb);
+                inline void setEraseChannelCallBack(const EraseChannelCallBack& cb);
 
             private:
                 void handleRead();
-            
+                 
             private:
                 socket::InetAddress& serveraddr;
-                int listenfd;
+                socket::Socket listenfd;
                 bool listening;
 
-                HandleChannelCallBack handleChannelCallBack;
+                InsertChannelCallBack insertChannelCallBack;
+                EraseChannelCallBack eraseChannelCallBack;
         };
     }
 }
