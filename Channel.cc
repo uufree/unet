@@ -124,7 +124,10 @@ namespace unet
         {return type;};
 
         void Channel::setReadCallBack(const ReadCallBack& lhs)
-        {readCallBack = lhs;};
+        {
+            if(type == LISTEN || type == CLOCK)
+                readCallBack = lhs;
+        };
 
         void Channel::setcloseCallBack(const CloseCallBack& lhs)
         {closeCallBack = lhs;};

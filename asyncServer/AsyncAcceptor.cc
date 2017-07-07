@@ -11,19 +11,15 @@ namespace unet
 {
     namespace net
     {
-        AsyncAcceptor::AsyncAcceptor(unet::net::InetAddress* addr_):
+        AsyncAcceptor::AsyncAcceptor(socket::InetAddress& addr_):
             serveraddr(addr_),
             listenfd(socket::socket()),
-            listenchannel(new Channel(listenfd,LISTEN)),
-            listening(false),
-            channel_(nullptr)
+            listening(false)
         {
-            int fd = socket::socket();
-            socket::bind(fd,serveraddr);
-            listenfd = fd;
-            listenchannel->setFd(fd);
+            Channel listenChannel(socket::socket(),LISTEN);
+            listenChannel.setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
 
-            listenchannel->setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
+            handleChannelCallBack(std::move(listenChannel));
         }
 
         AsyncAcceptor::~AsyncAcceptor()

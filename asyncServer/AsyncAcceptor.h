@@ -18,35 +18,29 @@ namespace unet
     {
         class AsyncAcceptor final
         {
-            typedef std::function<Channel* (int sockfd)> NewConnectionCallBack;
-            typedef std::function<void(Channel*)> AddInServerLoopCallBack;
-
+            typedef std::function<void(Channel&&)> HandleChannelCallBack;
+            
             public:
-                explicit AsyncAcceptor(unet::net::InetAddress* addr_);
+                explicit AsyncAcceptor(socket::InetAddress& addr_);
                 AsyncAcceptor(const AsyncAcceptor& lhs) = delete;
                 AsyncAcceptor& operator=(const AsyncAcceptor& lhs) = delete;
+                AsyncAcceptor(AsyncAcceptor&& lhs);
+                AsyncAcceptor& operator=(AsyncAcceptor&& lhs);
                 ~AsyncAcceptor();
-//public interface
-                void listen();
-                bool listened() {return listening;};
 
-                void setNewConnectionCallBack(const NewConnectionCallBack& cb)
-                {newconnectioncallback = cb;};
-                
-                void setAddInServerLoopCallBack(const AddInServerLoopCallBack& cb)
-                {addinserverloop = cb;};
-            
+                void listen();
+                inline bool listened() const;
+                inline void setHandleChannelCallBack(const HandleChannelCallBack& cb);
 
             private:
                 void handleRead();
-
-                unet::net::InetAddress* serveraddr;
+            
+            private:
+                socket::InetAddress& serveraddr;
                 int listenfd;
-                Channel* listenchannel;
                 bool listening;
-                NewConnectionCallBack newconnectioncallback;
-                AddInServerLoopCallBack addinserverloop;                    
-                Channel* channel_;
+
+                HandleChannelCallBack handleChannelCallBack;
         };
     }
 }
