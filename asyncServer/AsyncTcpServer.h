@@ -24,6 +24,7 @@ namespace unet
         class AsyncTcpServer final
         {
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
+            typedef std::vector<Channel&> ChannelList;
 
             public:
                 explicit AsyncTcpServer(socket::InetAddress& server,int size = 2);
@@ -38,7 +39,9 @@ namespace unet
                 void start();
              
             private:
-                
+                void InsertChannel(Channel&& channel);
+                void EraseChannel(int fd);
+                void GetActiveChannels();
 
             private:
                 socket::InetAddress& serveraddr;
@@ -46,6 +49,7 @@ namespace unet
                 TcpConnectionMap tcpconnectionMap;
                 ChannelMap channelMap;
                 EventList eventList;
+                ChannelList channelList;
                 thread::ThreadPool pool;                
 
                 Epoller epoller;

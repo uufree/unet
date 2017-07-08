@@ -46,18 +46,19 @@ namespace unet
 
         void TcpConnection::setWriteCallBack(const MessageCallBack& lhs)
         {writeCallBack = lhs;};
+        
+        void TcpConnection::read()
+        {
+            if(inputBuffer.readInSocket() == 0)
+                closeCallBack(confd.getFd());
+        }
 
         void TcpConnection::handleRead()
         {//处理读事件   
-            if(inputBuffer.readInSocket() == 0)
-                closeCallBack(confd.getFd());
+            if(readCallBack)
+                readCallBack(&inputBuffer,&outputBuffer);
             else
-            {
-                if(readCallBack)
-                    readCallBack(&inputBuffer,&outputBuffer);
-                else
-                    perror("没有注册readcallback\n");
-            }
+                perror("没有注册readcallback\n");
         }
 
         void TcpConnection::handleWrite()

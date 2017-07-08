@@ -10,6 +10,7 @@
 
 #include"ChannelMap.h"
 #include<sys/epoll.h>
+#include"TcpConnectionMap.h"
 
 namespace unet
 {
@@ -21,7 +22,7 @@ namespace unet
         class Epoller final
         {
             typedef std::vector<Channel&> ChannelList;
-
+            
             public:    
                 explicit Epoller(EventList& events);
                 Epoller(const Epoller&) = delete;
@@ -30,10 +31,10 @@ namespace unet
                 Epoller& operator=(Epoller&& lhs);
                 ~Epoller();
 
-                void epoll(ChannelList& channelList,ChannelMap& channelMap);
+                void epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap);
             
             private:
-                void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap);
+                void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap);
 
             private:
                 EventList& eventList;//保存epollfd的数组

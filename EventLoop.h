@@ -31,8 +31,6 @@ namespace unet
         class EventLoop final
         {
             typedef std::function<void()> GetActiveChannelsCallBack;
-            typedef std::function<void()> HandleChannelsCallBack;
-            typedef std::vector<Channel&> ChannelList;
 
             public:
                 EventLoop();
@@ -47,16 +45,13 @@ namespace unet
                 void loop();
                 inline void setQuit();
                 inline void setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs);
-                inline void setHandleChannelsCallBack(const HandleChannelsCallBack& lhs);
             
             private:
                 bool looping;
                 bool quit;
                 bool eventHandling;
-                ChannelList activeChannelList;
         
                 GetActiveChannelsCallBack getActiveChannelsCallBack;
-                HandleChannelsCallBack handleChannelsCallBack;
         };
     }
 }

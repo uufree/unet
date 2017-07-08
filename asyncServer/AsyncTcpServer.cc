@@ -17,14 +17,37 @@ namespace unet
             epoller(eventList),
             asyncAcceptor(serveraddr) 
         {
-            eventLoop.setGetActiveChannelsCallBack();
-            eventLoop.setHandleChannelsCallBack();
+            eventLoop.setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::GetActiveChannels,this));
             
-            asyncAcceptor.setEraseChannelCallBack();
-            asyncAcceptor.setInsertChannelCallBack();
+            asyncAcceptor.setEraseChannelCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
+            asyncAcceptor.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
         }
         
+        void AsyncTcpServer::InsertChannel(Channel&& channel)
+        {
+            channel.setCloseCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
+            
+            TcpConnection connection(channel.getFd());
+            connection.setReadCallBack(readCallBack);
+            connection.setWriteCallBack(writeCallBack);
+            
+            tcpconnectionMap.insert(std::move(connection));
+            channelMap.insert(std::move(channel));
+            eventList.insert(channel);
+        }
 
+        void AsyncTcpServer::EraseChannel(int fd)
+        {
+            tcpconnectionMap.erase(fd);
+            channelMap.erase(fd);
+            eventList.erase(fd);
+        }
+
+        void AsyncTcpServer::GetActiveChannels()
+        {
+            epoller.epoll(channelList,channelMap,tcpconnectionMap);
+            pool.addInTaskQueue(channelList); 
+        }
     }
 }
 

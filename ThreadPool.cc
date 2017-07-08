@@ -82,7 +82,8 @@ namespace unet
         void ThreadPool::addInTaskQueue(ChannelList& tasks)
         {
             MutexLockGuard guard(mutex);   
-            channelList.insert(tasks.begin(),tasks.end(),channelList.begin());
+            std::swap(tasks,channelList);
+            
             cond.notifyAll(); 
         }
     }

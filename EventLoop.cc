@@ -22,9 +22,7 @@ namespace unet
             looping(lhs.looping),
             quit(lhs.quit),
             eventHandling(lhs.eventHandling),
-            activeChannelList(std::move(lhs.activeChannelList)),
-            getActiveChannelsCallBack(std::move(lhs.getActiveChannelsCallBack)),
-            handleChannelsCallBack(std::move(lhs.handleChannelsCallBack))
+            getActiveChannelsCallBack(std::move(lhs.getActiveChannelsCallBack))
         {};
 
         EventLoop& EventLoop::operator=(EventLoop&& lhs)
@@ -33,9 +31,7 @@ namespace unet
             quit = lhs.quit;
             eventHandling = lhs.eventHandling;
 
-            activeChannelList = std::move(lhs.activeChannelList);
             getActiveChannelsCallBack = std::move(lhs.getActiveChannelsCallBack);
-            handleChannelsCallBack = std::move(lhs.handleChannelsCallBack);
 
             return *this;
         }
@@ -56,31 +52,14 @@ namespace unet
                 exit(1);
             }
 
-            if(!handleChannelsCallBack)
-            {
-                perror("没有注册handleEventsCallBack!\n");
-                exit(1);
-            }
-
             while(!quit)
-            {
-                activeChannelList.clear();
-
                 getActiveChannelsCallBack();
-                handleChannelsCallBack();
-            }
         }
         
         void EventLoop::setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs)
         {
             getActiveChannelsCallBack = lhs;
         }
-
-        void EventLoop::setHandleChannelsCallBack(const HandleChannelsCallBack& lhs)
-        {
-            handleChannelsCallBack = lhs;
-        }
-        
     }
 }
 

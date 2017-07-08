@@ -53,7 +53,7 @@ namespace unet
         {
             Channel channel(listenfd.getFd(),LISTEN);
             channel.setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
-            
+
             if(!listening)
             {
                 listening = true;
@@ -94,8 +94,7 @@ namespace unet
             socket::setNonBlockAndCloseOnExec(confd);
             
             Channel channel(confd,CONNECT);
-            channel.setCloseCallBack(eraseChannelCallBack);
-
+            
             if(insertChannelCallBack)
                 insertChannelCallBack(std::move(channel));
             else

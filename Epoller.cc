@@ -26,22 +26,23 @@ namespace unet
             ::close(epollfd);
         }
 
-        void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap)
+        void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap)
         {
             int activeEvents = ::epoll_wait(epollfd,&*eventList.getEventList().begin(),static_cast<int>(eventList.size()),timeoutMs);
 
             if(activeEvents > 0)
-                getActiveEvents(activeEvents,channelList,channelMap);
+                getActiveEvents(activeEvents,channelList,channelMap,tcpconnectionMap);
             else if(activeEvents == 0)
                 std::cout << "nothing happened!" << std::endl; 
             else
                 unet::handleError(errno);
         }
 
-        void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList,ChannelMap& channelMap)
+        void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap)
         {
             int fd;
             auto events = eventList.getEventList();
+
             for(int i=0;i<activeEvents;++i)
             {
                 if((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT))
@@ -49,6 +50,9 @@ namespace unet
                     fd = events[i].data.fd;
                     Channel& channel = channelMap.findChannel(fd); 
                     channel.setRevent(events[i].events);
+                    
+                    TcpConnection& con = tcpConnectionMap.find(fd);
+                    con.read();
 
                     channeList.push_back(channel);
                 }

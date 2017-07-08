@@ -36,13 +36,14 @@ namespace unet
                 ~TcpConnection();
                 
                 inline void setReadCallBack(const MessageCallBack& cb);
-                
                 inline void setWriteCallBack(const MessageCallBack& cb); 
+                
                 inline int getFd() const;
-
+                void read();
                 void handleRead();//用于处理描述符上发生的事件
                 void handleWrite();
                 void handleClose(); 
+                
 
             private:
                 socket::Socket confd;
