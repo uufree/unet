@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/a.dir/FileTest.cc.o CMakeFiles/a.dir/home/uuchen/unet/File.cc.o  -o a -rdynamic -lpthread 

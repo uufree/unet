@@ -4,63 +4,56 @@
 	> Mail: 1319081676@qq.com
 	> Created Time: 2017年02月27日 星期一 18时04分42秒
  ************************************************************************/
+/*设计理念：使用封装解决琐碎的问题
+ * 
+ * 1. O_WRITE: write
+ * 2. O_C_WRITE: clear write
+ * 3. O_READ: read
+ * 4. N_WRITE: new write
+ * 
+ * 5.使用分离式构造的方式完成基本的构造
+ */
 
 #ifndef _FILE_H
 #define _FILE_H
 
-#include<assert.h>
 #include<errno.h>
 #include<unistd.h>
 #include<fcntl.h>
-#include<sys/stat.h>
 #include<string>
 #include<string.h>
-#include<dirent.h>
-#include<iostream>
-#include<vector>
-#include"Mutex.h"
-
-//约定只能使用全局地址
 
 namespace unet
 {
     namespace file
     {
+        enum OperatorType{O_WRITE,O_C_WRITE,O_READ,N_WRITE};
+        
         class File final
         {
             friend bool operator==(const File& lhs,const File& rhs);
-            enum OperatorType{O_WRITE,O_C_WRITE,O_READ,N_WRITE};
 
             public:
                 explicit File(const char* filename_,OperatorType type_);
                 explicit File(const std::string& filename_,OperatorType type_);
 
-                File(File& lhs);
+                File(const File& lhs) = delete;
                 File(File&& lhs);
-                File& operator=(File& lhs);
+                File& operator=(const File& lhs) = delete;
                 File& operator=(File&& lhs);
                 ~File();  
 
-                const std::string& getFilename() const 
-                {return filename;}
-                
+                const std::string& getFilename() const
+                {return filename;};
+
                 const std::string& getGlobalFilename() const
-                {return g_filename;}
-
-                const std::string& getFileowner() const
-                {return fileowner;};
-
-                const std::string getFiletype() const
-                {return filetype;};
-                
-                void setSeekZero() const
-                {};
+                {return g_filename;};
 
                 int getFd() const
-                {return fd;}
+                {return fd;};
                 
                 bool isOpened() const
-                {return opened;};
+                {return opened;};    
 
             private:
                 void init();
@@ -71,24 +64,19 @@ namespace unet
                 bool opened;
                 std::string filename;
                 std::string g_filename;
-                std::string fileowner;
-                std::string filetype;
                 OperatorType type;
         };
         
-        bool operator==(const File& lhs,const File& rhs)
-        {
-            if(lhs.fd == rhs.fd && lhs.g_filename == rhs.g_filename && lhs.filetype == rhs.filetype)
-                return true;
-            else
-                return false;
-        }
-
         int readn(int fd,char* cptr,size_t nbytes);
-        int writen(int fd,char* cptr,size_t nbytes);
-
+        int readn(int fd,std::string& buf,size_t nbytes);
         void readn(const File& lhs,char* cptr,size_t nbytes);
-        void writen(const File& lhs,char* cptr,size_t nbytes);
+        void readn(const File& lhs,std::string& buf,size_t nbytes);
+        
+        int writen(int fd,const char* cptr,size_t nbytes);
+        int writen(int fd,std::string& buf,size_t nbytes);
+        void writen(const File& lhs,const char* cptr,size_t nbytes);
+        void writen(const File& lhs,const std::string& cptr,size_t nbytes);
+        
     }
 }
             

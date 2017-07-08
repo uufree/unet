@@ -16,7 +16,8 @@ namespace unet
 {
     namespace net
     {
-        Buffer::Buffer(int fd_,int bufferSize_) : fd(fd_),
+        Buffer::Buffer(int fd_,int bufferSize_) : 
+            fd(fd_),
             buffer(),
             bufferSize(bufferSize_),
             dataSize(0),
@@ -63,7 +64,7 @@ namespace unet
             return false;
         };
         
-        int Buffer::getFreeSize(int size)
+        int Buffer::getFreeSize(int size) const
         {
             /* 0:freeSize足够但是末尾空间不够
              * 1:freeSize足够并且末尾空间也足够
@@ -85,7 +86,7 @@ namespace unet
             return -1;
         };
 
-        bool Buffer::needToMove()
+        bool Buffer::needToMove() const
         {
             return dataIndex >= (bufferSize/2);
         }
@@ -174,12 +175,14 @@ namespace unet
         
         void Buffer::appendInBuffer(const char* message)
         {
-            handleBufferSpace(strlen(message),message);  
+            handleBufferSpace(strlen(message),message);
+            handleBufferSpace(2,"\r\n");
         }
 
         void Buffer::appendInBuffer(const std::string& message)
         {
             handleBufferSpace(message.size(),message);
+            handleBufferSpace(2,"\r\n");
         }
 
         void Buffer::getCompleteMessageInBuffer(std::string& message)
@@ -197,6 +200,25 @@ namespace unet
             std::string str(buffer,dataIndex,index);
 
             return std::move(str);
+        }
+
+        void Buffer::sendFile(const char* filename)
+        {
+
+        }
+
+        void Buffer::sendFile(const std::string& filename)
+        {
+            sendFile(filename.c_str());
+        }
+
+        void Buffer::recvFile(const char* filename)
+        {
+        }
+
+        void Buffer::recvFile(const std::string& filename)
+        {
+            recvFile(filename.c_str());
         }
     }
 }

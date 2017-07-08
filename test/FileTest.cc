@@ -2,39 +2,29 @@
 	> File Name: FileTest.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月31日 星期五 16时52分54秒
+	> Created Time: 2017年07月08日 星期六 13时45分13秒
  ************************************************************************/
 
 #include"../File.h"
-#include"../Buffer.h"
 #include<iostream>
-#include<string.h>
+
+using namespace unet::file;
 
 int main(int argc,char** argv)
 {
-/*    
-    unet::File uuchen("/home/uuchen/uuchen.jpeg");
-    unet::File chenuu("/home/uuchen/chenuu.jpeg");
-    Buffer inputbuffer(uuchen.getFd());
-    Buffer outputbuffer(chenuu.getFd());
-
-    std::cout << "uuchen: " << uuchen.getFd() << std::endl;
-    std::cout << "chenuu: "  << chenuu.getFd() << std::endl;
-
-    char buf[1024];
-    ::bzero(buf,1024);
-    while(1)
-    {
-        uuchen.readn(buf,1024);
-        if(uuchen.getReadSize() > 0)
-            chenuu.writen(buf,uuchen.getReadSize());
-        else
-            break;
-    }
-*/
-    unet::File hello("/home/uuchen/hello.txt");
-    hello.writen("hello,world!\n",13);
-
+    std::string mess;
+    std::string message("I'm uuchen!");
+    File uuchen("/home/uuchen/uuchen.txt",N_WRITE);
+    std::cout << "fd: " << uuchen.getFd() << std::endl;
+    std::cout << "g_filename: " << uuchen.getGlobalFilename() << std::endl;
+    std::cout << "filename: " << uuchen.getFilename() << std::endl;
+    
+    writen(uuchen,message,message.size());
+    std::cout << "finish writen" << std::endl;
+    readn(uuchen,mess,16);
+    std::cout << "finish readn" << std::endl;
+            
+    std::cout << mess << std::endl;
     return 0;
 }
 

@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/uuchen/unet/File.cc
+File.h
+/home/uuchen/unet/File.h
+error.h
+/home/uuchen/unet/error.h
+iostream
+-
+
+/home/uuchen/unet/File.h
+errno.h
+-
+unistd.h
+-
+fcntl.h
+-
+string
+-
+string.h
+-
+
+/home/uuchen/unet/error.h
+string.h
+-
+stdio.h
+-
+stdlib.h
+-
+errno.h
+-
+
+/home/uuchen/unet/test/FileTest.cc
+../File.h
+/home/uuchen/unet/File.h
+iostream
+-
+

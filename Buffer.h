@@ -6,17 +6,18 @@
  ************************************************************************/
 
 /* 设计理念:使用STL容器管理内存，避免使用C-Style风格，接受性能损失
- * 1.一个Buffer只做一样工作，读或者写。因为异步会对Buffer加锁 
- * 2.内部紧耦合，尽可能少的向外部暴露接口
- * 3.尽量节省空间（挪移），此举会带来性能损失
- * 4.根据需要使用STL自行扩展
+ 
+ * 1.一个Buffer只做一样工作，读或者写。
+ * 2.异步会对Buffer加锁 
+ * 3.内部紧耦合，尽可能少的向外部暴露接口
+ * 4.尽量节省空间（挪移），此举会带来性能损失
+ * 5.根据需要使用STL自行扩展
  */
 
 #ifndef _BUFFER_H
 #define _BUFFER_H
 
 #include<string>
-//目前版本只支持固定大小的数据传输
 
 namespace unet
 {
@@ -36,20 +37,19 @@ namespace unet
                 
                 void swap(Buffer& lhs);
 
-                //public interface
                 int readInSocket();
                 int writeInSocket();
                 void appendInBuffer(const char* message);
                 void appendInBuffer(const std::string& message);
                 void getCompleteMessageInBuffer(std::string& message);
                 std::string&& getCompleteMessageInBuffer();
-/*                
+                
                 //针对File
                 void sendFile(const char* filename);
                 void sendFile(const std::string& filename); 
                 void recvFile(const char* filename);
                 void recvFile(const std::string& filename);
-*/            
+            
             private:
                 inline int getFreeSize(int size) const;//得到几种不同情况的freeSize
                 inline bool needToMove() const;//是否需要移动
