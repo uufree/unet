@@ -35,13 +35,14 @@ namespace unet
             
                 int size() const;
                 bool empty() const;
+                void insert(Channel&& channel);
                 void insert(int fd,ChannelType type);
                 void erase(int fd);
                 
                 Channel& findChannel(int fd);
 
             private:
-                std::set<int> channelList;
+                thread::MutexLock mutex;
                 std::map<int,Channel&&> channelMap;
         };
     }

@@ -26,15 +26,14 @@ namespace unet
 {
     namespace net
     {
-        enum EventType{};
+        class Channel;
 
         class EventLoop final
         {
-            typedef std::pair<int,EventType> TcpConnectionIndex;
-            typedef std::vector<TcpConnectionIndex> ActiveEventsList;
-            typedef std::function<void()> GetActiveEventsCallBack;
-            typedef std::function<void()> HandleEventsCallBack;
-            
+            typedef std::function<void()> GetActiveChannelsCallBack;
+            typedef std::function<void()> HandleChannelsCallBack;
+            typedef std::vector<Channel&> ChannelList;
+
             public:
                 EventLoop();
                 EventLoop(const EventLoop&) = delete;
@@ -47,16 +46,17 @@ namespace unet
                 
                 void loop();
                 inline void setQuit();
-                inline void setGetActiveChannelsCallBack(const GetActiveEventsCallBack& lhs);
-                inline void setHandleEventsCallBack(const HandleEventsCallBack& lhs);
-
+                inline void setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs);
+                inline void setHandleChannelsCallBack(const HandleChannelsCallBack& lhs);
+            
             private:
                 bool looping;
                 bool quit;
                 bool eventHandling;
-                ActiveEventsList activeEventsList;
-                GetActiveEventsCallBack getActiveEventsCallBack;
-                HandleEventsCallBack handleEventsCallBack;
+                ChannelList activeChannelList;
+        
+                GetActiveChannelsCallBack getActiveChannelsCallBack;
+                HandleChannelsCallBack handleChannelsCallBack;
         };
     }
 }

@@ -49,13 +49,17 @@ namespace unet
             bzero(&event,sizeof(event));
             event.events = channel.getEvent();
             event.data.fd = channel.getFd();
-
-            eventList.push_back(std::move(event));
-            eventFdList.push_back(event.data.fd);
+            
+            {
+                thread::MutexLockGuard guard(mutex);
+                eventList.push_back(std::move(event));
+                eventFdList.push_back(event.data.fd);
+            }
         }
 
         void EventList::erase(int fd)
         {
+            thread::MutexLockGuard guard(mutex);
             auto pos = std::find(eventFdList.begin(),eventFdList.end(),fd);
             int index = pos - eventFdList.cbegin();
             pos = eventList.begin() + index;

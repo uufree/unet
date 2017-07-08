@@ -22,18 +22,19 @@ namespace unet
         {
             typedef std::function<void()> Task;
             typedef std::vector<Task> TaskList;
-            typedef std::vector<unet::net::Channel*> ChannelList;
+            typedef std::vector<unet::net::Channel&> ChannelList;
             
             public:
                 explicit TaskThreadPool(int size = 2) : pool(size),lock1(),lock2(),cond1(lock1),cond2(lock2)
                 {
                     Thread thread(std::bind(&TaskThreadPool::ThreadFunc,this));
-                    pool.setThreadCallBack(std::move(thread));
+                    pool.setThreadCallBack(&TaskThreadPool::ThreadFunc,this);
                 }
 
                 TaskThreadPool(const TaskThreadPool& lhs) = delete;
                 TaskThreadPool& operator=(const TaskThreadPool& lhs) = delete;
-                
+                TaskThreadPool(TaskThreadPool&& lhs);
+                TaskThreadPool& operator=(TaskThreadPool&& lhs);
                 ~TaskThreadPool()
                 {
                     pool.joinAll();

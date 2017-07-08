@@ -129,7 +129,7 @@ namespace unet
                 readCallBack = lhs;
         };
 
-        void Channel::setcloseCallBack(const CloseCallBack& lhs)
+        void Channel::setCloseCallBack(const CloseCallBack& lhs)
         {closeCallBack = lhs;};
 
         bool Channel::isNoneEvent() const

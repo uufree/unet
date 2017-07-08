@@ -8,10 +8,14 @@
 #ifndef _ASYNCTCPSERVER_H
 #define _ASYNCTCPSERVER_H
 
-#include"AsyncEventLoop.h"
-#include"../Epoller.h"
-#include"TaskThreadPool.h"
 #include"AsyncAcceptor.h"
+#include"../TcpConnectionMap.h"
+#include"../ChannelMap.h"
+#include"../EventList.h"
+#include"../Epoller.h"
+#include"../EventLoop.h"
+#include"../ThreadPool.h"
+#include"../ThreadPool.h"
 
 namespace unet
 {
@@ -19,51 +23,36 @@ namespace unet
     {
         class AsyncTcpServer final
         {
-            typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-            typedef std::map<int,TcpConnectionPtr> TcpConnectionPtrMap;
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
-            typedef std::vector<Channel*> ChannelList;
 
             public:
-                explicit AsyncTcpServer(InetAddress* addr_,int size = 2);
+                explicit AsyncTcpServer(socket::InetAddress& server,int size = 2);
                 AsyncTcpServer(const AsyncTcpServer& lhs) = delete;
                 AsyncTcpServer& operator=(const AsyncTcpServer& lhs) = delete;
-                ~AsyncTcpServer(){};
+                AsyncTcpServer(AsyncTcpServer&& lhs);
+                AsyncTcpServer& operator=(AsyncTcpServer&& lhs);
+                ~AsyncTcpServer();
 
-                void setReadCallBack(const MessageCallBack& cb)
-                {readcallback = cb;};
-
-                void setWriteCallBack(const MessageCallBack& cb)
-                {writecallback = cb;};
-
-                void setDrivedCallBack(const MessageCallBack& cb)
-                {drivedcallback = cb;};
-
-                void handleDiedTcpConnection(int fd);
+                inline void setReadCallBack(const MessageCallBack& cb);
+                inline void setWriteCallBack(const MessageCallBack& cb);
                 void start();
-                
-                void getActiveChannels(ChannelList* channels)
-                {
-                    epoller->epoll(channels);
-                };
-                
-                void addChannelInPool(ChannelList* channels)
-                {
-                    pool->addInChannelQueue(channels);
-                };
-            
+             
             private:
-                Channel* newConnectionCallBack(int fd_);
-                void addInServerLoop(Channel* channel);
+                
 
-                InetAddress* serveraddr;
-                std::unique_ptr<AsyncEventLoop> loop;//异步事件loop
-                std::unique_ptr<Epoller> epoller;
-                std::unique_ptr<AsyncAcceptor> acceptor;
-                std::unique_ptr<unet::thread::TaskThreadPool> pool;//处理异步事件的线程池
-                TcpConnectionPtrMap tcpconnectionptrmap;
-                MessageCallBack readcallback,writecallback,drivedcallback;
-                thread::MutexLock lock;
+            private:
+                socket::InetAddress& serveraddr;
+
+                TcpConnectionMap tcpconnectionMap;
+                ChannelMap channelMap;
+                EventList eventList;
+                thread::ThreadPool pool;                
+
+                Epoller epoller;
+                EventLoop eventLoop;
+                AsyncAcceptor asyncAcceptor;
+
+                MessageCallBack readCallBack,writeCallBack;
         };
     }
 }

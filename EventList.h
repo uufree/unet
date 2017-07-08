@@ -11,6 +11,7 @@
 
 #include<vector>
 #include<sys/epoll.h>
+#include"Mutex.h"
 
 namespace unet
 {
@@ -37,6 +38,7 @@ namespace unet
                 inline std::vector<struct epoll_event>& getEventList();
 
             private:
+                thread::MutexLock mutex;
                 std::vector<struct epoll_event&&> eventList;
                 std::vector<int> eventFdList;
         };

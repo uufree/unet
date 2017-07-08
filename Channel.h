@@ -62,8 +62,9 @@ namespace unet
                 inline int getEvent() const;
                 inline void setRevent(int revent_); 
                 inline int getType() const;
+                
                 inline void setReadCallBack(const ReadCallBack& lhs);
-                inline void setcloseCallBack(const CloseCallBack& lhs);
+                inline void setCloseCallBack(const CloseCallBack& lhs);
 
                 inline bool isNoneEvent() const;
                 inline bool isReading() const;

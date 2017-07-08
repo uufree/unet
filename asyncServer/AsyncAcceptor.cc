@@ -92,8 +92,10 @@ namespace unet
             int confd = socket::accept(listenfd.getFd());
             assert(confd >= 0);
             socket::setNonBlockAndCloseOnExec(confd);
-            Channel channel(confd,CONNECT);
             
+            Channel channel(confd,CONNECT);
+            channel.setCloseCallBack(eraseChannelCallBack);
+
             if(insertChannelCallBack)
                 insertChannelCallBack(std::move(channel));
             else

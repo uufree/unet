@@ -7,86 +7,83 @@
 
 #include"ThreadPool.h"
 
-namespace thread
+namespace unet
 {
-    ThreadPool::~ThreadPool()
+    namespace thread
     {
-        started = false;
-        for(int i=0;i<threadsize;++i)
-            ::pthread_detach(threadlistptr[i].getThreadId());
-
-        delete [] threadlistptr;
-    }
-    
-    ThreadPool::ThreadPool(const ThreadPool& lhs) : 
-        started(false),
-        threadsize(lhs.threadsize),
-        threadlistptr(new Thread[threadsize]),
-        threadfunc(lhs.threadfunc),
-        mutex(),
-        cond(mutex)
-    {};
-    
-    ThreadPool::ThreadPool(ThreadPool&& lhs) : 
-        started(false),
-        threadsize(lhs.threadsize),
-        threadlistptr(new Thread[threadsize]),
-        threadfunc(lhs.threadfunc),
-        mutex(),
-        cond(mutex)
-    {};
-
-    ThreadPool& ThreadPool::operator=(const ThreadPool& lhs)
-    {
-        assert(!started);
-        delete [] threadlistptr;
-        threadlistptr = new Thread[threadsize];
-            
-        threadfunc = lhs.threadfunc;
-        taskqueue.clear();
-
-        return *this;
-    }
-
-    void ThreadPool::start()
-    {
-        if(!started)
+        ThreadPool::ThreadPool(int size) :
+            started(false),
+            threadSize(size),
+            threadListPtr(new Thread[size]),
+            mutex(),
+            cond(mutex)
         {
-            for(int i=0;i<threadsize;++i)
+            setThreadCallBack(std::bind(&ThreadPool::ThreadFunction,this));
+        };
+        
+        ThreadPool::ThreadPool(int size,const ThreadFunc& cb) :
+            started(false),
+            threadSize(size),
+            threadListPtr(new Thread[size]),
+            threadFunc(cb),
+            mutex(),
+            cond(mutex)
+        {};
+
+        ThreadPool::ThreadPool(ThreadPool&& lhs) : 
+            started(false),
+            threadSize(lhs.threadSize),
+            threadListPtr(new Thread[threadSize]),
+            threadFunc(std::move(lhs.threadFunc)),
+            mutex(),
+            cond(mutex)
+        {};
+        
+        ThreadPool& ThreadPool::operator=(ThreadPool&& lhs)
+        {
+            joinAll();
+            delete [] threadListPtr;
+
+            started = false;
+            threadListPtr = new Thread[threadSize];
+            threadFunc = std::move(lhs.threadFunc);
+            return *this;
+        }
+
+        ThreadPool::~ThreadPool()
+        {
+            started = false;
+            for(int i=0;i<threadSize;++i)
+                ::pthread_detach(threadListPtr[i].getThreadId());
+
+            delete [] threadListPtr;
+        }
+    
+        void ThreadPool::start()
+        {
+            if(!started)
             {
-                threadlistptr[i].setThreadCallBack(threadfunc);
-                threadlistptr[i].start();
+                for(int i=0;i<threadSize;++i)
+                {
+                    threadListPtr[i].setThreadCallBack(threadFunc);
+                    threadListPtr[i].start();
+                }
+                started = true;
             }
-            started = true;
         }
-    }
 
-    void ThreadPool::joinAll()
-    {
-        assert(started);
-        for(int i=0;i<threadsize;++i)
-            threadlistptr[i].join();
-    }
-
-    void ThreadPool::addInTaskQueue(const ThreadFunc& task)
-    {
-        if(started)
+        void ThreadPool::joinAll()
         {
-            MutexLockGuard guard(mutex);
-            taskqueue.push_back(task);
-        
-            cond.notify();
+            assert(started);
+            for(int i=0;i<threadSize;++i)
+                threadListPtr[i].join();
         }
-    }
 
-    ThreadFunc ThreadPool::getTaskInTaskQueue()
-    {
-        MutexLockGuard guard(mutex);
-        while(taskqueue.empty())
-            cond.wait();
-        
-        ThreadFunc func(taskqueue.front());
-        taskqueue.pop_front();
-        return func;
+        void ThreadPool::addInTaskQueue(ChannelList& tasks)
+        {
+            MutexLockGuard guard(mutex);   
+            channelList.insert(tasks.begin(),tasks.end(),channelList.begin());
+            cond.notifyAll(); 
+        }
     }
 }

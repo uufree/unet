@@ -25,10 +25,10 @@ namespace unet
                 explicit TaskQueue() : mutex(),notempty(mutex),queue() {};
 
                 TaskQueue(const TaskQueue&) = delete;
-                TaskQueue(TaskQueue&&) = delete;
+                TaskQueue(TaskQueue&& lhs);
                 TaskQueue& operator=(const TaskQueue&) = delete;
-                TaskQueue& operator=(TaskQueue&&) = delete;     
-                ~TaskQueue() {};
+                TaskQueue& operator=(TaskQueue&& lhs);     
+                ~TaskQueue();
 
                 void put(const T& task)
                 {
@@ -73,9 +73,9 @@ namespace unet
                 }
 
             private:
-                std::deque<T> queue;
                 mutable MutexLock mutex;
                 Condition notempty;
+                std::deque<T> queue;
         };
     }
 }

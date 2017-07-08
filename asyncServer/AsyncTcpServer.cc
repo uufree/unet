@@ -11,57 +11,20 @@ namespace unet
 {
     namespace net
     {
-        AsyncTcpServer::AsyncTcpServer(InetAddress* addr_,int size):
+        AsyncTcpServer::AsyncTcpServer(socket::InetAddress& addr_,int size):
             serveraddr(addr_),
-            loop(new AsyncEventLoop),
-            epoller(new Epoller),
-            acceptor(new AsyncAcceptor(addr_)),
-            pool(new thread::TaskThreadPool(size))
+            pool(new thread::ThreadPool(size)),
+            epoller(eventList),
+            asyncAcceptor(serveraddr) 
         {
-            acceptor->setNewConnectionCallBack(std::bind(&AsyncTcpServer::newConnectionCallBack,this,std::placeholders::_1));//处理新连接的回调
-            acceptor->setAddInServerLoopCallBack(std::bind(&AsyncTcpServer::addInServerLoop,this,std::placeholders::_1));//将一个新的channel加入loop
+            eventLoop.setGetActiveChannelsCallBack();
+            eventLoop.setHandleChannelsCallBack();
             
-            loop->setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::getActiveChannels,this,std::placeholders::_1));//epoller和pool交互的方式
-            loop->setHandleActiveChannelsCallBack(std::bind(&AsyncTcpServer::addChannelInPool,this,std::placeholders::_1));//将活动的事件加入pool中
+            asyncAcceptor.setEraseChannelCallBack();
+            asyncAcceptor.setInsertChannelCallBack();
         }
         
-        Channel* AsyncTcpServer::newConnectionCallBack(int fd_)
-        {
-            Channel* channel = new Channel(fd_,CONNECT);
-            TcpConnectionPtr ptr(channel->getTcpConnectionPtr());
 
-            if(readcallback)
-                ptr->setReadCallBack(readcallback);
-            if(writecallback)
-                ptr->setWriteCallBack(writecallback);
-            if(drivedcallback)
-                ptr->setDrivedCallBack(drivedcallback);
-     
-            ptr->setHandleDiedTcpConnection(std::bind(&AsyncTcpServer::handleDiedTcpConnection,this,std::placeholders::_1));
-            tcpconnectionptrmap.insert({fd_,ptr});
-            
-            return channel;
-        };
-
-        void AsyncTcpServer::addInServerLoop(Channel* channel)
-        {
-            epoller->addInChannelMap(channel);
-        }
-
-        void AsyncTcpServer::start()
-        {
-            acceptor->listen();
-            pool->start();
-            loop->loop();
-        }
-
-        void AsyncTcpServer::handleDiedTcpConnection(int fd)
-        {
-            thread::MutexLockGuard guard(lock);
-            tcpconnectionptrmap[fd]->handleChannel();
-            tcpconnectionptrmap[fd].reset();
-            tcpconnectionptrmap.erase(fd);
-        }
     }
 }
 

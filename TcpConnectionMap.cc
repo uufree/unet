@@ -36,12 +36,20 @@ namespace unet
 
         void TcpConnectionMap::insert(int fd)
         {
+            thread::MutexLockGuard guard(mutex);
             TcpConnection tcp(fd);
             tcpConnectionMap.insert({fd,std::move(tcp)});
         }
 
+        void TcpConnectionMap::insert(TcpConnection&& lhs)
+        {
+            thread::MutexLockGuard guard(mutex);
+            tcpConnectionMap.insert({lhs.getFd(),std::move(lhs)});
+        }
+
         void TcpConnectionMap::erase(int fd) 
         {
+            thread::MutexLockGuard guard(mutex);
             tcpConnectionMap.erase(fd);
         }
         

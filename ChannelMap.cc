@@ -15,13 +15,11 @@ namespace unet
         {};
 
         ChannelMap::ChannelMap(ChannelMap&& lhs) : 
-            channelList(std::move(lhs.channelList)),
             channelMap(std::move(lhs.channelMap))
         {};
 
         ChannelMap& ChannelMap::operator=(ChannelMap&& lhs)
         {
-            channelList = std::move(lhs.channelList);
             channelMap = std::move(lhs.channelMap);
 
             return *this;
@@ -29,25 +27,30 @@ namespace unet
 
         int ChannelMap::size() const 
         {
-            return channelList.size();
+            return channelMap.size();
         }
 
         bool ChannelMap::empty() const
         {
-            return channelList.empty();
+            return channelMap.empty();
         }
 
         void ChannelMap::insert(int fd,ChannelType type)
         {
-            channelList.insert(fd);
-            
+            thread::MutexLockGuard guard(mutex);
             net::Channel channel_(fd,type);
             channelMap.insert({fd,std::move(channel_)});
         }
 
+        void ChannelMap::insert(Channel&& channel)
+        {
+            thread::MutexLockGuard gurad(mutex);
+            channelMap.insert({channel.getFd(),std::move(channel)});
+        }
+
         void ChannelMap::erase(int fd)
         {
-            channelList.erase(fd);
+            thread::MutexLockGuard guard(mutex);
             channelMap.erase(fd);
         }
 

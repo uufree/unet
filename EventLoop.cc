@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"EventLoop.h"
+#include"Channel.h"
 
 namespace unet
 {
@@ -21,9 +22,9 @@ namespace unet
             looping(lhs.looping),
             quit(lhs.quit),
             eventHandling(lhs.eventHandling),
-            activeEventsList(std::move(lhs.activeEventsList)),
-            getActiveEventsCallBack(std::move(lhs.getActiveEventsCallBack)),
-            handleEventsCallBack(std::move(lhs.handleEventsCallBack))
+            activeChannelList(std::move(lhs.activeChannelList)),
+            getActiveChannelsCallBack(std::move(lhs.getActiveChannelsCallBack)),
+            handleChannelsCallBack(std::move(lhs.handleChannelsCallBack))
         {};
 
         EventLoop& EventLoop::operator=(EventLoop&& lhs)
@@ -32,9 +33,9 @@ namespace unet
             quit = lhs.quit;
             eventHandling = lhs.eventHandling;
 
-            activeEventsList = std::move(lhs.activeEventsList);
-            getActiveEventsCallBack = std::move(lhs.getActiveEventsCallBack);
-            handleEventsCallBack = std::move(lhs.handleEventsCallBack);
+            activeChannelList = std::move(lhs.activeChannelList);
+            getActiveChannelsCallBack = std::move(lhs.getActiveChannelsCallBack);
+            handleChannelsCallBack = std::move(lhs.handleChannelsCallBack);
 
             return *this;
         }
@@ -49,13 +50,13 @@ namespace unet
             looping = true;
             quit = false;
             
-            if(!getActiveEventsCallBack)
+            if(!getActiveChannelsCallBack)
             {
                 perror("没有注册getActiveEventsCallBack!\n");
                 exit(1);
             }
 
-            if(!handleEventsCallBack)
+            if(!handleChannelsCallBack)
             {
                 perror("没有注册handleEventsCallBack!\n");
                 exit(1);
@@ -63,21 +64,21 @@ namespace unet
 
             while(!quit)
             {
-                activeEventsList.clear();
+                activeChannelList.clear();
 
-                getActiveEventsCallBack();
-                handleEventsCallBack();
+                getActiveChannelsCallBack();
+                handleChannelsCallBack();
             }
         }
         
-        void EventLoop::setGetActiveChannelsCallBack(const GetActiveEventsCallBack& lhs)
+        void EventLoop::setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs)
         {
-            getActiveEventsCallBack = lhs;
+            getActiveChannelsCallBack = lhs;
         }
 
-        void EventLoop::setHandleEventsCallBack(const HandleEventsCallBack& lhs)
+        void EventLoop::setHandleChannelsCallBack(const HandleChannelsCallBack& lhs)
         {
-            handleEventsCallBack = lhs;
+            handleChannelsCallBack = lhs;
         }
         
     }

@@ -13,6 +13,8 @@
 #include"Condition.h"
 #include<deque>
 #include<memory>
+#include"TaskQueue.h"
+#include"Channel.h"
 
 namespace unet
 {
@@ -21,50 +23,63 @@ namespace unet
         class ThreadPool final
         {
             typedef std::function<void()> ThreadFunc;
-            typedef std::deque<ThreadFunc> TaskQueue;
+            typedef std::vector<Channel&> ChannelList;
 
             public:
-                explicit ThreadPool(int size = 2) : 
-                    started(false),
-                    threadsize(size),
-                    threadlistptr(new Thread[size]),
-                    mutex(),
-                    cond(mutex)
-                {};
-
-                explicit ThreadPool(int size,const ThreadFunc& cb) : 
-                    started(false),
-                    threadsize(size),
-                    threadlistptr(new Thread[size]),
-                    threadfunc(cb),
-                    mutex(),
-                    cond(mutex)
-                {};
-                
-                ThreadPool(const ThreadPool& lhs);
+                explicit ThreadPool(int size = 2);
+                explicit ThreadPool(int size,const ThreadFunc& cb);
+                ThreadPool(const ThreadPool& lhs) = delete;
                 ThreadPool(ThreadPool&& lhs);
-                ThreadPool& operator=(const ThreadPool& lhs);
-                
+                ThreadPool& operator=(const ThreadPool& lhs) = delete;
+                ThreadPool& operator=(ThreadPool&& lhs);
                 ~ThreadPool();
 
-//public interface
                 void setThreadCallBack(const ThreadFunc& cb)
                 {
                     if(!started)
-                        threadfunc = cb;
+                        threadFunc = cb;
+                }
+
+                void setThreadCallBack(ThreadFunc&& cb)
+                {
+                    if(!started)
+                        threadFunc = std::move(cb);
                 }
 
                 void start();
                 void joinAll();
-                void addInTaskQueue(const ThreadFunc& task);
-                ThreadFunc getTaskInTaskQueue();
+                void addInTaskQueue(ChannelList& lhs);
+
+            private:
+                void ThreadFunction()
+                {
+                    ChannelList channels;
+                    
+                    while(1)
+                    {
+                        while((channelList.size()) == 0)   
+                            cond.wait();
+                        
+                        channels.clear();
+                        
+                        {
+                            MutexLockGuard guard(mutex);
+                            channels.insert(channelList.begin(),channelList.end(),channels.begin());
+                            channels.clear();
+                        }
+                        
+                        for(auto iter=channels.begin();iter!=channels.end();++iter)
+                            iter->handleEvent();
+                    }
+                }
 
             private:
                 bool started;
-                const int threadsize;
-                Thread* threadlistptr;
-                ThreadFunc threadfunc;
-                TaskQueue taskqueue;
+                const int threadSize;
+                Thread* threadListPtr;
+                ThreadFunc threadFunc;
+                ChannelList channelList;
+
                 MutexLock mutex;
                 Condition cond;
         };

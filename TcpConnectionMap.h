@@ -10,6 +10,7 @@
 
 #include"TcpConnection.h"
 #include<map>
+#include"Mutex.h"
 
 namespace unet
 {
@@ -30,10 +31,12 @@ namespace unet
                 int size() const;
                 bool empty() const;
                 void insert(int fd);
+                void insert(TcpConnection&& lhs);
                 void erase(int fd);
                 TcpConnection& find(int fd);
 
             private:
+                thread::MutexLock mutex;
                 std::map<int,TcpConnection&&> tcpConnectionMap;
         };
     }
