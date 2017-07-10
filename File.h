@@ -75,7 +75,7 @@ namespace unet
         int writen(int fd,const char* cptr,size_t nbytes);
         int writen(int fd,std::string& buf,size_t nbytes);
         void writen(const File& lhs,const char* cptr,size_t nbytes);
-        void writen(const File& lhs,const std::string& cptr,size_t nbytes);
+        void writen(const File& lhs,const std::string& cptr);
         
     }
 }

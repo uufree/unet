@@ -54,7 +54,7 @@ namespace unet
             {
                 case O_WRITE:
                 {
-                    fd = ::open(g_filename.c_str(),O_RDWR|O_APPEND);    
+                    fd = ::open(g_filename.c_str(),O_RDWR|O_APPEND|O_READ);    
                     break;
                 }
                 case O_READ:
@@ -64,12 +64,12 @@ namespace unet
                 }
                 case O_C_WRITE:
                 {
-                    fd = ::open(g_filename.c_str(),O_TRUNC|O_APPEND|O_RDWR);
+                    fd = ::open(g_filename.c_str(),O_TRUNC|O_APPEND|O_RDWR|O_READ);
                     break;
                 }
                 case N_WRITE:
                 {
-                    fd = ::open(g_filename.c_str(),O_CREAT|O_RDWR|O_APPEND);
+                    fd = ::open(g_filename.c_str(),O_CREAT|O_RDWR|O_APPEND|O_READ);
                     break;
                 }
             }
@@ -83,7 +83,7 @@ namespace unet
         File::File(File&& lhs) : 
             opened(false),
             filename(std::move(lhs.filename)),
-            g_filename(std::move(lhs.filename)),
+            g_filename(std::move(lhs.g_filename)),
             type(lhs.type)
         {
             fd = switchOperatorType(type);
@@ -127,7 +127,7 @@ namespace unet
         int readn(int fd,char* cptr,size_t nbytes)
         {
             int nleft,nread;
-        
+            
             int readsize = 0;
             nleft = nbytes;
 
@@ -148,6 +148,7 @@ namespace unet
                 nleft -= nread;
                 cptr += nread;
             }
+
             readsize = nbytes - nleft;
             return readsize;
         }
@@ -179,8 +180,6 @@ namespace unet
                 nleft -= nread;
             }
             
-            std::cout << cptr << std::endl;
-            std::cout << "3" << std::endl;
             readsize = nbytes - nleft;
             buf = cptr;
             return readsize;
@@ -219,6 +218,7 @@ namespace unet
                 cptr += nwriten;
             }
             writesize  = nbytes - nleft;
+            
             return writesize;
         }
         
@@ -245,6 +245,7 @@ namespace unet
                 cptr += nwriten;
             }
             writesize  = nbytes - nleft;
+            
             return writesize;
         }
 
@@ -254,8 +255,10 @@ namespace unet
                 writen(lhs.getFd(),cptr,nbytes);
         }
         
-        void writen(const File& lhs,const std::string& cptr,size_t nbytes)
+        void writen(const File& lhs,const std::string& cptr)
         {
+            size_t nbytes = cptr.size();
+            
             if(lhs.isOpened())
                 writen(lhs.getFd(),cptr.c_str(),nbytes);
         }
