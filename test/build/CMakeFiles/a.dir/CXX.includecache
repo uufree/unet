@@ -6,6 +6,20 @@
 
 #IncludeRegexTransform: 
 
+/home/uuchen/unet/Directory.cc
+Directory.h
+/home/uuchen/unet/Directory.h
+error.h
+/home/uuchen/unet/error.h
+dirent.h
+-
+
+/home/uuchen/unet/Directory.h
+File.h
+/home/uuchen/unet/File.h
+vector
+-
+
 /home/uuchen/unet/File.cc
 File.h
 /home/uuchen/unet/File.h
@@ -36,9 +50,9 @@ stdlib.h
 errno.h
 -
 
-/home/uuchen/unet/test/FileTest.cc
-../File.h
-/home/uuchen/unet/File.h
+/home/uuchen/unet/test/DirectoryTest.cc
 iostream
 -
+../Directory.h
+/home/uuchen/unet/Directory.h
 

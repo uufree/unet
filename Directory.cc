@@ -7,6 +7,7 @@
 
 #include"Directory.h"
 #include"error.h"
+#include<dirent.h>
 
 namespace unet
 {
@@ -86,6 +87,14 @@ namespace unet
             directorylist.push_back(filename);
             directoryBuffer.append(filename);
             directoryBuffer.append("\t");
+        }
+        
+        bool operator==(const Directory& lhs,const Directory& rhs)
+        {
+            if(lhs.directorypath == rhs.directorypath)
+                return true;
+            else
+                return false;
         }
     }
 }

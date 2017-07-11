@@ -5,7 +5,7 @@ PROJECT(a)
 SET(CMAKE_C_COMPILER g++)
 INCLUDE_DIRECTORIES(/usr/include/pthread)
 
-SET(SERVER FileTest.cc ../File.cc)
+SET(SERVER DirectoryTest.cc ../File.cc ../Directory.cc)
 
 ADD_DEFINITIONS("-g -Wall -o -lpthread -std=c++11")
 

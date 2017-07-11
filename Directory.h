@@ -9,6 +9,7 @@
 #define _DIRECTORY_H
 
 #include"File.h"
+#include<vector>
 
 namespace unet
 {
@@ -39,14 +40,8 @@ namespace unet
                 std::vector<std::string> directorylist;
                 std::string directoryBuffer;
         };
-
-        bool operator==(const Directory& lhs,const Directory& rhs)
-        {
-            if(lhs.directorypath == rhs.directorypath)
-                return true;
-            else
-                return false;
-        }
+        
+        bool operator==(const Directory& lhs,const Directory& rhs);
     }
 }
 

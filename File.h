@@ -67,6 +67,8 @@ namespace unet
                 OperatorType type;
         };
         
+        bool operator==(const File& lhs,const File& rhs);
+
         int readn(int fd,char* cptr,size_t nbytes);
         int readn(int fd,std::string& buf,size_t nbytes);
         void readn(const File& lhs,char* cptr,size_t nbytes);
