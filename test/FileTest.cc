@@ -16,13 +16,15 @@ int main(int argc,char** argv)
     std::string message("I'm uuchen!");
     File uuchen("/home/uuchen/uuchen.txt",N_WRITE);
     
+    unet::file::writen(uuchen.getFd(),message);
+
     File chenuu = std::move(uuchen);
     
     std::cout << "fd: " << chenuu.getFd() << std::endl;
     std::cout << "g_filename: " << chenuu.getGlobalFilename() << std::endl;
     std::cout << "filename: " << chenuu.getFilename() << std::endl;
     
-    readn(chenuu,mess,256);
+    readn(chenuu.getFd(),mess,256);
     std::cout << "finish readn" << std::endl;
     std::cout << mess << std::endl;
     return 0;

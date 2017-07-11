@@ -34,9 +34,9 @@ namespace unet
                     explicit InetAddress(const std::string& ip,int port);
                     explicit InetAddress(const std::string& ip,uint16_t port);
 
-                    InetAddress(const InetAddress& lhs); 
+                    InetAddress(const InetAddress& lhs) = delete; 
                     InetAddress(InetAddress&& lhs);
-                    InetAddress& operator=(const InetAddress& lhs);
+                    InetAddress& operator=(const InetAddress& lhs) = delete;
                     InetAddress& operator=(InetAddress&& lhs);
                     ~InetAddress();
                     
@@ -59,7 +59,6 @@ namespace unet
                         return static_cast<uint16_t>(port);
                     };
 
-
                 private:
                     void init(uint16_t port);
                 
@@ -68,13 +67,8 @@ namespace unet
                     std::string ip = "INADDR_ANY";
             };
 
-            bool operator==(const InetAddress& lhs,const InetAddress& rhs)
-            {
-                if(lhs.addr.sin_port == rhs.addr.sin_port && lhs.ip == rhs.ip && lhs.addr.sin_port == rhs.addr.sin_port && lhs.addr.sin_addr.s_addr == rhs.addr.sin_addr.s_addr)
-                    return true;
-                else
-                    return false;
-            }
+            bool operator==(const InetAddress& lhs,const InetAddress& rhs);
+        
         }
     }
 }

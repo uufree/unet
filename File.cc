@@ -185,17 +185,6 @@ namespace unet
             return readsize;
         }
         
-        void readn(const File& lhs,char* cptr,size_t nbytes)
-        {
-            if(lhs.isOpened())
-                readn(lhs.getFd(),cptr,nbytes);
-        }
-        void readn(const File& lhs,std::string& buf,size_t nbytes)
-        {
-            if(lhs.isOpened())
-                readn(lhs.getFd(),buf,nbytes);
-        }
-            
         int writen(int fd,const char* cptr,size_t nbytes)
         {
             int nleft,nwriten;
@@ -222,47 +211,11 @@ namespace unet
             return writesize;
         }
         
-        int writen(int fd,const std::string& buf,size_t nbytes)
+        int writen(int fd,const std::string& buf)
         {
-            int nleft,nwriten;
-            const char* cptr = buf.c_str();
-
-            nleft = nbytes;
-            int writesize = 0;
-            while(nleft > 0)
-            {
-                if((nwriten=write(fd,cptr,nleft)) <= 0)
-                {
-                    if(nwriten<0 && errno!=EINTR)
-                    nwriten = 0;
-                    else
-                    {
-                        perror("writen error!\n");
-                        exit(0);
-                    }
-                }
-                nleft -= nwriten;
-                cptr += nwriten;
-            }
-            writesize  = nbytes - nleft;
-            
-            return writesize;
+            return writen(fd,buf.c_str(),buf.size());
         }
 
-        void writen(const File& lhs,const char* cptr,size_t nbytes)
-        {
-            if(lhs.isOpened())
-                writen(lhs.getFd(),cptr,nbytes);
-        }
-        
-        void writen(const File& lhs,const std::string& cptr)
-        {
-            size_t nbytes = cptr.size();
-            
-            if(lhs.isOpened())
-                writen(lhs.getFd(),cptr.c_str(),nbytes);
-        }
-        
         bool operator==(const File& lhs,const File& rhs)
         {
             if(lhs.fd == rhs.fd && lhs.g_filename == rhs.g_filename )

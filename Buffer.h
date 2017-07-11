@@ -62,7 +62,9 @@ namespace unet
                 int bufferSize;
                 int dataSize;
                 int dataIndex;
-        };        
+        };      
+
+        bool operator==(const Buffer& lhs,const Buffer& rhs);
     }
 }
 

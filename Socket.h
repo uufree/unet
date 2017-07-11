@@ -19,7 +19,7 @@
 #include<fcntl.h>
 #include<unistd.h>
 #include"error.h"
-/*在Socket类中用8位来标志socket属性，最高的两位保留不用，从左到右依次为：
+/*在Socket类中用8位来标志socket属性，最高的两位保留，从低到高依次为：
  * used
  * keepalive
  * nodelay
@@ -34,12 +34,11 @@ namespace unet
     {
         namespace socket
         {
+            enum SocketType{CONNECT,LISTEN};
             const static int COMMSIZE = 256;
             
             class Socket final
             {//用RAII处理sockfd
-                enum SocketType{CONNECT,LISTEN};
-                
                 friend bool operator==(const Socket& lhs,const Socket& rhs);
                 
                 public:
@@ -88,6 +87,7 @@ namespace unet
                     
                     bool isReusePort() const
                     {return bit & (1 << 0);};
+                    
                     void setReusePortBit()
                     {bit |= (1 << 0);}
                 
@@ -96,20 +96,14 @@ namespace unet
                     mutable int socketfd;
                     unsigned char bit;
             };
-            
-            bool operator==(const Socket& lhs,const Socket& rhs)
-            {
-                if(rhs.socketfd == lhs.socketfd && rhs.bit == lhs.bit && rhs.type == lhs.type)
-                    return true;
-                else
-                    return false;
-            }
 
+            bool operator==(const Socket& lhs,const Socket& rhs);
+            
             int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
             void listen(int socketfd);
             int accept(int socketfd);
-            void connect(int socketfd,InetAddress* addr);
-            void bind(int socketfd,InetAddress* addr);
+            void connect(int socketfd,InetAddress& addr);
+            void bind(int socketfd,InetAddress& addr);
             void close(int socketfd);
 //这五组对fd的操作不暴露给用户        
             bool setKeepAlive(int socketfd);
@@ -125,8 +119,9 @@ namespace unet
             void setReusePort(Socket& sock);
             
             void listen(Socket& lhs);
-            void connect(Socket& lhs,InetAddress* addr);
-            void bind(Socket& lhs,InetAddress* addr);
+            void connect(Socket& lhs,InetAddress& addr);
+            void bind(Socket& lhs,InetAddress& addr);
+            int accept(Socket& lhs);
         }
     }
 }

@@ -88,18 +88,18 @@ namespace unet
                 return connectfd;
             }
             
-            void connect(int socketfd,InetAddress* addr)
+            void connect(int socketfd,InetAddress& addr)
             {
-                sockaddr_in addr_ = addr->getSockaddr();
+                sockaddr_in addr_ = addr.getSockaddr();
                 int n = ::connect(socketfd,(sockaddr*)(&addr_),static_cast<socklen_t>(sizeof(struct sockaddr_in)));
                 
                 if(n == -1)
                     unet::handleError(errno);
             }
             
-            void bind(int sockfd,InetAddress* addr)
+            void bind(int sockfd,InetAddress& addr)
             {
-                sockaddr_in addr_ = addr->getSockaddr();                
+                sockaddr_in addr_ = addr.getSockaddr();                
                 int n = ::bind(sockfd,(sockaddr*)(&addr_),static_cast<socklen_t>(sizeof(struct sockaddr_in)));
                 
                 if(n < 0)
@@ -201,16 +201,28 @@ namespace unet
                 listen(lhs.getFd());
             }
 
-            void connect(Socket& lhs,InetAddress* addr)
+            void connect(Socket& lhs,InetAddress& addr)
             {
                 connect(lhs.getFd(),addr);
             }
 
-            void bind(Socket& lhs,InetAddress* addr)
+            void bind(Socket& lhs,InetAddress& addr)
             {
                 bind(lhs.getFd(),addr);
             }
 
+            int accept(Socket& lhs)
+            {
+                return accept(lhs.getFd());
+            }
+
+            bool operator==(const Socket& lhs,const Socket& rhs)
+            {
+                if(rhs.socketfd == lhs.socketfd && rhs.bit == lhs.bit && rhs.type == lhs.type)
+                    return true;
+                else
+                    return false;
+            }
         }
     }
 }

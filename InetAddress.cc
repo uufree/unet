@@ -41,23 +41,8 @@ namespace unet
                 addr.sin_addr.s_addr = htonl(INADDR_ANY);
             }
 
-            InetAddress::InetAddress(const InetAddress& lhs) : addr(lhs.addr),ip(lhs.ip)
-            {};
-
             InetAddress::InetAddress(InetAddress&& lhs) : addr(std::move(lhs.addr)),ip(std::move(lhs.ip))
             {};
-
-            InetAddress& InetAddress::operator=(const InetAddress& lhs)
-            {
-                if(*this == lhs)
-                    return *this;
-                else
-                {
-                    addr = lhs.addr;
-                    ip = lhs.ip;
-                }
-                return *this;
-            }
 
             InetAddress& InetAddress::operator=(InetAddress&& lhs)
             {
@@ -71,9 +56,16 @@ namespace unet
                 return *this;
             }
 
-            InetAddress::~InetAddress(){};
-
+            InetAddress::~InetAddress()
+            {};
             
+            bool operator==(const InetAddress& lhs,const InetAddress& rhs)
+            {
+                if(lhs.addr.sin_port == rhs.addr.sin_port && lhs.ip == rhs.ip && lhs.addr.sin_port == rhs.addr.sin_port && lhs.addr.sin_addr.s_addr == rhs.addr.sin_addr.s_addr)
+                    return true;
+                else
+                    return false;
+            }
         }
     }
 }

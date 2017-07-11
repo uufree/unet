@@ -71,13 +71,9 @@ namespace unet
 
         int readn(int fd,char* cptr,size_t nbytes);
         int readn(int fd,std::string& buf,size_t nbytes);
-        void readn(const File& lhs,char* cptr,size_t nbytes);
-        void readn(const File& lhs,std::string& buf,size_t nbytes);
         
         int writen(int fd,const char* cptr,size_t nbytes);
-        int writen(int fd,std::string& buf,size_t nbytes);
-        void writen(const File& lhs,const char* cptr,size_t nbytes);
-        void writen(const File& lhs,const std::string& cptr);
+        int writen(int fd,const std::string& buf);
         
     }
 }
