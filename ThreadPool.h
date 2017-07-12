@@ -13,7 +13,6 @@
 #include"Condition.h"
 #include<deque>
 #include<memory>
-#include"TaskQueue.h"
 #include"Channel.h"
 
 namespace unet
@@ -23,7 +22,6 @@ namespace unet
         class ThreadPool final
         {
             typedef std::function<void()> ThreadFunc;
-            typedef std::vector<Channel&> ChannelList;
 
             public:
                 explicit ThreadPool(int size = 2);
@@ -48,42 +46,17 @@ namespace unet
 
                 void start();
                 void joinAll();
-                void addInTaskQueue(ChannelList& lhs);
-
-            private:
-                void ThreadFunction()
-                {
-                    ChannelList channels;
-                    
-                    while(1)
-                    {
-                        while((channelList.size()) == 0)   
-                            cond.wait();
-                        
-                        channels.clear();
-                        
-                        {
-                            MutexLockGuard guard(mutex);
-                            std::swap(channels,channelList);    
-                        }
-                        
-                        for(auto iter=channels.begin();iter!=channels.end();++iter)
-                            iter->handleEvent();
-                    }
-                }
 
             private:
                 bool started;
                 const int threadSize;
                 Thread* threadListPtr;
                 ThreadFunc threadFunc;
-                ChannelList channelList;
-
+                
                 MutexLock mutex;
                 Condition cond;
         };
     }
 }
-
 #endif
 

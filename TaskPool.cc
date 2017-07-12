@@ -1,25 +1,28 @@
 /*************************************************************************
-	> File Name: ThreadPool.cc
+	> File Name: TaskPool.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2017年03月27日 星期一 23时31分49秒
+	> Created Time: 2017年07月12日 星期三 20时55分39秒
  ************************************************************************/
 
-#include"ThreadPool.h"
+
+#include"TaskPool.h"
 
 namespace unet
 {
     namespace thread
     {
-        ThreadPool::ThreadPool(int size) :
+        TaskPool::TaskPool(int size) :
             started(false),
             threadSize(size),
             threadListPtr(new Thread[size]),
             mutex(),
             cond(mutex)
-        {};
+        {
+            setThreadCallBack(std::bind(&TaskPool::ThreadFunction,this));
+        };
         
-        ThreadPool::ThreadPool(int size,const ThreadFunc& cb) :
+        TaskPool::TaskPool(int size,const ThreadFunc& cb) :
             started(false),
             threadSize(size),
             threadListPtr(new Thread[size]),
@@ -28,7 +31,7 @@ namespace unet
             cond(mutex)
         {};
 
-        ThreadPool::ThreadPool(ThreadPool&& lhs) : 
+        TaskPool::TaskPool(TaskPool&& lhs) : 
             started(false),
             threadSize(lhs.threadSize),
             threadListPtr(new Thread[threadSize]),
@@ -37,7 +40,7 @@ namespace unet
             cond(mutex)
         {};
         
-        ThreadPool& ThreadPool::operator=(ThreadPool&& lhs)
+        TaskPool& TaskPool::operator=(TaskPool&& lhs)
         {
             joinAll();
             delete [] threadListPtr;
@@ -48,7 +51,7 @@ namespace unet
             return *this;
         }
 
-        ThreadPool::~ThreadPool()
+        TaskPool::~TaskPool()
         {
             started = false;
             for(int i=0;i<threadSize;++i)
@@ -57,7 +60,7 @@ namespace unet
             delete [] threadListPtr;
         }
     
-        void ThreadPool::start()
+        void TaskPool::start()
         {
             if(!started)
             {
@@ -70,11 +73,19 @@ namespace unet
             }
         }
 
-        void ThreadPool::joinAll()
+        void TaskPool::joinAll()
         {
             assert(started);
             for(int i=0;i<threadSize;++i)
                 threadListPtr[i].join();
+        }
+
+        void TaskPool::addInTaskQueue(ChannelList& tasks)
+        {
+            MutexLockGuard guard(mutex);   
+            std::swap(tasks,channelList);
+            
+            cond.notifyAll(); 
         }
     }
 }
