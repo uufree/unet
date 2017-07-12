@@ -27,9 +27,9 @@ namespace unet
                 explicit Thread();
                 explicit Thread(const ThreadFunc& lhs);
            
-                Thread(const Thread& lhs);
+                Thread(const Thread& lhs) = delete;
                 Thread(Thread&& lhs);
-                Thread& operator=(const Thread& lhs);
+                Thread& operator=(const Thread& lhs) = delete;
                 Thread& operator=(Thread&& lhs);
 
                 ~Thread();

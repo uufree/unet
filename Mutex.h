@@ -37,9 +37,13 @@ namespace unet
                     
                 void swap(MutexLock& lhs) = delete;
 
-                inline bool isLockInThisThread() const;
+                inline bool isLockInThisThread() const
+                {return pid==now::pid();};
+                
+                inline pthread_mutex_t& getMutex()
+                {return mutex;};
+                
                 inline void lock();
-                inline pthread_mutex_t& getMutex();
                 inline void unlock();
             
             private:

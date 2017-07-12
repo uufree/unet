@@ -37,11 +37,6 @@ namespace unet
             return *this;
         }
 
-        bool MutexLock::isLockInThisThread() const
-        {
-            return pid == now::pid();
-        }
-        
         void MutexLock::lock()
         {        
             if(pthread_mutex_lock(&mutex) < 0)
@@ -56,11 +51,6 @@ namespace unet
             pid = 0;
         }
 
-        pthread_mutex_t& MutexLock::getMutex()
-        {
-            return mutex;
-        }
-        
         MutexLockGuard::MutexLockGuard(MutexLock& mutex_) :
             mutex(mutex_)
         {
