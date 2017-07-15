@@ -71,13 +71,14 @@ namespace unet
              *-1:freeSize不够
              * */
             
-            int asize = bufferSize - dataSize;
-            int bsize = bufferSize - dataSize - dataIndex;
-
+            int asize = bufferSize - dataSize;//所有剩余空间
+            std::cout << "所有剩余空间：" << asize << std::endl;
+            int bsize = bufferSize - dataSize - dataIndex;//尾部剩余空间
+            std::cout << "尾部剩余空间：" << bsize << std::endl;
             if(asize >= size && bsize <= size)
                 return 0;//不重新分配空间+移动元素
                     
-            if(asize >= size && bsize >= size)
+            if(bsize >= size)
                 return 1;//直接插入
 
             if(asize < size)
@@ -92,24 +93,29 @@ namespace unet
         }
 
         void Buffer::handleBufferSpace(int size,const std::string& str)
-        {//只修改bufferSize,其余不管
+        {
             int n = getFreeSize(size);
+            
+            std::cout << "messageSize: " << str.size() << std::endl;
+            std::cout << "appendInBuffer->dataSize: " << bufferSize << std::endl;
 
         read:
             switch (n)
             {
                 case -1:
-                {
-                    while((n=getFreeSize(size)) == -1)
+                {//增大空间+移动元素
+                    do
                     {
                         bufferSize *= 2;
-                         
                         buffer.reserve(bufferSize);
+                        std::cout << "appendInBuffer->dataSize: " << bufferSize << std::endl;
                     }
-                    goto read;
+                    while((n=getFreeSize(size)) == -1);
+                    n = 1; 
+                    goto read; 
                 }   
                 case 0:
-                {
+                {//不重新分配空间+移动元素
                     std::string str;
                     str.reserve(bufferSize);
                     str.insert(0,buffer,dataIndex,dataSize);
@@ -118,15 +124,17 @@ namespace unet
                     dataIndex = 0;
                 }
                 case 1:
-                {
+                {//直接插入
                     buffer.append(str);
-
                     dataSize += size;
+                    
+                    std::cout << "***********" << std::endl;
+                    printBufferMessage();
+                    std::cout << "*************" << std::endl;
+
                     break;
                 }
             }
-
-            dataSize += size;
         }
 
         void Buffer::handleBufferSpace(int size)
