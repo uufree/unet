@@ -10,13 +10,15 @@
     - 考虑应用需求，构建成型组件。用回调函数增加成型组件的灵活性。
 
 ### 修改完成的构件
-    - Condition
-    - Directory
-    - File
-    - InetAddress
-    - Mutex
-    - Socket
-    - TaskPool
-    - Thread
-    - ThreadPool
+```
+    Condition
+    Directory
+    File
+    InetAddress
+    Mutex
+    Socket
+    TaskPool
+    Thread
+    ThreadPool
+```
 

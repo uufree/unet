@@ -94,7 +94,7 @@ namespace unet
         void Buffer::handleBufferSpace(int size,const std::string& str)
         {//只修改bufferSize,其余不管
             int n = getFreeSize(size);
-            
+
         read:
             switch (n)
             {
@@ -103,6 +103,7 @@ namespace unet
                     while((n=getFreeSize(size)) == -1)
                     {
                         bufferSize *= 2;
+                         
                         buffer.reserve(bufferSize);
                     }
                     goto read;
@@ -119,6 +120,8 @@ namespace unet
                 case 1:
                 {
                     buffer.append(str);
+
+                    dataSize += size;
                     break;
                 }
             }
@@ -128,8 +131,8 @@ namespace unet
 
         void Buffer::handleBufferSpace(int size)
         {
-            dataSize -= size;
-            dataIndex += size;
+            dataSize -= (size+2);
+            dataIndex += (size+2);
             
             if(needToMove())
             {
@@ -191,15 +194,10 @@ namespace unet
             message.clear();
 
             if(index != std::string::npos)
+            {
                 message.append(buffer,dataIndex,index); 
-        }
-
-        std::string&& Buffer::getCompleteMessageInBuffer()
-        {
-            size_t index = buffer.find_first_of("\r\n");
-            std::string str(buffer,dataIndex,index);
-
-            return std::move(str);
+                handleBufferSpace(index);
+            }
         }
 
         void Buffer::sendFile(const char* filename)

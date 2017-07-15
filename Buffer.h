@@ -18,6 +18,7 @@
 #define _BUFFER_H
 
 #include<string>
+#include<iostream>
 
 namespace unet
 {
@@ -28,7 +29,7 @@ namespace unet
             friend bool operator==(const Buffer& lhs,const Buffer& rhs);
             
             public:
-                explicit Buffer(int fd_,int bufferSize = 4096);
+                explicit Buffer(int fd_,int bufferSize_ = 4096);
                 Buffer(const Buffer& lhs) = delete;
                 Buffer(Buffer&& lhs);
                 Buffer& operator=(const Buffer& lhs) = delete;
@@ -42,8 +43,15 @@ namespace unet
                 void appendInBuffer(const char* message);
                 void appendInBuffer(const std::string& message);
                 void getCompleteMessageInBuffer(std::string& message);
-                std::string&& getCompleteMessageInBuffer();
+                void getCompleteMessageInBuffer(char* message); 
                 
+                void printBufferMessage()
+                {
+                    std::cout << "bufferSize: " << bufferSize << std::endl;
+                    std::cout << "dataSize: " << dataSize << std::endl;
+                    std::cout << "dataIndex: " << dataIndex << std::endl;
+                    std::cout << buffer << std::endl;
+                }
                 //针对File
                 void sendFile(const char* filename);
                 void sendFile(const std::string& filename); 
