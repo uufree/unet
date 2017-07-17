@@ -19,23 +19,25 @@
 
 #include<string>
 #include<iostream>
+#include"File.h"
 
 namespace unet
 {
     namespace net
     {
+        class File;
+
         class Buffer final
         {
             friend bool operator==(const Buffer& lhs,const Buffer& rhs);
             
             public:
-                explicit Buffer(int fd_,int bufferSize_ = 4096);
+                explicit Buffer(int fd_);
                 Buffer(const Buffer& lhs) = delete;
                 Buffer(Buffer&& lhs);
                 Buffer& operator=(const Buffer& lhs) = delete;
                 Buffer& operator=(Buffer&& lhs);
-                ~Buffer();
-                
+                ~Buffer();    
                 void swap(Buffer& lhs);
 
                 int readInSocket();
@@ -43,33 +45,18 @@ namespace unet
                 void appendInBuffer(const char* message);
                 void appendInBuffer(const std::string& message);
                 void getCompleteMessageInBuffer(std::string& message);
-                void getCompleteMessageInBuffer(char* message); 
                 
-                void printBufferMessage()
-                {
-                    std::cout << "bufferSize: " << bufferSize << std::endl;
-                    std::cout << "dataSize: " << dataSize << std::endl;
-                    std::cout << "dataIndex: " << dataIndex << std::endl;
-                    std::cout << buffer << std::endl;
-                }
                 //针对File
                 void sendFile(const char* filename);
                 void sendFile(const std::string& filename); 
+                void sendFile(const file::File& lhs);
                 void recvFile(const char* filename);
                 void recvFile(const std::string& filename);
-            
+                void recvFile(const file::File& lhs);
+
             private:
-                inline int getFreeSize(int size) const;//得到几种不同情况的freeSize
-                inline bool needToMove() const;//是否需要移动
-                inline void handleBufferSpace(int size,const std::string& str);//处理往Buffer中写的情况
-                inline void handleBufferSpace(int size);//处理从Buffer中拿出的情况
-            
-            private:
-                int fd;
+                int confd;
                 std::string buffer;
-                int bufferSize;
-                int dataSize;
-                int dataIndex;
         };      
 
         bool operator==(const Buffer& lhs,const Buffer& rhs);

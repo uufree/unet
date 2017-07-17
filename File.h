@@ -27,15 +27,18 @@ namespace unet
 {
     namespace file
     {
-        enum OperatorType{O_WRITE,O_C_WRITE,O_READ,N_WRITE};
-        
+        static const int WRITE = O_WRONLY|O_APPEND|O_EXCL;
+        static const int C_WRITE = O_WRONLY|O_TRUNC|O_APPEND|O_CREAT;
+        static const int READ = O_RDONLY|O_EXCL;
+        static const int N_WRITE = O_WRONLY|O_CREAT|O_APPEND; 
+
         class File final
         {
             friend bool operator==(const File& lhs,const File& rhs);
 
             public:
-                explicit File(const char* filename_,OperatorType type_);
-                explicit File(const std::string& filename_,OperatorType type_);
+                explicit File(const char* filename_,int type_);
+                explicit File(const std::string& filename_,int type_);
 
                 File(const File& lhs) = delete;
                 File(File&& lhs);
@@ -54,17 +57,21 @@ namespace unet
                 
                 bool isOpened() const
                 {return opened;};    
+                
+                int getFileSize()
+                {return fileSize;};
 
             private:
                 void init();
-                int switchOperatorType(OperatorType type_);
+                int switchOperatorType(int type_);
 
             private:
                 int fd;
                 bool opened;
                 std::string filename;
                 std::string g_filename;
-                OperatorType type;
+                int type;
+                int fileSize;
         };
         
         bool operator==(const File& lhs,const File& rhs);

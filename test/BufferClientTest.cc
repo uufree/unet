@@ -19,12 +19,9 @@ int main(int argc,char** argv)
     
     std::cout << "confd is: " << confd.getFd() << std::endl;
 
-    std::string message;
     net::Buffer clientBuffer(confd.getFd());
-
-    clientBuffer.readInSocket();
-    clientBuffer.getCompleteMessageInBuffer(message);
-    std::cout << message << std::endl;
+    
+    clientBuffer.sendFile("/home/uuchen/uuchen.jpeg");
     
     return 0;
 }

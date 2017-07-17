@@ -18,25 +18,18 @@ int main(int argc,char** argv)
     std::string message1("hello,world!");//12
     std::string message2("hello,FLY");//9
     std::string message3("hello,DXJ");//9
-    Buffer buffer(10,4);
+    Buffer buffer(10);
 
     buffer.appendInBuffer(message1);
-    buffer.printBufferMessage();
-    
     buffer.appendInBuffer(message2);
-    buffer.printBufferMessage();
-  
     buffer.appendInBuffer(message3);
-    buffer.printBufferMessage();
         
     buffer.getCompleteMessageInBuffer(message);
-    buffer.printBufferMessage();
-    
+    std::cout << "message: " << message << std::endl;
     buffer.getCompleteMessageInBuffer(message);
-    buffer.printBufferMessage();
-
+    std::cout << "message: " << message << std::endl;
     buffer.getCompleteMessageInBuffer(message);
-    buffer.printBufferMessage();
+    std::cout << "message: " << message << std::endl;
 
     return 0;
 }

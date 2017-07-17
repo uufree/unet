@@ -8,19 +8,20 @@
 #include"File.h"
 #include"error.h"
 #include<iostream>
+#include<sys/stat.h>
 
 namespace unet
 {
     namespace file
     { 
-        File::File(const char* filename_,OperatorType type_) :       opened(false),
+        File::File(const char* filename_,int type_) :       opened(false),
             g_filename(filename_),
             type(type_)
         {
             init();
         }
 
-        File::File(const std::string& filename_,OperatorType type_) : opened(false),
+        File::File(const std::string& filename_,int type_) : opened(false),
         g_filename(filename_),
         type(type_)
         {
@@ -44,39 +45,20 @@ namespace unet
             }
             
             fd = switchOperatorType(type);     
-  
+
+            struct stat statBuf;
+            if(fstat(fd,&statBuf) < 0)
+                unet::handleError(errno);
+
+            fileSize = statBuf.st_size;
         }
         
-        int File::switchOperatorType(OperatorType type_)
+        int File::switchOperatorType(int type_)
         {
-            int fd;
-            switch (type_)
-            {
-                case O_WRITE:
-                {
-                    fd = ::open(g_filename.c_str(),O_RDWR|O_APPEND|O_READ);    
-                    break;
-                }
-                case O_READ:
-                {
-                    fd = ::open(g_filename.c_str(),O_READ);
-                    break;
-                }
-                case O_C_WRITE:
-                {
-                    fd = ::open(g_filename.c_str(),O_TRUNC|O_APPEND|O_RDWR|O_READ);
-                    break;
-                }
-                case N_WRITE:
-                {
-                    fd = ::open(g_filename.c_str(),O_CREAT|O_RDWR|O_APPEND|O_READ);
-                    break;
-                }
-            }
-
+            int fd = ::open(g_filename.c_str(),type_);
+            
             if(fd < 0)
                 unet::handleError(errno);
-            opened = true;
             return fd;
         }
         
@@ -84,7 +66,8 @@ namespace unet
             opened(false),
             filename(std::move(lhs.filename)),
             g_filename(std::move(lhs.g_filename)),
-            type(lhs.type)
+            type(lhs.type),
+            fileSize(lhs.fileSize)
         {
             fd = switchOperatorType(type);
             opened = true;
@@ -111,6 +94,7 @@ namespace unet
             this->g_filename = std::move(lhs.g_filename);
             this->fd = switchOperatorType(this->type);
             this->opened = true;
+            this->fileSize = lhs.fileSize;
 
             return *this;
         }
