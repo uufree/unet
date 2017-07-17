@@ -24,6 +24,6 @@ int main(int argc,char** argv)
     net::Buffer serverBuffer(confd);
 
     serverBuffer.recvFile("/home/uuchen/chenuu.jpeg");
-    
+
     return 0;
 }

@@ -147,21 +147,22 @@ namespace unet
             int fd = ::open(filename,file::N_WRITE); 
             size_t index = 0;
 
-            std::string buf;
+            char buf[4096];
+            bzero(buf,4096);
+
             while(1)
             {
-                file::readn(confd,buf,4096); 
-                index = buf.find_first_of("\r\n");
+                index = ::read(confd,buf,4096); 
                 
-                if(index == std::string::npos)
+                if(index == 4096)
                 {
-                    file::writen(fd,buf);
-                    buf.clear();
+                    file::writen(fd,buf,4096);
+                    bzero(buf,4096);
                     continue;
                 }
                 else
                 {
-                    file::writen(fd,buf);
+                    file::writen(fd,buf,index);
                     break;
                 }
             }           
