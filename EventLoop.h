@@ -43,8 +43,12 @@ namespace unet
                 void swap(EventLoop& lhs) = delete;
                 
                 void loop();
-                inline void setQuit();
-                inline void setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs);
+                
+                void setQuit()
+                {quit = true;};
+                
+                void setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs)
+                {getActiveChannelsCallBack = lhs;};
             
             private:
                 bool looping;

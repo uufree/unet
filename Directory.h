@@ -29,7 +29,9 @@ namespace unet
                 Directory& operator=(Directory&& lhs);
                 ~Directory();
             
-                const std::string& getDirBuffer() const;
+                const std::string& getDirBuffer() const
+                {return directoryBuffer;};
+                
                 void addInDirectoryList(const std::string& filename);
 
             private:

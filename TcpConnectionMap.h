@@ -1,4 +1,4 @@
-/*************************************************************************
+ /*************************************************************************
 	> File Name: TcpConnectionMap.h
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
@@ -28,8 +28,12 @@ namespace unet
 
                 void swap(TcpConnectionMap& lhs) = delete;
 
-                int size() const;
-                bool empty() const;
+                int size() const
+                {return tcpConnectionMap.size();};
+                
+                bool empty() const
+                {return tcpConnectionMap.empty();};
+
                 void insert(int fd);
                 void insert(TcpConnection&& lhs);
                 void erase(int fd);

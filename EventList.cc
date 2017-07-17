@@ -37,12 +37,6 @@ namespace unet
             std::swap(eventFdList,lhs.eventFdList);
         };
 
-        int EventList::size() const
-        {return eventList.size();};
-
-        bool EventList::empty() const
-        {return eventList.empty();};
-
         void EventList::insert(const Channel& channel)
         {
             struct epoll_event event;

@@ -10,7 +10,6 @@
 
 #include"../Channel.h"
 
-
 namespace unet
 {
     namespace net
@@ -47,23 +46,6 @@ namespace unet
         };
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #endif

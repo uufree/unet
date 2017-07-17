@@ -20,5 +20,6 @@
     TaskPool
     Thread
     ThreadPool
+    Buffer
 ```
 

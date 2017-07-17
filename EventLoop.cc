@@ -36,11 +36,6 @@ namespace unet
             return *this;
         }
         
-        void EventLoop::setQuit()
-        {
-            quit = true;
-        }
-
         void EventLoop::loop()
         {
             looping = true;
@@ -54,11 +49,6 @@ namespace unet
 
             while(!quit)
                 getActiveChannelsCallBack();
-        }
-        
-        void EventLoop::setGetActiveChannelsCallBack(const GetActiveChannelsCallBack& lhs)
-        {
-            getActiveChannelsCallBack = lhs;
         }
     }
 }

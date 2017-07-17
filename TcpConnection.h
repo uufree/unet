@@ -8,7 +8,8 @@
 #ifndef _TCPCONNECTION_H
 #define _TCPCONNECTION_H
 
-#include"Typedef.h"
+#include<functional>
+
 #include"Buffer.h"
 #include"Socket.h"
 
@@ -38,7 +39,9 @@ namespace unet
                 inline void setReadCallBack(const MessageCallBack& cb);
                 inline void setWriteCallBack(const MessageCallBack& cb); 
                 
-                inline int getFd() const;
+                int getFd() const
+                {return confd.getFd();};
+
                 void read();
                 void handleRead();//用于处理描述符上发生的事件
                 void handleWrite();

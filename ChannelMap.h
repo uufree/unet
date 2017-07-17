@@ -33,13 +33,19 @@ namespace unet
 
                 void swap(ChannelMap& lhs) = delete;
             
-                int size() const;
-                bool empty() const;
+                int size() const
+                {return channelMap.size();};
+
+                bool empty() const
+                {return channelMap.empty();};
+                
+                Channel& findChannel(int fd)
+                {return channelMap[fd];};
+
                 void insert(Channel&& channel);
                 void insert(int fd,ChannelType type);
                 void erase(int fd);
                 
-                Channel& findChannel(int fd);
 
             private:
                 thread::MutexLock mutex;

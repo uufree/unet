@@ -31,11 +31,15 @@ namespace unet
             
                 inline void swap(EventList& lhs);
 
-                inline int size() const;
-                inline bool empty() const;
-                inline void insert(const Channel& channel);
-                inline void erase(int fd);
-                inline std::vector<struct epoll_event>& getEventList();
+                int size() const
+                {return eventList.size();};
+
+                bool empty() const
+                {return eventList.empty();};
+
+                void insert(const Channel& channel);
+                void erase(int fd);
+                std::vector<struct epoll_event>& getEventList();
 
             private:
                 thread::MutexLock mutex;

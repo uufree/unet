@@ -13,7 +13,7 @@ namespace unet
     {
         TcpConnectionMap::TcpConnectionMap()
         {};
-
+/*
         TcpConnectionMap::TcpConnectionMap(TcpConnectionMap&& lhs) :
             tcpConnectionMap(std::move(lhs.tcpConnectionMap))
         {};
@@ -23,16 +23,9 @@ namespace unet
             tcpConnectionMap = std::move(lhs.tcpConnectionMap);
             return *this;
         }
-
-        int TcpConnectionMap::size() const
-        {
-            return tcpConnectionMap.size();
-        }
-
-        bool TcpConnectionMap::empty() const
-        {
-            return tcpConnectionMap.empty();
-        }
+*/
+        TcpConnectionMap::~TcpConnectionMap()
+        {};
 
         void TcpConnectionMap::insert(int fd)
         {

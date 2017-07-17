@@ -29,6 +29,7 @@
 
 
 #include"TcpConnectionMap.h"
+#include<sys/epoll.h>
 
 class Channel;
 
@@ -55,20 +56,41 @@ namespace unet
                 Channel& operator=(Channel&& lhs);
                 ~Channel();
                 
-                void handleEvent(TcpConnectionMap& tcpconnectionMap);//处理事件的主体函数
+                void handleEvent(TcpConnectionMap& tcpconnectionMap);
                 
-                inline int getFd() const; 
-                inline void setEvent();
-                inline int getEvent() const;
-                inline void setRevent(int revent_); 
-                inline int getType() const;
                 
-                inline void setReadCallBack(const ReadCallBack& lhs);
-                inline void setCloseCallBack(const CloseCallBack& lhs);
+                int getFd() const
+                {return fd;};
 
-                inline bool isNoneEvent() const;
-                inline bool isReading() const;
-                inline bool isWriting() const;
+                void setEvent()
+                {event = KWriteEvent & KReadEvent;};
+
+                int getEvent() const
+                {return event;};
+
+                void setRevent(int revent_)
+                {revent = revent_;};
+        
+                int getType() const
+                {return type;};
+                
+                void setReadCallBack(const ReadCallBack& lhs)
+                {
+                    if(type == LISTEN || type == CLOCK)
+                        readCallBack = lhs;
+                };
+
+                void setCloseCallBack(const CloseCallBack& lhs)
+                {closeCallBack = lhs;};
+
+                bool isNoneEvent() const
+                {return event == KNoneEvent;};
+
+                bool isReading() const
+                {return event == KReadEvent;};
+
+                bool isWriting() const
+                {return event == KWriteEvent;};
                 
             private:
                 int fd;

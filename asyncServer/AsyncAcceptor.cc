@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"AsyncAcceptor.h"
+#include"../Socket.h"
 
 namespace unet
 {
@@ -16,7 +17,7 @@ namespace unet
             listenfd(socket::socket()),
             listening(false)
         {
-            socket::bind(listenfd,&serveraddr);
+            socket::bind(listenfd,serveraddr);
             socket::listen(listenfd);
         }
 
@@ -34,7 +35,7 @@ namespace unet
         {
             lhs.stopListen();
             
-            serveraddr = lhs.serveraddr;
+            serveraddr = std::move(lhs.serveraddr);
             listenfd = std::move(lhs.listenfd);
             listening = false;
             insertChannelCallBack = std::move(lhs.insertChannelCallBack);

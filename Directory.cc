@@ -58,11 +58,6 @@ namespace unet
         Directory::~Directory()
         {}
     
-        const std::string& Directory::getDirBuffer() const 
-        {
-            return directoryBuffer;
-        }
-
         void Directory::update(const std::string& lhs)
         {
             struct dirent* drip = NULL;

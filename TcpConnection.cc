@@ -77,9 +77,6 @@ namespace unet
                 perror("没有注册handlediedtcpconnection\n");
 
         }
-
-        int TcpConnection::getFd() const
-        {return confd.getFd();};
     }
 }
 

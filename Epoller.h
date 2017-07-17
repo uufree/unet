@@ -11,6 +11,7 @@
 #include"ChannelMap.h"
 #include<sys/epoll.h>
 #include"TcpConnectionMap.h"
+#include<vector>
 
 namespace unet
 {

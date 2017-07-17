@@ -108,38 +108,7 @@ namespace unet
             }
         }
         
-        int Channel::getFd() const
-        {return fd;};
 
-        void Channel::setEvent()
-        {event = KWriteEvent & KReadEvent;};
-
-        int Channel::getEvent() const
-        {return event;};
-
-        void Channel::setRevent(int revent_)
-        {revent = revent_;};
-        
-        int Channel::getType() const
-        {return type;};
-
-        void Channel::setReadCallBack(const ReadCallBack& lhs)
-        {
-            if(type == LISTEN || type == CLOCK)
-                readCallBack = lhs;
-        };
-
-        void Channel::setCloseCallBack(const CloseCallBack& lhs)
-        {closeCallBack = lhs;};
-
-        bool Channel::isNoneEvent() const
-        {return event == KNoneEvent;};
-
-        bool Channel::isReading() const
-        {return event == KReadEvent;};
-
-        bool Channel::isWriting() const
-        {return event == KWriteEvent;};
     }
 }
 
