@@ -128,9 +128,11 @@ namespace unet
                     buffer.append(str);
                     dataSize += size;
                     
+                    std::cout << std::endl;
                     std::cout << "***********" << std::endl;
                     printBufferMessage();
                     std::cout << "*************" << std::endl;
+                    std::cout << std::endl;
 
                     break;
                 }
@@ -139,9 +141,13 @@ namespace unet
 
         void Buffer::handleBufferSpace(int size)
         {
+            std::cout << "erase start: " << dataIndex << std::endl;
+            std::cout << "erase end: " << dataIndex+size+2 << std::endl;
+            buffer.erase(dataIndex,dataIndex+size+2);                  
+            
             dataSize -= (size+2);
             dataIndex += (size+2);
-            
+    
             if(needToMove())
             {
                 bufferSize /= 2;

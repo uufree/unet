@@ -15,16 +15,17 @@ using namespace unet::net;
 int main(int argc,char** argv)
 {
     std::string message;
-    std::string message1("hello,world!");
-    std::string message2("hello,FLY");
-    std::string message3("hello,DXJ");
+    std::string message1("hello,world!");//12
+    std::string message2("hello,FLY");//9
+    std::string message3("hello,DXJ");//9
     Buffer buffer(10,4);
 
     buffer.appendInBuffer(message1);
     buffer.printBufferMessage();
-/*    
+    
     buffer.appendInBuffer(message2);
     buffer.printBufferMessage();
+  
     buffer.appendInBuffer(message3);
     buffer.printBufferMessage();
         
@@ -36,7 +37,7 @@ int main(int argc,char** argv)
 
     buffer.getCompleteMessageInBuffer(message);
     buffer.printBufferMessage();
-*/
+
     return 0;
 }
 
