@@ -36,6 +36,9 @@ namespace unet
             return *this;
         }
         
+        EventLoop::~EventLoop()
+        {};
+
         void EventLoop::loop()
         {
             looping = true;

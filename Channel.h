@@ -27,8 +27,7 @@
  * 
  */
 
-
-#include"TcpConnectionMap.h"
+#include<functional>
 #include<sys/epoll.h>
 
 class Channel;
@@ -43,6 +42,7 @@ namespace unet
         
         enum ChannelType{LISTEN,CONNECT,CLOCK};
         
+        class TcpConnectionMap;
         class Channel final
         {
             typedef std::function<void()> ReadCallBack;
