@@ -23,6 +23,39 @@ namespace unet
             asyncAcceptor.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
         }
         
+        AsyncTcpServer::AsyncTcpServer(AsyncTcpServer&& lhs) :
+            serveraddr(lhs.serveraddr),
+            tcpconnectionMap(std::move(lhs.tcpconnectionMap)),
+            channelMap(std::move(lhs.channelMap)),
+            eventList(std::move(lhs.eventList)),
+            channelList(std::move(lhs.channelList)),
+            pool(std::move(lhs.pool)),
+            epoller(std::move(lhs.epoller)),
+            eventLoop(std::move(lhs.eventLoop)),
+            asyncAcceptor(std::move(lhs.asyncAcceptor)),
+            readCallBack(std::move(lhs.readCallBack)),
+            writeCallBack(std::move(lhs.writeCallBack))
+        {};
+
+        AsyncTcpServer& AsyncTcpServer::operator=(AsyncTcpServer&& lhs)
+        {
+            tcpconnectionMap = std::move(lhs.tcpconnectionMap);
+            channelMap = std::move(lhs.channelMap);
+            eventList = std::move(lhs.eventList);
+            channelList = std::move(lhs.channelList);
+            pool = std::move(lhs.pool);
+            epoller = std::move(lhs.epoller);
+            eventLoop = std::move(lhs.eventLoop);
+            asyncAcceptor = std::move(lhs.asyncAcceptor);
+            readCallBack = std::move(lhs.readCallBack);
+            writeCallBack = std::move(lhs.writeCallBack);
+            
+            return *this;
+        }
+
+        AsyncTcpServer::~AsyncTcpServer()
+        {};
+
         void AsyncTcpServer::InsertChannel(ChannelPtr&& channel)
         {
             channel->setCloseCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));

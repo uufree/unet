@@ -30,8 +30,8 @@ namespace unet
                 explicit Epoller(EventList& events);
                 Epoller(const Epoller&) = delete;
                 Epoller& operator=(const Epoller&) = delete;
-                Epoller(Epoller&& lhs) = delete;
-                Epoller& operator=(Epoller&& lhs) = delete;
+                Epoller(Epoller&& lhs);
+                Epoller& operator=(Epoller&& lhs);
                 ~Epoller();
 
                 void epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap);

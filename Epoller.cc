@@ -18,7 +18,17 @@ namespace unet
             if(epollfd < 0)
                 unet::handleError(errno);
         }                     
-  
+        
+        Epoller::Epoller(Epoller&& lhs) : 
+            eventList(lhs.eventList),
+            epollfd(std::move(lhs.epollfd))
+        {};
+        
+        Epoller& Epoller::operator=(Epoller&& lhs)
+        {
+            return *this;
+        }
+        
         Epoller::~Epoller()
         {
             ::close(epollfd);

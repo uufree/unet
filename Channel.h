@@ -55,7 +55,7 @@ namespace unet
                 Channel& operator=(Channel&& lhs);
                 ~Channel();
                 
-                void handleEvent(const TcpConnectionMap& tcpconnectionMap);
+                void handleEvent(TcpConnectionMap& tcpconnectionMap);
                 
                 
                 int getFd() const

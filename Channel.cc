@@ -42,7 +42,7 @@ namespace unet
         Channel::~Channel()
         {};
 
-        void Channel::handleEvent(const TcpConnectionMap& tcpconnectionMap)
+        void Channel::handleEvent(TcpConnectionMap& tcpconnectionMap)
         {
             if(type == LISTEN || type == CLOCK)
             {
