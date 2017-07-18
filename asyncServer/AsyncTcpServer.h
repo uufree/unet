@@ -12,11 +12,9 @@
 #include"../TcpConnectionMap.h"
 #include"../ChannelMap.h"
 #include"../EventList.h"
+#include"../TaskPool.h"
 #include"../Epoller.h"
 #include"../EventLoop.h"
-#include"../ThreadPool.h"
-#include"../TaskPool.h"
-
 namespace unet
 {
     namespace net
@@ -24,7 +22,7 @@ namespace unet
         class AsyncTcpServer final
         {
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
-            typedef std::vector<Channel&> ChannelList;
+            typedef std::vector<ChannelPtr> ChannelList;
 
             public:
                 explicit AsyncTcpServer(socket::InetAddress& server,int size = 2);

@@ -6,8 +6,6 @@
  ************************************************************************/
 
 #include"EventList.h"
-#include"Channel.h"
-#include<algorithm>
 
 namespace unet
 {
@@ -37,12 +35,12 @@ namespace unet
             std::swap(eventFdList,lhs.eventFdList);
         };
 
-        void EventList::insert(const ChannelPtr& channel)
+        void EventList::insert(int fd,int event_)
         {
             struct epoll_event event;
             bzero(&event,sizeof(event));
-            event.events = channel->getEvent();
-            event.data.fd = channel->getFd();
+            event.events = event_;
+            event.data.fd = fd;
             
             {
                 thread::MutexLockGuard guard(mutex);
@@ -50,6 +48,7 @@ namespace unet
                 eventFdList.push_back(event.data.fd);
             }
         }
+
 
         void EventList::erase(int fd)
         {

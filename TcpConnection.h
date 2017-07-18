@@ -36,8 +36,11 @@ namespace unet
                 TcpConnection& operator=(TcpConnection&& lhs);
                 ~TcpConnection();
                 
-                inline void setReadCallBack(const MessageCallBack& cb);
-                inline void setWriteCallBack(const MessageCallBack& cb); 
+                void setReadCallBack(const MessageCallBack& cb)
+                {readCallBack = cb;};
+
+                void setWriteCallBack(const MessageCallBack& cb)
+                {writeCallBack = cb;};
                 
                 int getFd() const
                 {return confd.getFd();};

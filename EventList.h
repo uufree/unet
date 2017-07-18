@@ -8,19 +8,17 @@
 #ifndef _EVENTLIST_H
 #define _EVENTLIST_H
 
-
 #include<vector>
 #include<sys/epoll.h>
-#include"Mutex.h"
+#include<algorithm>
 #include<memory>
+
+#include"Mutex.h"
 
 namespace unet
 {
     namespace net
     {
-        class Channel;
-        typedef std::shared_ptr<Channel> ChannelPtr;
-
         class EventList final
         {
             public:
@@ -39,7 +37,7 @@ namespace unet
                 bool empty() const
                 {return eventList.empty();};
 
-                void insert(const ChannelPtr& channel);
+                void insert(int fd,int event_);
                 void erase(int fd);
                 std::vector<struct epoll_event>& getEventList();
 

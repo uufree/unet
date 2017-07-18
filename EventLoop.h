@@ -26,8 +26,6 @@ namespace unet
 {
     namespace net
     {
-        class Channel;
-
         class EventLoop final
         {
             typedef std::function<void()> GetActiveChannelsCallBack;

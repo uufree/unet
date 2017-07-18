@@ -30,9 +30,14 @@ namespace unet
 
                 void listen();
                 void stopListen();
-                inline bool listened() const;
-                inline void setInsertChannelCallBack(const InsertChannelCallBack& cb);
-                inline void setEraseChannelCallBack(const EraseChannelCallBack& cb);
+                bool listened() const
+                {return listening;};
+
+                void setInsertChannelCallBack(const InsertChannelCallBack& cb)
+                {insertChannelCallBack = cb;};
+
+                void setEraseChannelCallBack(const EraseChannelCallBack& cb)
+                {eraseChannelCallBack = cb;};
 
             private:
                 void handleRead();

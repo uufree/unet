@@ -8,12 +8,14 @@
 #ifndef _TASKPOOL_H
 #define _TASKPOOL_H
 
+#include"Channel.h"
 #include"Thread.h"
 #include"Mutex.h"
 #include"Condition.h"
+#include"TcpConnectionMap.h"
+
 #include<deque>
 #include<memory>
-#include"Channel.h"
 #include<vector>
 
 namespace unet
@@ -23,11 +25,12 @@ namespace unet
         class TaskPool final
         {
             typedef std::function<void()> ThreadFunc;
-            typedef std::vector<Channel&> ChannelList;
+            typedef std::shared_ptr<net::Channel> ChannelPtr;
+            typedef std::vector<ChannelPtr> ChannelList;
 
             public:
-                explicit TaskPool(int size = 2);
-                explicit TaskPool(int size,const ThreadFunc& cb);
+                explicit TaskPool(int size,net::TcpConnectionMap& tcp);
+                explicit TaskPool(int size,const ThreadFunc& cb,net::TcpConnectionMap& tcp);
                 TaskPool(const TaskPool& lhs) = delete;
                 TaskPool(TaskPool&& lhs);
                 TaskPool& operator=(const TaskPool& lhs) = delete;
@@ -70,7 +73,7 @@ namespace unet
                         }
                         
                         for(auto iter=channels.begin();iter!=channels.end();++iter)
-                            iter->handleEvent();
+                           (*iter)->handleEvent(tcpConnectionMap); 
                     }     
                 }
 
@@ -80,6 +83,7 @@ namespace unet
                 Thread* threadListPtr;
                 ThreadFunc threadFunc;
                 ChannelList channelList;
+                net::TcpConnectionMap& tcpConnectionMap;
                 
                 MutexLock mutex;
                 Condition cond;

@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"EventLoop.h"
-#include"Channel.h"
 
 namespace unet
 {

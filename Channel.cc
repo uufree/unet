@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"Channel.h"
-#include"TcpConnectionMap.h"
 
 namespace unet
 {
@@ -43,7 +42,7 @@ namespace unet
         Channel::~Channel()
         {};
 
-        void Channel::handleEvent(TcpConnectionMap& tcpconnectionMap)
+        void Channel::handleEvent(const TcpConnectionMap& tcpconnectionMap)
         {
             if(type == LISTEN || type == CLOCK)
             {

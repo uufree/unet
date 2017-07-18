@@ -41,12 +41,6 @@ namespace unet
         TcpConnection::~TcpConnection()
         {};
 
-        void TcpConnection::setReadCallBack(const MessageCallBack& lhs)
-        {readCallBack = lhs;};
-
-        void TcpConnection::setWriteCallBack(const MessageCallBack& lhs)
-        {writeCallBack = lhs;};
-        
         void TcpConnection::read()
         {
             if(inputBuffer.readInSocket() == 0)
@@ -79,8 +73,5 @@ namespace unet
         }
     }
 }
-
-
-
 
 

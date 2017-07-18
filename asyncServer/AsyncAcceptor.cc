@@ -79,15 +79,6 @@ namespace unet
             }
         }
 
-        bool AsyncAcceptor::listened() const
-        {return listening;};
-
-        void AsyncAcceptor::setInsertChannelCallBack(const InsertChannelCallBack& cb)
-        {insertChannelCallBack = cb;};
-
-        void AsyncAcceptor::setEraseChannelCallBack(const EraseChannelCallBack& cb)
-        {eraseChannelCallBack = cb;};
-
         void AsyncAcceptor::handleRead()
         {
             int confd = socket::accept(listenfd.getFd());

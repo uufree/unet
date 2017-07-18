@@ -30,7 +30,7 @@
 #include<functional>
 #include<sys/epoll.h>
 
-class Channel;
+#include"TcpConnectionMap.h"
 
 namespace unet
 {
@@ -42,7 +42,6 @@ namespace unet
         
         enum ChannelType{LISTEN,CONNECT,CLOCK};
         
-        class TcpConnectionMap;
         class Channel final
         {
             typedef std::function<void()> ReadCallBack;
@@ -56,7 +55,7 @@ namespace unet
                 Channel& operator=(Channel&& lhs);
                 ~Channel();
                 
-                void handleEvent(TcpConnectionMap& tcpconnectionMap);
+                void handleEvent(const TcpConnectionMap& tcpconnectionMap);
                 
                 
                 int getFd() const
