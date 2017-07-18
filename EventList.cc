@@ -37,16 +37,16 @@ namespace unet
             std::swap(eventFdList,lhs.eventFdList);
         };
 
-        void EventList::insert(const Channel& channel)
+        void EventList::insert(const ChannelPtr& channel)
         {
             struct epoll_event event;
             bzero(&event,sizeof(event));
-            event.events = channel.getEvent();
-            event.data.fd = channel.getFd();
+            event.events = channel->getEvent();
+            event.data.fd = channel->getFd();
             
             {
                 thread::MutexLockGuard guard(mutex);
-                eventList.push_back(std::move(event));
+                eventList.push_back(event);
                 eventFdList.push_back(event.data.fd);
             }
         }
@@ -56,8 +56,8 @@ namespace unet
             thread::MutexLockGuard guard(mutex);
             auto pos = std::find(eventFdList.begin(),eventFdList.end(),fd);
             int index = pos - eventFdList.cbegin();
-            pos = eventList.begin() + index;
-            eventList.erase(pos);
+            auto pos1 = eventList.begin() + index;
+            eventList.erase(pos1);
         }
 
         std::vector<struct epoll_event>& EventList::getEventList()

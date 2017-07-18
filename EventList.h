@@ -12,12 +12,14 @@
 #include<vector>
 #include<sys/epoll.h>
 #include"Mutex.h"
+#include<memory>
 
 namespace unet
 {
     namespace net
     {
         class Channel;
+        typedef std::shared_ptr<Channel> ChannelPtr;
 
         class EventList final
         {
@@ -37,13 +39,13 @@ namespace unet
                 bool empty() const
                 {return eventList.empty();};
 
-                void insert(const Channel& channel);
+                void insert(const ChannelPtr& channel);
                 void erase(int fd);
                 std::vector<struct epoll_event>& getEventList();
 
             private:
                 thread::MutexLock mutex;
-                std::vector<struct epoll_event&&> eventList;
+                std::vector<struct epoll_event> eventList;
                 std::vector<int> eventFdList;
         };
     }

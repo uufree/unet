@@ -24,28 +24,21 @@ namespace unet
 
             return *this;
         }
-
-        int ChannelMap::size() const 
-        {
-            return channelMap.size();
-        }
-
-        bool ChannelMap::empty() const
-        {
-            return channelMap.empty();
-        }
+        
+        ChannelMap::~ChannelMap()
+        {};
 
         void ChannelMap::insert(int fd,ChannelType type)
         {
             thread::MutexLockGuard guard(mutex);
-            net::Channel channel_(fd,type);
-            channelMap.insert({fd,std::move(channel_)});
+            net::ChannelPtr channel_(new Channel(fd,type));
+            channelMap.insert({fd,channel_});
         }
 
-        void ChannelMap::insert(Channel&& channel)
+        void ChannelMap::insert(const ChannelPtr& channel)
         {
             thread::MutexLockGuard gurad(mutex);
-            channelMap.insert({channel.getFd(),std::move(channel)});
+            channelMap.insert({channel->getFd(),channel});
         }
 
         void ChannelMap::erase(int fd)
@@ -53,12 +46,6 @@ namespace unet
             thread::MutexLockGuard guard(mutex);
             channelMap.erase(fd);
         }
-
-        Channel& ChannelMap::findChannel(int fd)
-        {
-           return channelMap[fd]; 
-        }
-
     }
 }
 

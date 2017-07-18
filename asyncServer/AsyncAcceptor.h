@@ -16,7 +16,8 @@ namespace unet
     {
         class AsyncAcceptor final
         {
-            typedef std::function<void(Channel&&)> InsertChannelCallBack;
+            typedef std::unique_ptr<Channel> ChannelPtr;
+            typedef std::function<void(ChannelPtr&&)> InsertChannelCallBack;
             typedef std::function<void(int)> EraseChannelCallBack;
 
             public:

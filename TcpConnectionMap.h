@@ -11,11 +11,14 @@
 #include"TcpConnection.h"
 #include<map>
 #include"Mutex.h"
+#include<memory>
 
 namespace unet
 {
     namespace net
     {
+        typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
+        
         class TcpConnectionMap final
         {
             public:
@@ -35,13 +38,15 @@ namespace unet
                 {return tcpConnectionMap.empty();};
 
                 void insert(int fd);
-                void insert(TcpConnection&& lhs);
+                void insert(const TcpConnectionPtr& lhs);
                 void erase(int fd);
-                TcpConnection& find(int fd);
+                
+                TcpConnectionPtr& find(int fd)
+                {return tcpConnectionMap[fd];};
 
             private:
                 thread::MutexLock mutex;
-                std::map<int,TcpConnection&&> tcpConnectionMap;
+                std::map<int,TcpConnectionPtr> tcpConnectionMap;
         };
     }
 }

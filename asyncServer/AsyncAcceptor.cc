@@ -52,8 +52,8 @@ namespace unet
 
         void AsyncAcceptor::listen()
         {
-            Channel channel(listenfd.getFd(),LISTEN);
-            channel.setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
+            ChannelPtr channel(new Channel(listenfd.getFd(),LISTEN));
+            channel->setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
 
             if(!listening)
             {
@@ -94,7 +94,7 @@ namespace unet
             assert(confd >= 0);
             socket::setNonBlockAndCloseOnExec(confd);
             
-            Channel channel(confd,CONNECT);
+            ChannelPtr channel(new Channel(confd,CONNECT));
             
             if(insertChannelCallBack)
                 insertChannelCallBack(std::move(channel));

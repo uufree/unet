@@ -8,28 +8,30 @@
 #ifndef _EPOLLER_H
 #define _EPOLLER_H
 
-#include"ChannelMap.h"
 #include<sys/epoll.h>
-#include"TcpConnectionMap.h"
 #include<vector>
+
+#include"ChannelMap.h"
+#include"TcpConnectionMap.h"
+#include"error.h"
+#include"EventList.h"
 
 namespace unet
 {
     namespace net
     {
-        class EventList;
         static const int timeoutMs = 200;//默认poll阻塞200ms
         
         class Epoller final
         {
-            typedef std::vector<Channel&> ChannelList;
+            typedef std::vector<ChannelPtr> ChannelList;
             
             public:    
                 explicit Epoller(EventList& events);
                 Epoller(const Epoller&) = delete;
                 Epoller& operator=(const Epoller&) = delete;
-                Epoller(Epoller&& lhs);
-                Epoller& operator=(Epoller&& lhs);
+                Epoller(Epoller&& lhs) = delete;
+                Epoller& operator=(Epoller&& lhs) = delete;
                 ~Epoller();
 
                 void epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap);

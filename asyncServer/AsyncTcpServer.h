@@ -15,7 +15,7 @@
 #include"../Epoller.h"
 #include"../EventLoop.h"
 #include"../ThreadPool.h"
-#include"../ThreadPool.h"
+#include"../TaskPool.h"
 
 namespace unet
 {
@@ -39,7 +39,7 @@ namespace unet
                 void start();
              
             private:
-                void InsertChannel(Channel&& channel);
+                void InsertChannel(ChannelPtr&& channel);
                 void EraseChannel(int fd);
                 void GetActiveChannels();
 
@@ -50,7 +50,7 @@ namespace unet
                 ChannelMap channelMap;
                 EventList eventList;
                 ChannelList channelList;
-                thread::ThreadPool pool;                
+                thread::TaskPool pool;                
 
                 Epoller epoller;
                 EventLoop eventLoop;

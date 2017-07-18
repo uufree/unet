@@ -13,7 +13,7 @@ namespace unet
     {
         AsyncTcpServer::AsyncTcpServer(socket::InetAddress& addr_,int size):
             serveraddr(addr_),
-            pool(new thread::ThreadPool(size)),
+            pool(new thread::TaskPool(size)),
             epoller(eventList),
             asyncAcceptor(serveraddr) 
         {
@@ -23,13 +23,13 @@ namespace unet
             asyncAcceptor.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
         }
         
-        void AsyncTcpServer::InsertChannel(Channel&& channel)
+        void AsyncTcpServer::InsertChannel(ChannelPtr&& channel)
         {
-            channel.setCloseCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
+            channel->setCloseCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
             
-            TcpConnection connection(channel.getFd());
-            connection.setReadCallBack(readCallBack);
-            connection.setWriteCallBack(writeCallBack);
+            TcpConnectionPtr connection(new TcpConnection(channel->getFd()));
+            connection->setReadCallBack(readCallBack);
+            connection->setWriteCallBack(writeCallBack);
             
             tcpconnectionMap.insert(std::move(connection));
             channelMap.insert(std::move(channel));

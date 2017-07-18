@@ -13,7 +13,7 @@ namespace unet
     {
         TcpConnectionMap::TcpConnectionMap()
         {};
-/*
+
         TcpConnectionMap::TcpConnectionMap(TcpConnectionMap&& lhs) :
             tcpConnectionMap(std::move(lhs.tcpConnectionMap))
         {};
@@ -23,21 +23,21 @@ namespace unet
             tcpConnectionMap = std::move(lhs.tcpConnectionMap);
             return *this;
         }
-*/
+
         TcpConnectionMap::~TcpConnectionMap()
         {};
 
         void TcpConnectionMap::insert(int fd)
         {
             thread::MutexLockGuard guard(mutex);
-            TcpConnection tcp(fd);
-            tcpConnectionMap.insert({fd,std::move(tcp)});
+            TcpConnectionPtr tcp(new TcpConnection(fd));
+            tcpConnectionMap.insert({fd,tcp});
         }
 
-        void TcpConnectionMap::insert(TcpConnection&& lhs)
-        {
-            thread::MutexLockGuard guard(mutex);
-            tcpConnectionMap.insert({lhs.getFd(),std::move(lhs)});
+        void TcpConnectionMap::insert(const TcpConnectionPtr& lhs)
+            {
+                thread::MutexLockGuard guard(mutex);
+                tcpConnectionMap.insert({lhs->getFd(),lhs});
         }
 
         void TcpConnectionMap::erase(int fd) 
@@ -45,12 +45,6 @@ namespace unet
             thread::MutexLockGuard guard(mutex);
             tcpConnectionMap.erase(fd);
         }
-        
-        TcpConnection& TcpConnectionMap::find(int fd)
-        {
-            return tcpConnectionMap[fd];
-        }
-
     }
 }
 

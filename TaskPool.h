@@ -14,6 +14,7 @@
 #include<deque>
 #include<memory>
 #include"Channel.h"
+#include<vector>
 
 namespace unet
 {

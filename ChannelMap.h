@@ -16,11 +16,14 @@
 #include"Mutex.h"
 #include<set>
 #include<map>
+#include<memory>
 
 namespace unet
 {
     namespace net
     {
+        typedef std::shared_ptr<Channel> ChannelPtr;
+        
         class ChannelMap final
         {
             public:
@@ -39,17 +42,17 @@ namespace unet
                 bool empty() const
                 {return channelMap.empty();};
                 
-                Channel& findChannel(int fd)
+                ChannelPtr& findChannel(int fd)
                 {return channelMap[fd];};
 
-                void insert(Channel&& channel);
+                void insert(const ChannelPtr& channel);
                 void insert(int fd,ChannelType type);
                 void erase(int fd);
                 
 
             private:
                 thread::MutexLock mutex;
-                std::map<int,Channel&&> channelMap;
+                std::map<int,ChannelPtr> channelMap;
         };
     }
 }

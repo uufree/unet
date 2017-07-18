@@ -6,8 +6,6 @@
  ************************************************************************/
 
 #include"Epoller.h"
-#include"error.h"
-#include"EventList.h"
 
 namespace unet
 {
@@ -48,11 +46,11 @@ namespace unet
                 if((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT))
                 {
                     fd = events[i].data.fd;
-                    Channel& channel = channelMap.findChannel(fd); 
-                    channel.setRevent(events[i].events);
+                    ChannelPtr& channel = channelMap.findChannel(fd); 
+                    channel->setRevent(events[i].events);
                     
-                    TcpConnection& con = tcpConnectionMap.find(fd);
-                    con.read();
+                    TcpConnectionPtr& con = tcpConnectionMap.find(fd);
+                    con->read();
 
                     channeList.push_back(channel);
                 }

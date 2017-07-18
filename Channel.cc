@@ -74,7 +74,7 @@ namespace unet
             else if(type == CONNECT)
             {
                 handleEventing = true;
-                TcpConnection& connection = tcpconnectionMap.find(fd);
+                TcpConnectionPtr& connection = tcpconnectionMap.find(fd);
                 
                 if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
@@ -85,11 +85,11 @@ namespace unet
                 }
                 else if(revent & EPOLLIN)
                 {//存在无法正常关闭connection的问题
-                    connection.handleRead();
+                    connection->handleRead();
                 }
                 else if(revent & EPOLLOUT)
                 {
-                    connection.handleWrite();
+                    connection->handleWrite();
                 }
                 else
                 {
