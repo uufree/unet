@@ -11,8 +11,8 @@ namespace unet
 {
     namespace net
     {
-        Epoller::Epoller(EventList& events) :
-            eventList(events),
+        Epoller::Epoller() :
+            eventList(),
             epollfd(::epoll_create(65536))
         {
             if(epollfd < 0)
@@ -20,25 +20,26 @@ namespace unet
         }                     
         
         Epoller::Epoller(Epoller&& lhs) : 
-            eventList(lhs.eventList),
+            eventList(std::move(lhs.eventList)),
             epollfd(std::move(lhs.epollfd))
         {};
         
         Epoller& Epoller::operator=(Epoller&& lhs)
         {
+            eventList = std::move(lhs.eventList);
+
             return *this;
         }
         
         Epoller::~Epoller()
         {
             ::close(epollfd);
-
-            std::cout << "~Epoller" << std::endl;
         }
 
         void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap)
         {
-            int activeEvents = ::epoll_wait(epollfd,&*eventList.getEventList().begin(),static_cast<int>(eventList.size()),timeoutMs);
+            eventList.clear();
+            int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),eventList.size(),timeoutMs);
              
             std::cout << "activeEvents: " << activeEvents << std::endl;
 
@@ -46,29 +47,30 @@ namespace unet
                 getActiveEvents(activeEvents,channelList,channelMap,tcpconnectionMap);
             else if(activeEvents == 0)
             {}
-//                std::cout << "nothing happened!" << std::endl; 
             else
+            {
+                std::cout << "epoll_wait error" << std::endl;
                 unet::handleError(errno);
+                std::cout << "epoll_wait error" << std::endl;
+            }
         }
 
         void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap)
         {
             int fd;
-            auto events = eventList.getEventList();
 
             for(int i=0;i<activeEvents;++i)
             {
-                if((events[i].events & EPOLLIN) || (events[i].events & EPOLLOUT))
+                if((eventList[i].events & EPOLLIN) || (eventList[i].events & EPOLLOUT))
                 {
-                    fd = events[i].data.fd;
+                    fd = eventList[i].data.fd;
                     ChannelPtr& channel = channelMap.findChannel(fd); 
-                    channel->setRevent(events[i].events);
+                    channel->setRevent(eventList[i].events);
                     
                     TcpConnectionPtr& con = tcpConnectionMap.find(fd);
                     con->read();
-                    channel->handleEvent(tcpConnectionMap);
 
-//                    channeList.push_back(channel);
+                    channeList.push_back(channel);
                 }
             }
         }

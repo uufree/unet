@@ -13,7 +13,6 @@
 
 #include"ChannelMap.h"
 #include"TcpConnectionMap.h"
-#include"EventList.h"
 #include"error.h"
 
 namespace unet
@@ -25,9 +24,10 @@ namespace unet
         class Epoller final
         {
             typedef std::vector<ChannelPtr> ChannelList;
-            
+            typedef std::vector<struct epoll_event> EventList;
+
             public:    
-                explicit Epoller(EventList& events);
+                explicit Epoller();
                 Epoller(const Epoller&) = delete;
                 Epoller& operator=(const Epoller&) = delete;
                 Epoller(Epoller&& lhs);
@@ -36,15 +36,15 @@ namespace unet
 
                 void epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap);
                 
-                int getEpollfd() const
+                int getEpollfd()
                 {return epollfd;};
-            
+
             private:
                 void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap);
 
             private:
-                EventList& eventList;//保存epollfd的数组
-                int epollfd;//内核维护的epollfd表
+                EventList eventList;
+                int epollfd;
         };    
     }
 }

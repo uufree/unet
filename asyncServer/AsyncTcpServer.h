@@ -11,7 +11,7 @@
 #include"AsyncAcceptor.h"
 #include"../TcpConnectionMap.h"
 #include"../ChannelMap.h"
-#include"../EventList.h"
+#include"../EventMap.h"
 #include"../TaskPool.h"
 #include"../Epoller.h"
 #include"../EventLoop.h"
@@ -47,7 +47,7 @@ namespace unet
 
                 TcpConnectionMap tcpconnectionMap;
                 ChannelMap channelMap;
-                EventList eventList;
+                EventMap eventMap;
                 ChannelList channelList;
                 thread::TaskPool pool;                
 

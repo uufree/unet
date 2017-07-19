@@ -15,10 +15,10 @@ namespace unet
             serveraddr(addr_),
             tcpconnectionMap(),
             channelMap(),
-            eventList(),
+            eventMap(),
             channelList(),
             pool(size,tcpconnectionMap),
-            epoller(eventList),
+            epoller(),
             eventLoop(),
             asyncAcceptor(serveraddr) 
         {
@@ -31,7 +31,7 @@ namespace unet
             serveraddr(lhs.serveraddr),
             tcpconnectionMap(std::move(lhs.tcpconnectionMap)),
             channelMap(std::move(lhs.channelMap)),
-            eventList(std::move(lhs.eventList)),
+            eventMap(std::move(lhs.eventMap)),
             channelList(std::move(lhs.channelList)),
             pool(std::move(lhs.pool)),
             epoller(std::move(lhs.epoller)),
@@ -44,7 +44,7 @@ namespace unet
         {
             tcpconnectionMap = std::move(lhs.tcpconnectionMap);
             channelMap = std::move(lhs.channelMap);
-            eventList = std::move(lhs.eventList);
+            eventMap = std::move(lhs.eventMap);
             channelList = std::move(lhs.channelList);
             pool = std::move(lhs.pool);
             epoller = std::move(lhs.epoller);
@@ -69,14 +69,14 @@ namespace unet
             
             tcpconnectionMap.insert(connection);
             channelMap.insert(std::move(channel));
-            eventList.insert(channel->getFd(),channel->getEvent(),epoller.getEpollfd());
+            eventMap.insert(channel->getFd(),channel->getEvent(),epoller.getEpollfd());
         }
 
         void AsyncTcpServer::EraseChannel(int fd)
         {
             tcpconnectionMap.erase(fd);
             channelMap.erase(fd);
-            eventList.erase(fd,epoller.getEpollfd());
+            eventMap.erase(fd,epoller.getEpollfd());
         }
 
         void AsyncTcpServer::GetActiveChannels()
