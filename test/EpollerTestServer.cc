@@ -17,21 +17,24 @@ int main(int argc,char** argv)
     std::cout << "epollfd: " << epollfd << std::endl;
 
     std::vector<struct epoll_event> events;
+    events.reserve(10);
+
     unet::net::socket::InetAddress serveraddr(7777);
     unet::net::socket::Socket listenfd(unet::net::socket::LISTEN);
     unet::net::socket::bind(listenfd,serveraddr);
     unet::net::socket::listen(listenfd);
-    
+    std::cout << "listenfd: " << listenfd.getFd() << std::endl;
+
     struct epoll_event event;
     bzero(&event,sizeof(event));
     event.events = EPOLLIN;
     event.data.fd = listenfd.getFd();
-    events.push_back(event);
     
     epoll_ctl(epollfd,EPOLL_CTL_ADD,listenfd.getFd(),&event);
 
-    int es = epoll_wait(epollfd,&*events.begin(),events.size(),-1); 
+    int es = epoll_wait(epollfd,&*events.begin(),65536,-1); 
     std::cout << "es: " << es << std::endl;
+    std::cout << "activeEvents: " << events[0].data.fd << std::endl;
 
     int confd = unet::net::socket::accept(listenfd);
     std::cout << "confd: " << confd << std::endl;

@@ -43,8 +43,8 @@ namespace unet
                 void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap);
 
             private:
-                EventList eventList;
                 int epollfd;
+                EventList eventList;
         };    
     }
 }

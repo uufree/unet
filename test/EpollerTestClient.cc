@@ -13,12 +13,11 @@ using namespace unet;
 
 int main(int argc,char** argv)
 {
+    sleep(3);
+
     net::socket::InetAddress serverAddr("127.0.0.1",7777);
     net::socket::Socket confd(net::socket::CONNECT);
     net::socket::connect(confd,serverAddr);
-    
-
-    sleep(10); 
      
     return 0;
 }

@@ -49,7 +49,6 @@ namespace unet
             }
         }
 
-
         void EventMap::erase(int fd,int epollfd)
         {
             thread::MutexLockGuard guard(mutex);

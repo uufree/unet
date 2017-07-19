@@ -12,22 +12,22 @@ namespace unet
     namespace net
     {
         Epoller::Epoller() :
-            eventList(),
-            epollfd(::epoll_create(65536))
+            epollfd(::epoll_create(65536)),
+            eventList()
         {
             if(epollfd < 0)
                 unet::handleError(errno);
+
+            eventList.reserve(65536);
         }                     
         
         Epoller::Epoller(Epoller&& lhs) : 
-            eventList(std::move(lhs.eventList)),
             epollfd(std::move(lhs.epollfd))
         {};
         
         Epoller& Epoller::operator=(Epoller&& lhs)
         {
             eventList = std::move(lhs.eventList);
-
             return *this;
         }
         
@@ -39,19 +39,19 @@ namespace unet
         void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap)
         {
             eventList.clear();
-            int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),eventList.size(),timeoutMs);
+            int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),65536,-1);
              
             std::cout << "activeEvents: " << activeEvents << std::endl;
 
             if(activeEvents > 0)
                 getActiveEvents(activeEvents,channelList,channelMap,tcpconnectionMap);
             else if(activeEvents == 0)
-            {}
+            {
+
+            }
             else
             {
-                std::cout << "epoll_wait error" << std::endl;
                 unet::handleError(errno);
-                std::cout << "epoll_wait error" << std::endl;
             }
         }
 
@@ -69,7 +69,6 @@ namespace unet
                     
                     TcpConnectionPtr& con = tcpConnectionMap.find(fd);
                     con->read();
-
                     channeList.push_back(channel);
                 }
             }

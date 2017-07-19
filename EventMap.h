@@ -20,6 +20,8 @@ namespace unet
 {
     namespace net
     {
+        typedef std::vector<struct epoll_event> EventList;
+
         class EventMap final
         {
             public:
@@ -40,7 +42,6 @@ namespace unet
 
                 void insert(int fd,int event_,int epollfd);
                 void erase(int fd,int epollfd);
-                
 
             private:
                 thread::MutexLock mutex;
@@ -48,6 +49,5 @@ namespace unet
         };
     }
 }
-
 
 #endif
