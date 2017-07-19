@@ -22,8 +22,17 @@ int main(int argc,char** argv)
     std::cout << "confd is: " << confd << std::endl;
     
     net::Buffer serverBuffer(confd);
+    std::string message;
 
-    serverBuffer.recvFile("/home/uuchen/chenuu.jpeg");
+    for(int i=0;i<10;++i)
+    {
+        serverBuffer.readInSocket();
+        serverBuffer.getCompleteMessageInBuffer(message);
+        std::cout << message << std::endl;
+        message.clear();
+
+        sleep(1);
+    }
 
     return 0;
 }

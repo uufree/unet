@@ -57,28 +57,28 @@ include CMakeFiles/server.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/server.dir/flags.make
 
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.o: ../AsyncTcpServerTest.cc
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/uuchen/unet/asyncServer/test/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/AsyncTcpServerTest.cc.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/AsyncTcpServerTest.cc.o -c /home/uuchen/unet/asyncServer/test/AsyncTcpServerTest.cc
+CMakeFiles/server.dir/Server.cc.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/Server.cc.o: ../Server.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/uuchen/unet/asyncServer/test/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/server.dir/Server.cc.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/server.dir/Server.cc.o -c /home/uuchen/unet/asyncServer/test/Server.cc
 
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/AsyncTcpServerTest.cc.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/uuchen/unet/asyncServer/test/AsyncTcpServerTest.cc > CMakeFiles/server.dir/AsyncTcpServerTest.cc.i
+CMakeFiles/server.dir/Server.cc.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/Server.cc.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/uuchen/unet/asyncServer/test/Server.cc > CMakeFiles/server.dir/Server.cc.i
 
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/AsyncTcpServerTest.cc.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/uuchen/unet/asyncServer/test/AsyncTcpServerTest.cc -o CMakeFiles/server.dir/AsyncTcpServerTest.cc.s
+CMakeFiles/server.dir/Server.cc.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/Server.cc.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/uuchen/unet/asyncServer/test/Server.cc -o CMakeFiles/server.dir/Server.cc.s
 
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.requires:
+CMakeFiles/server.dir/Server.cc.o.requires:
 
-.PHONY : CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.requires
+.PHONY : CMakeFiles/server.dir/Server.cc.o.requires
 
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.provides: CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.requires
-	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.provides.build
-.PHONY : CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.provides
+CMakeFiles/server.dir/Server.cc.o.provides: CMakeFiles/server.dir/Server.cc.o.requires
+	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/Server.cc.o.provides.build
+.PHONY : CMakeFiles/server.dir/Server.cc.o.provides
 
-CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.provides.build: CMakeFiles/server.dir/AsyncTcpServerTest.cc.o
+CMakeFiles/server.dir/Server.cc.o.provides.build: CMakeFiles/server.dir/Server.cc.o
 
 
 CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o: CMakeFiles/server.dir/flags.make
@@ -539,7 +539,7 @@ CMakeFiles/server.dir/home/uuchen/unet/ThreadPool.cc.o.provides.build: CMakeFile
 
 # Object files for target server
 server_OBJECTS = \
-"CMakeFiles/server.dir/AsyncTcpServerTest.cc.o" \
+"CMakeFiles/server.dir/Server.cc.o" \
 "CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o" \
 "CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o" \
 "CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.o" \
@@ -563,7 +563,7 @@ server_OBJECTS = \
 # External object files for target server
 server_EXTERNAL_OBJECTS =
 
-server: CMakeFiles/server.dir/AsyncTcpServerTest.cc.o
+server: CMakeFiles/server.dir/Server.cc.o
 server: CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o
 server: CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o
 server: CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.o
@@ -593,7 +593,7 @@ CMakeFiles/server.dir/build: server
 
 .PHONY : CMakeFiles/server.dir/build
 
-CMakeFiles/server.dir/requires: CMakeFiles/server.dir/AsyncTcpServerTest.cc.o.requires
+CMakeFiles/server.dir/requires: CMakeFiles/server.dir/Server.cc.o.requires
 CMakeFiles/server.dir/requires: CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o.requires
 CMakeFiles/server.dir/requires: CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o.requires
 CMakeFiles/server.dir/requires: CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.o.requires

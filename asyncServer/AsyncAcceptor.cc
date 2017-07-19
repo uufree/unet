@@ -19,6 +19,7 @@ namespace unet
         {
             socket::bind(listenfd,serveraddr);
             socket::listen(listenfd);
+            std::cout << "8" << std::endl;
         }
 
         AsyncAcceptor::AsyncAcceptor(AsyncAcceptor&& lhs) :
@@ -48,6 +49,8 @@ namespace unet
         {
             if(!listening)
                 eraseChannelCallBack(listenfd.getFd());
+            
+            std::cout << "~AsyncAcceptor" << std::endl;
         };
 
         void AsyncAcceptor::listen()

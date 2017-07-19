@@ -35,6 +35,9 @@ namespace unet
                 ~Epoller();
 
                 void epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap);
+                
+                int getEpollfd() const
+                {return epollfd;};
             
             private:
                 void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap);

@@ -6,13 +6,16 @@
  ************************************************************************/
 
 #include"EventList.h"
+#include<iostream>
 
 namespace unet
 {
     namespace net
     {
         EventList::EventList()
-        {};
+        {
+            std::cout << "4" << std::endl;
+        };
 
         EventList::EventList(EventList&& lhs) :
             eventList(std::move(lhs.eventList)),
@@ -27,7 +30,9 @@ namespace unet
         }
 
         EventList::~EventList()
-        {};
+        {
+            std::cout << "~EventList" << std::endl;
+        };
 
         void EventList::swap(EventList& lhs)
         {
@@ -35,13 +40,16 @@ namespace unet
             std::swap(eventFdList,lhs.eventFdList);
         };
 
-        void EventList::insert(int fd,int event_)
+        void EventList::insert(int fd,int event_,int epollfd)
         {
             struct epoll_event event;
             bzero(&event,sizeof(event));
             event.events = event_;
             event.data.fd = fd;
             
+            if(::epoll_ctl(epollfd,EPOLL_CTL_ADD,fd,&event) < 0)
+                unet::handleError(errno);
+
             {
                 thread::MutexLockGuard guard(mutex);
                 eventList.push_back(event);
@@ -50,9 +58,13 @@ namespace unet
         }
 
 
-        void EventList::erase(int fd)
+        void EventList::erase(int fd,int epollfd)
         {
             thread::MutexLockGuard guard(mutex);
+
+            if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
+                unet::handleError(errno);
+
             auto pos = std::find(eventFdList.begin(),eventFdList.end(),fd);
             int index = pos - eventFdList.cbegin();
             auto pos1 = eventList.begin() + index;

@@ -32,8 +32,9 @@ namespace unet
                 AsyncTcpServer& operator=(AsyncTcpServer&& lhs);
                 ~AsyncTcpServer();
 
-                inline void setReadCallBack(const MessageCallBack& cb);
-                inline void setWriteCallBack(const MessageCallBack& cb);
+                void setReadCallBack(const MessageCallBack& cb)
+                {readCallBack = cb;};
+                
                 void start();
              
             private:
@@ -54,7 +55,7 @@ namespace unet
                 EventLoop eventLoop;
                 AsyncAcceptor asyncAcceptor;
 
-                MessageCallBack readCallBack,writeCallBack;
+                MessageCallBack readCallBack;
         };
     }
 }

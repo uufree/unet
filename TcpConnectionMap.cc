@@ -12,7 +12,9 @@ namespace unet
     namespace net
     {
         TcpConnectionMap::TcpConnectionMap()
-        {};
+        {
+            std::cout << "2" << std::endl;
+        };
 
         TcpConnectionMap::TcpConnectionMap(TcpConnectionMap&& lhs) :
             tcpConnectionMap(std::move(lhs.tcpConnectionMap))
@@ -25,7 +27,9 @@ namespace unet
         }
 
         TcpConnectionMap::~TcpConnectionMap()
-        {};
+        {
+            std::cout << "~TcpConnectionMap" << std::endl;
+        };
 
         void TcpConnectionMap::insert(int fd)
         {

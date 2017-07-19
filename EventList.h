@@ -37,8 +37,8 @@ namespace unet
                 bool empty() const
                 {return eventList.empty();};
 
-                void insert(int fd,int event_);
-                void erase(int fd);
+                void insert(int fd,int event_,int epollfd);
+                void erase(int fd,int epollfd);
                 std::vector<struct epoll_event>& getEventList();
 
             private:

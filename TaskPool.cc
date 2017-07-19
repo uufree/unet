@@ -21,6 +21,7 @@ namespace unet
             cond(mutex)
         {
             setThreadCallBack(std::bind(&TaskPool::ThreadFunction,this));
+            std::cout << "5" << std::endl;
         };
         
         TaskPool::TaskPool(int size,const ThreadFunc& cb,net::TcpConnectionMap& tcp) :
@@ -61,6 +62,8 @@ namespace unet
                 ::pthread_detach(threadListPtr[i].getThreadId());
 
             delete [] threadListPtr;
+            
+            std::cout << "~TaskPool" << std::endl;
         }
     
         void TaskPool::start()

@@ -12,7 +12,9 @@ namespace unet
     namespace net
     {
         ChannelMap::ChannelMap()
-        {};
+        {
+            std::cout << "3" << std::endl;
+        };
 
         ChannelMap::ChannelMap(ChannelMap&& lhs) : 
             channelMap(std::move(lhs.channelMap))
@@ -26,7 +28,9 @@ namespace unet
         }
         
         ChannelMap::~ChannelMap()
-        {};
+        {
+            std::cout << "~ChannelMap" << std::endl;
+        };
 
         void ChannelMap::insert(int fd,ChannelType type)
         {

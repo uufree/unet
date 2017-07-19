@@ -13,12 +13,16 @@ namespace unet
     {
         AsyncTcpServer::AsyncTcpServer(socket::InetAddress& addr_,int size):
             serveraddr(addr_),
+            tcpconnectionMap(),
+            channelMap(),
+            eventList(),
+            channelList(),
             pool(size,tcpconnectionMap),
             epoller(eventList),
+            eventLoop(),
             asyncAcceptor(serveraddr) 
         {
             eventLoop.setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::GetActiveChannels,this));
-            
             asyncAcceptor.setEraseChannelCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
             asyncAcceptor.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
         }
@@ -33,8 +37,7 @@ namespace unet
             epoller(std::move(lhs.epoller)),
             eventLoop(std::move(lhs.eventLoop)),
             asyncAcceptor(std::move(lhs.asyncAcceptor)),
-            readCallBack(std::move(lhs.readCallBack)),
-            writeCallBack(std::move(lhs.writeCallBack))
+            readCallBack(std::move(lhs.readCallBack))
         {};
 
         AsyncTcpServer& AsyncTcpServer::operator=(AsyncTcpServer&& lhs)
@@ -48,13 +51,14 @@ namespace unet
             eventLoop = std::move(lhs.eventLoop);
             asyncAcceptor = std::move(lhs.asyncAcceptor);
             readCallBack = std::move(lhs.readCallBack);
-            writeCallBack = std::move(lhs.writeCallBack);
             
             return *this;
         }
 
         AsyncTcpServer::~AsyncTcpServer()
-        {};
+        {
+            std::cout << "~AsyncTcpServer" << std::endl;
+        };
 
         void AsyncTcpServer::InsertChannel(ChannelPtr&& channel)
         {
@@ -62,24 +66,30 @@ namespace unet
             
             TcpConnectionPtr connection(new TcpConnection(channel->getFd()));
             connection->setReadCallBack(readCallBack);
-            connection->setWriteCallBack(writeCallBack);
             
             tcpconnectionMap.insert(connection);
             channelMap.insert(std::move(channel));
-            eventList.insert(channel->getFd(),channel->getEvent());
+            eventList.insert(channel->getFd(),channel->getEvent(),epoller.getEpollfd());
         }
 
         void AsyncTcpServer::EraseChannel(int fd)
         {
             tcpconnectionMap.erase(fd);
             channelMap.erase(fd);
-            eventList.erase(fd);
+            eventList.erase(fd,epoller.getEpollfd());
         }
 
         void AsyncTcpServer::GetActiveChannels()
         {
+            channelList.clear();
             epoller.epoll(channelList,channelMap,tcpconnectionMap);
             pool.addInTaskQueue(channelList); 
+        }
+
+        void AsyncTcpServer::start()
+        {
+            asyncAcceptor.listen();
+            eventLoop.loop();
         }
     }
 }

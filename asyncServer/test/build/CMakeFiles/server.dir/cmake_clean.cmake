@@ -1,5 +1,5 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/server.dir/AsyncTcpServerTest.cc.o"
+  "CMakeFiles/server.dir/Server.cc.o"
   "CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncTcpServer.cc.o"
   "CMakeFiles/server.dir/home/uuchen/unet/asyncServer/AsyncAcceptor.cc.o"
   "CMakeFiles/server.dir/home/uuchen/unet/Buffer.cc.o"
