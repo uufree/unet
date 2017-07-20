@@ -43,8 +43,10 @@ namespace unet
 
         void TcpConnection::read()
         {
-            if(inputBuffer.readInSocket() == 0)
+            if(inputBuffer.readInSocket() <= 0)
+            {
                 closeCallBack(confd.getFd());
+            }
         }
 
         void TcpConnection::handleRead()

@@ -52,9 +52,8 @@ namespace unet
         void EventMap::erase(int fd,int epollfd)
         {
             thread::MutexLockGuard guard(mutex);
-            auto event = eventMap.at(fd);
 
-            if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,&event) < 0)
+            if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
                 unet::handleError(errno);
             
             eventMap.erase(fd);

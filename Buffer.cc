@@ -62,10 +62,6 @@ namespace unet
 
             if(n > 0)
                 appendInBuffer(extraBuffer);
-            else if(n == 0)
-            {}
-            else
-                unet::handleError(errno);
             
             return n;
         };

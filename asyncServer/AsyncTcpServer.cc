@@ -74,9 +74,9 @@ namespace unet
 
         void AsyncTcpServer::EraseChannel(int fd)
         {
+            eventMap.erase(fd,epoller.getEpollfd());
             tcpconnectionMap.erase(fd);
             channelMap.erase(fd);
-            eventMap.erase(fd,epoller.getEpollfd());
         }
 
         void AsyncTcpServer::GetActiveChannels()
@@ -89,6 +89,7 @@ namespace unet
         void AsyncTcpServer::start()
         {
             asyncAcceptor.listen();
+            pool.start();
             eventLoop.loop();
         }
     }

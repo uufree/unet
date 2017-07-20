@@ -16,7 +16,6 @@ namespace unet
             InetAddress::InetAddress(int port)
             {
                 init(static_cast<uint16_t>(port));
-                std::cout << "1" << std::endl;
             }
 
             InetAddress::InetAddress(uint16_t port)
@@ -58,9 +57,7 @@ namespace unet
             }
 
             InetAddress::~InetAddress()
-            {
-                std::cout << "~InetAddress" << std::endl;
-            };
+            {};
             
             bool operator==(const InetAddress& lhs,const InetAddress& rhs)
             {

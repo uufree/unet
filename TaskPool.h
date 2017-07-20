@@ -73,7 +73,7 @@ namespace unet
                         
                         for(auto iter=channels.begin();iter!=channels.end();++iter)
                            (*iter)->handleEvent(); 
-                    }     
+                    }
                 }
 
             private:

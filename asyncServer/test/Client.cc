@@ -14,19 +14,19 @@ int main(int argc,char** argv)
 {
     while(1)
     {
-        sleep(2);
+        sleep(1);
         net::socket::InetAddress server("127.0.0.1",7777);
         net::socket::Socket confd(net::socket::CONNECT);
         net::socket::connect(confd,server);
-    }
-/*
-    net::Buffer buffer(confd.getFd());    
-    buffer.appendInBuffer("hello,server!");
-    buffer.writeInSocket();
         
-    std::cout << "write ok!" << std::endl;
-    sleep(1);
-*/
+        std::string message("hello,server!");
+        net::Buffer buffer(confd.getFd());
+        buffer.appendInBuffer(message);
+        buffer.writeInSocket();
+
+        std::cout << "client already send message!" << std::endl;
+    }
+    
     return 0;
 }
 
