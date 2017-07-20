@@ -43,7 +43,7 @@ namespace unet
                 bool empty() const
                 {return channelMap.empty();};
                 
-                ChannelPtr& findChannel(int fd)
+                ChannelPtr findChannel(int fd)
                 {return channelMap[fd];};
 
                 void insert(const ChannelPtr& channel);

@@ -89,7 +89,7 @@ namespace unet
         void AsyncTcpServer::start()
         {
             asyncAcceptor.listen();
-            pool.start();
+//            pool.start();
             eventLoop.loop();
         }
     }

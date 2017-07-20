@@ -62,14 +62,17 @@ namespace unet
                 if((eventList[i].events & EPOLLIN) || (eventList[i].events & EPOLLOUT))
                 {
                     fd = eventList[i].data.fd;
-                    ChannelPtr& channel = channelMap.findChannel(fd); 
+                    ChannelPtr channel = channelMap.findChannel(fd); 
                     channel->setRevent(eventList[i].events);
 
                     int type = channel->getType();
                     if(type == CONNECT)
                     {
-                        channel->read();
-                        channeList.push_back(channel);
+                        if(channel->read() > 0)
+                        {
+//                            channel->handleEvent();
+                            channeList.push_back(channel);
+                        }
                     }
                     else
                     {

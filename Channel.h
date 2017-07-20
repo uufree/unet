@@ -94,8 +94,8 @@ namespace unet
                 bool isWriting() const
                 {return event == KWriteEvent;};
                 
-                void read()
-                {tcp->read();};
+                int read()
+                {return tcp->read();};
 
             private:
                 int fd;

@@ -41,18 +41,22 @@ namespace unet
         TcpConnection::~TcpConnection()
         {};
 
-        void TcpConnection::read()
+        int TcpConnection::read()
         {
-            if(inputBuffer.readInSocket() <= 0)
+            int n = inputBuffer.readInSocket();
+            if(n <= 0)
             {
                 closeCallBack(confd.getFd());
             }
+            return n;
         }
 
         void TcpConnection::handleRead()
         {//处理读事件   
             if(readCallBack)
+            {
                 readCallBack(&inputBuffer,&outputBuffer);
+            }
             else
                 perror("没有注册readcallback\n");
         }

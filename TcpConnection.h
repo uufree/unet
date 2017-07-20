@@ -48,7 +48,7 @@ namespace unet
                 int getFd() const
                 {return confd.getFd();};
 
-                void read();
+                int read();
                 void handleRead();//用于处理描述符上发生的事件
                 void handleWrite();
                 void handleClose(); 
