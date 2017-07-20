@@ -14,7 +14,7 @@ namespace unet
         
         Channel::Channel(int fd_,ChannelType type_) : 
             fd(fd_),
-            event(0),
+            event(EPOLLIN|EPOLLOUT),
             revent(0),
             handleEventing(false),
             type(type_)
@@ -35,14 +35,14 @@ namespace unet
             revent = lhs.revent;
             handleEventing = lhs.handleEventing;
             type = lhs.type;
-            
+
             return *this;
         }
 
         Channel::~Channel()
         {};
 
-        void Channel::handleEvent(TcpConnectionMap& tcpconnectionMap)
+        void Channel::handleEvent()
         {
             if(type == LISTEN || type == CLOCK)
             {
@@ -75,8 +75,6 @@ namespace unet
             else if(type == CONNECT)
             {
                 handleEventing = true;
-                TcpConnectionPtr& connection = tcpconnectionMap.find(fd);
-                
                 if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
                     if(closeCallBack)
@@ -86,17 +84,17 @@ namespace unet
                 }
                 else if(revent & EPOLLIN)
                 {//存在无法正常关闭connection的问题
-                    connection->handleRead();
+                    tcp->handleRead();
                 }
                 else if(revent & EPOLLOUT)
                 {
-                    connection->handleWrite();
+                    tcp->handleWrite();
                 }
                 else
                 {
                     if(closeCallBack)
                         closeCallBack(fd);
-                    else
+                    else    
                         perror("没有注册CloseCallBack\n");
                 }
 
@@ -108,8 +106,6 @@ namespace unet
                 perror("此Channel没有注册类型");
             }
         }
-        
-
     }
 }
 

@@ -17,7 +17,7 @@ namespace unet
             channelMap(),
             eventMap(),
             channelList(),
-            pool(size,tcpconnectionMap),
+            pool(size),
             epoller(),
             eventLoop(),
             asyncAcceptor(serveraddr) 
@@ -56,9 +56,7 @@ namespace unet
         }
 
         AsyncTcpServer::~AsyncTcpServer()
-        {
-            std::cout << "~AsyncTcpServer" << std::endl;
-        };
+        {};
 
         void AsyncTcpServer::InsertChannel(ChannelPtr&& channel)
         {
@@ -66,7 +64,9 @@ namespace unet
             
             TcpConnectionPtr connection(new TcpConnection(channel->getFd()));
             connection->setReadCallBack(readCallBack);
-            
+            connection->setCloseCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
+            channel->setTcpConnectionPtr(connection);
+
             tcpconnectionMap.insert(connection);
             channelMap.insert(std::move(channel));
             eventMap.insert(channel->getFd(),channel->getEvent(),epoller.getEpollfd());
@@ -82,7 +82,7 @@ namespace unet
         void AsyncTcpServer::GetActiveChannels()
         {
             channelList.clear();
-            epoller.epoll(channelList,channelMap,tcpconnectionMap);
+            epoller.epoll(channelList,channelMap);
             pool.addInTaskQueue(channelList); 
         }
 

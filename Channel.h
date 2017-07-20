@@ -46,6 +46,7 @@ namespace unet
         {
             typedef std::function<void()> ReadCallBack;
             typedef std::function<void(int)> CloseCallBack;
+            typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
             public:
                 explicit Channel(int fd_,ChannelType type_);
@@ -55,8 +56,7 @@ namespace unet
                 Channel& operator=(Channel&& lhs);
                 ~Channel();
                 
-                void handleEvent(TcpConnectionMap& tcpconnectionMap);
-                
+                void handleEvent();
                 
                 int getFd() const
                 {return fd;};
@@ -73,6 +73,9 @@ namespace unet
                 int getType() const
                 {return type;};
                 
+                void setTcpConnectionPtr(const TcpConnectionPtr& tcp_)
+                {tcp = tcp_;};
+
                 void setReadCallBack(const ReadCallBack& lhs)
                 {
                     if(type == LISTEN || type == CLOCK)
@@ -91,12 +94,16 @@ namespace unet
                 bool isWriting() const
                 {return event == KWriteEvent;};
                 
+                void read()
+                {tcp->read();};
+
             private:
                 int fd;
                 int event;//关注的事件
                 int revent;//正在发生的事件
                 bool handleEventing;
                 ChannelType type;
+                TcpConnectionPtr tcp;
 
                 ReadCallBack readCallBack;
                 CloseCallBack closeCallBack;

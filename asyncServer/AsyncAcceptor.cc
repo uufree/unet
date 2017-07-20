@@ -19,7 +19,6 @@ namespace unet
         {
             socket::bind(listenfd,serveraddr);
             socket::listen(listenfd);
-            std::cout << "8" << std::endl;
         }
 
         AsyncAcceptor::AsyncAcceptor(AsyncAcceptor&& lhs) :
@@ -49,14 +48,13 @@ namespace unet
         {
             if(!listening)
                 eraseChannelCallBack(listenfd.getFd());
-            
-            std::cout << "~AsyncAcceptor" << std::endl;
         };
 
         void AsyncAcceptor::listen()
         {
             ChannelPtr channel(new Channel(listenfd.getFd(),LISTEN));
             channel->setReadCallBack(std::bind(&AsyncAcceptor::handleRead,this));
+            channel->setCloseCallBack(eraseChannelCallBack);
 
             if(!listening)
             {
@@ -89,7 +87,8 @@ namespace unet
             socket::setNonBlockAndCloseOnExec(confd);
             
             ChannelPtr channel(new Channel(confd,CONNECT));
-            
+            channel->setCloseCallBack(eraseChannelCallBack);
+
             if(insertChannelCallBack)
                 insertChannelCallBack(std::move(channel));
             else

@@ -12,10 +12,13 @@ using namespace unet;
 
 int main(int argc,char** argv)
 {
-    sleep(3);
-    net::socket::InetAddress server("127.0.0.1",7777);
-    net::socket::Socket confd(net::socket::CONNECT);
-    net::socket::connect(confd,server);
+    while(1)
+    {
+        sleep(2);
+        net::socket::InetAddress server("127.0.0.1",7777);
+        net::socket::Socket confd(net::socket::CONNECT);
+        net::socket::connect(confd,server);
+    }
 /*
     net::Buffer buffer(confd.getFd());    
     buffer.appendInBuffer("hello,server!");

@@ -34,13 +34,13 @@ namespace unet
                 Epoller& operator=(Epoller&& lhs);
                 ~Epoller();
 
-                void epoll(ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpconnectionMap);
+                void epoll(ChannelList& channelList,ChannelMap& channelMap);
                 
                 int getEpollfd()
                 {return epollfd;};
 
             private:
-                void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap,TcpConnectionMap& tcpConnectionMap);
+                void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap);
 
             private:
                 int epollfd;

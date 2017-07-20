@@ -12,7 +12,6 @@
 #include"Thread.h"
 #include"Mutex.h"
 #include"Condition.h"
-#include"TcpConnectionMap.h"
 
 #include<deque>
 #include<memory>
@@ -29,8 +28,8 @@ namespace unet
             typedef std::vector<ChannelPtr> ChannelList;
 
             public:
-                explicit TaskPool(int size,net::TcpConnectionMap& tcp);
-                explicit TaskPool(int size,const ThreadFunc& cb,net::TcpConnectionMap& tcp);
+                explicit TaskPool(int size = 2);
+                explicit TaskPool(int size,const ThreadFunc& cb);
                 TaskPool(const TaskPool& lhs) = delete;
                 TaskPool(TaskPool&& lhs);
                 TaskPool& operator=(const TaskPool& lhs) = delete;
@@ -73,7 +72,7 @@ namespace unet
                         }
                         
                         for(auto iter=channels.begin();iter!=channels.end();++iter)
-                           (*iter)->handleEvent(tcpConnectionMap); 
+                           (*iter)->handleEvent(); 
                     }     
                 }
 
@@ -83,7 +82,6 @@ namespace unet
                 Thread* threadListPtr;
                 ThreadFunc threadFunc;
                 ChannelList channelList;
-                net::TcpConnectionMap& tcpConnectionMap;
                 
                 MutexLock mutex;
                 Condition cond;

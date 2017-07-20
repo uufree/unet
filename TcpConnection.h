@@ -42,6 +42,9 @@ namespace unet
                 void setWriteCallBack(const MessageCallBack& cb)
                 {writeCallBack = cb;};
                 
+                void setCloseCallBack(const CloseCallBack& cb)
+                {closeCallBack = cb;};
+
                 int getFd() const
                 {return confd.getFd();};
 

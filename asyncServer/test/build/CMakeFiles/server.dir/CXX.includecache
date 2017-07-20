@@ -235,8 +235,6 @@ Mutex.h
 /home/uuchen/unet/Mutex.h
 Condition.h
 /home/uuchen/unet/Condition.h
-TcpConnectionMap.h
-/home/uuchen/unet/TcpConnectionMap.h
 deque
 -
 memory
