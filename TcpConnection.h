@@ -14,9 +14,10 @@
 #include"Socket.h"
 
 /* 设计宗旨：TcpConnection描述一个连接，内部状态机表征状态 
+ * 
  * 1.管理socket的生命期
- * 2.
-
+ * 2.持有并且管理与Socket相对应的Buffer
+ * 3.设置处理通信回调函数，若回调函数可重入，持有回调函数的引用即可
 */
 
 namespace unet

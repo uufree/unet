@@ -5,6 +5,8 @@
 	> Created Time: 2017年02月27日 星期一 20时58分25秒
  ************************************************************************/
 
+//封装IP地址
+
 #ifndef _INETADDRESS_H
 #define _INETADDRESS_H
 
@@ -14,7 +16,6 @@
 #include<sys/socket.h>
 #include<string.h>
 #include<string>
-#include<iostream>
 
 namespace unet
 {

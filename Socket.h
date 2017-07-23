@@ -5,6 +5,16 @@
 	> Created Time: 2017年02月27日 星期一 23时56分55秒
  ************************************************************************/
 
+/*      封装套接字及其属性
+ *在Socket类中用8位来标志socket属性，最高的两位保留，从低到高依次为：
+ * used
+ * keepalive
+ * nodelay
+ * noblock and closeonexec 
+ * reuseaddr
+ * reuseport
+ */
+
 #ifndef _SOCKET_H
 #define _SOCKET_H
 
@@ -19,14 +29,6 @@
 #include<fcntl.h>
 #include<unistd.h>
 #include"error.h"
-/*在Socket类中用8位来标志socket属性，最高的两位保留，从低到高依次为：
- * used
- * keepalive
- * nodelay
- * noblock and closeonexec 
- * reuseaddr
- * reuseport
- */
 
 namespace unet
 {

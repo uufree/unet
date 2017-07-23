@@ -8,6 +8,13 @@
 #ifndef _TASKPOOL_H
 #define _TASKPOOL_H
 
+/* 设计理念：以线程为基本对象的不可更改的任务池，为Servre服务
+ *
+ * 1.基于细粒度的的线程实现
+ * 2.不具有可更改性
+ * 3.左值引用与右值引用不是万能的，必要的数据依旧需要用指针来操作
+ */
+
 #include"Channel.h"
 #include"Thread.h"
 #include"Mutex.h"

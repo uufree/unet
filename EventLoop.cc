@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"EventLoop.h"
-#include<iostream>
 
 namespace unet
 {
@@ -16,9 +15,7 @@ namespace unet
             looping(false),
             quit(false),
             eventHandling(false)
-        {
-            std::cout << "7" << std::endl;
-        };
+        {};
 
         EventLoop::EventLoop(EventLoop&& lhs) : 
             looping(lhs.looping),
@@ -39,9 +36,7 @@ namespace unet
         }
         
         EventLoop::~EventLoop()
-        {
-            std::cout << "~EventLoop" << std::endl;
-        };
+        {};
 
         void EventLoop::loop()
         {

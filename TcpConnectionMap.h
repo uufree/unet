@@ -5,6 +5,8 @@
 	> Created Time: 2017年06月12日 星期一 22时34分26秒
  ************************************************************************/
 
+//由Server统一管理的数据集,表连接
+
 #ifndef _TCPCONNECTIONMAP_H
 #define _TCPCONNECTIONMAP_H
 

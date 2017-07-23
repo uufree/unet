@@ -18,7 +18,6 @@
 #define _BUFFER_H
 
 #include<string>
-#include<iostream>
 #include"File.h"
 
 namespace unet

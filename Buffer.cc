@@ -13,7 +13,6 @@
 #include<unistd.h>
 #include<sys/sendfile.h>
 #include<sys/stat.h>
-#include<string.h>
 
 namespace unet
 {
@@ -58,7 +57,6 @@ namespace unet
             char extraBuffer[65535];
             bzero(extraBuffer,65535);
             int n = ::read(confd,extraBuffer,65535);
-            std::cout << "read n: " << n << std::endl;
 
             if(n > 0)
                 appendInBuffer(extraBuffer);
@@ -113,7 +111,8 @@ namespace unet
             struct stat statBuf;
             if(fstat(fd,&statBuf) < 0)
                 unet::handleError(errno);
-/*            
+
+/* 发送文件的通信协议设计           
             char* index = strrchr(const_cast<char*>(filename),'/');
             char* buf = NULL;
             if(index != NULL)
@@ -121,8 +120,9 @@ namespace unet
                 ++index;
                 buf = index;
             }
+            
+            appendInBuffer(buf);
 */            
-//            appendInBuffer(buf);
             
             sendfile(confd,fd,0,statBuf.st_size);
             file::writen(confd,"\r\n",2);

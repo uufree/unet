@@ -36,7 +36,7 @@ namespace unet
         {
             friend bool operator==(const File& lhs,const File& rhs);
 
-            public:
+             public:
                 explicit File(const char* filename_,int type_);
                 explicit File(const std::string& filename_,int type_);
 

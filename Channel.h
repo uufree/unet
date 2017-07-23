@@ -8,23 +8,12 @@
 #ifndef _CHANNEL_H
 #define _CHANNEL_H
 
-//核心思想在于Channel不负责fd的生命期，只负责其上事件的处理
-
-//并且Channel拥有TcpConnection对象的weak_ptr，用弱指向判断TcpConnection对象是否还存在
-
-//确信讨论一点，当一个连接建立起来之后，关注的事件应该不会再变了
-
-//confd关注可写和可读事件，listenfd关注可读事件,timefd关注可读事件
-
-//由于listenchannel与普通的channel不同（没有TcpConnection）,用一个bool类型进行判断
-
-/* 设计理念：Channel只关注fd上的事件的处理
- * 1.
- * 
- * 
- * 
- * 
- * 
+/* 设计理念：Channel只关注fd上的事件的处理,不负责管理生命周期
+ 
+ * 1.Channel创建时会分类，根据Channel的类型来处理事件
+ * 2.Channel持有指向TcpConnection的指针（生命周期同等长）
+ * 3.假设一点：Channel创建以后关注的事件不会再改变
+ * 4.Channel的相当于事件的外壳，可升级关注更多的细节
  */
 
 #include<functional>

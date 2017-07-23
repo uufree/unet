@@ -7,7 +7,6 @@
 
 #include"File.h"
 #include"error.h"
-#include<iostream>
 #include<sys/stat.h>
 
 namespace unet
