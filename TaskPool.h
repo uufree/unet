@@ -68,7 +68,7 @@ namespace unet
                         
                         {
                             MutexLockGuard guard(mutex);
-                            std::swap(channels,channelList);    
+                            std::swap(channels,channelList);
                         }
                         
                         for(auto iter=channels.begin();iter!=channels.end();++iter)

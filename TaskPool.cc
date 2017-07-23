@@ -85,7 +85,7 @@ namespace unet
         {
             MutexLockGuard guard(mutex);   
             std::swap(tasks,channelList);
-            
+//            channelList[0]->handleEvent();          
             cond.notifyAll(); 
         }
     }

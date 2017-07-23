@@ -83,14 +83,14 @@ namespace unet
         {
             channelList.clear();
             epoller.epoll(channelList,channelMap);
-            if(!channelList.empty())
-                pool.addInTaskQueue(channelList); 
+            std::cout << "ChannelList->Size: " << channelList.size() << std::endl;
+            pool.addInTaskQueue(channelList); 
         }
 
         void AsyncTcpServer::start()
         {
             asyncAcceptor.listen();
-            pool.start();
+//            pool.start();
             eventLoop.loop();
         }
     }
