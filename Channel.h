@@ -85,6 +85,10 @@ namespace unet
                 
                 int read()
                 {return tcp->read();};
+                
+                void handleClose()
+                {closeCallBack(fd);};
+
 
             private:
                 int fd;

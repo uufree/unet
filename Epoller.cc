@@ -70,6 +70,8 @@ namespace unet
                     {
                         if(channel->read() > 0)
                             channeList.push_back(channel);
+                        else
+                            channel->handleClose();
                     }
                     else
                     {
