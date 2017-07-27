@@ -17,7 +17,9 @@
 namespace unet
 {
     namespace time
-    {
+    {    
+        static const int KMicroseconds = 1000000;
+        
         class Timestamp final
         {
             friend bool operator<(const Timestamp& lhs,const Timestamp& rhs);
@@ -49,7 +51,6 @@ namespace unet
             
             private:
                 int64_t microseconds;
-                static const int KMicroseconds = 1000000;
         };
         
         bool operator<(const Timestamp& lhs,const Timestamp& rhs);

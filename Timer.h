@@ -11,42 +11,44 @@
 #include"Timestamp.h"
 #include<functional>
 
-//表示一个常数时间所对应的事件
 namespace unet
 {
     namespace time
     {
+        typedef std::function<void()> TimeCallBack;
+        
         class Timer final
         {
-            typedef std::function<void()> TimeCallBack;
-            
+            friend bool operator==(const Timer& lhs,const Timer& rhs);
+            friend bool operator<(const Timer& lhs,const Timer& rhs);
+
             public:
-                explicit Timer(const TimeCallBack& callback_,bool repeat_,double repeattime_) : callback(callback_),
-                repeat(repeat_),repeattime(repeattime_)
-                {
-                };
-
+                explicit Timer(Timestamp time_,bool repeat_,double repeatTime_);
+                explicit Timer(bool repeat_,double repeatTime_);
                 Timer(const Timer& lhs) = delete;
+                Timer(Timer&& lhs);
                 Timer& operator=(const Timer& lhs) = delete;
+                Timer& operator=(Timer&& lhs);
+                ~Timer();
                 
-                ~Timer(){};
+                void run() const
+                {timeCallBack();};
 
-                void run()
-                {
-                    callback();
-                }
-
-                bool isRepeat()
-                {
-                    return repeat;
-                }
+                bool isRepeat() const
+                {return repeat;};
+                
+                void setTimeCallBack(const TimeCallBack& lhs)
+                {timeCallBack = lhs;};
 
             private:
-                const TimeCallBack callback;
-                bool repeat;
-                double repeattime;
                 Timestamp time;
+                bool repeat;
+                double repeatTime;
+                TimeCallBack timeCallBack;
         };
+
+        bool operator<(const Timer& lhs,const Timer& rhs);
+        bool operator==(const Timer& lhs,const Timer& rhs);
     }
 }
 
