@@ -20,68 +20,42 @@ namespace unet
     {
         class Timestamp final
         {
-            
+            friend bool operator<(const Timestamp& lhs,const Timestamp& rhs);
+            friend bool operator==(const Timestamp& lhs,const Timestamp& rhs);
+
             public:
-                explicit Timestamp()
-                {
-                    struct timeval tv;
-                    ::gettimeofday(&tv,NULL);
-                    microseconds = tv.tv_sec*KMicroseconds + tv.tv_usec;
-                }
+                explicit Timestamp();
+                explicit Timestamp(int64_t microseconds_);
+                Timestamp(const Timestamp& lhs);
+                Timestamp(Timestamp&& lhs);
+                Timestamp& operator=(const Timestamp& lhs);
+                Timestamp& operator=(Timestamp&& lhs);
+                ~Timestamp();
 
-                Timestamp(int64_t microseconds_) : 
-                    microseconds(microseconds_)
-                {};
-
-                friend bool operator<(const Timestamp& lhs,Timestamp& rhs);
+                bool operator<(const Timestamp& rhs)
+                {return microseconds < rhs.microseconds;};
                 
-                Timestamp(Timestamp& rhs) :
-                    microseconds(rhs.microseconds)
-                {};
-                
-
                 void addTime(double seconds)
-                {
-                    microseconds += seconds * KMicroseconds;
-                }
-/*                
-                bool operator<(const Timestamp& lhs)
-                {
-                    return microseconds<lhs.microseconds;
-                };
-*/
+                {microseconds += seconds * KMicroseconds;}
 
                 bool operator==(const Timestamp& rhs)
-                {
-                    return microseconds == rhs.microseconds;
-                }
+                {return microseconds == rhs.microseconds;}
         
                 void swap(Timestamp& rhs)
-                {
-                    std::swap(microseconds,rhs.microseconds);
-                };
+                {std::swap(microseconds,rhs.microseconds);};
                     
                 int64_t getTime() const
-                {
-                    return microseconds;
-                }
-                
-            static const int KMicroseconds = 1000000;
+                {return microseconds;}
             
             private:
                 int64_t microseconds;
+                static const int KMicroseconds = 1000000;
         };
         
-        bool operator<(const Timestamp& lhs,Timestamp& rhs)
-        {
-            return lhs.microseconds < rhs.microseconds;
-        }
+        bool operator<(const Timestamp& lhs,const Timestamp& rhs);
+        bool operator==(const Timestamp& lhs,const Timestamp& rhs);
         
-        inline double timedifference(const Timestamp& lhs,Timestamp& rhs)
-        {
-            int64_t diff = lhs.getTime() - rhs.getTime();
-            return static_cast<double>(diff/Timestamp::KMicroseconds);
-        }
+        double timedifference(const Timestamp& lhs,const Timestamp& rhs);
     }
 }
 
