@@ -11,11 +11,14 @@
 #include"Timer.h"
 #include"Timestamp.h"
 #include"Channel.h"
+#include"Mutex.h"
 
 #include<map>
 #include<sys/timerfd.h>
 #include<functional>
 #include<memory>
+#include<vector>
+#include<string.h>
 
 namespace unet
 {
@@ -28,6 +31,7 @@ namespace unet
             typedef std::unique_ptr<unet::net::Channel> ChannelPtr;
             typedef std::function<void(ChannelPtr&&)> InsertChannelCallBack;
             typedef std::function<void(int)> EraseChannelCallBack;
+            typedef std::vector<Timestamp> TimestampList;
 
             public:
                 TimerQueue();
@@ -37,27 +41,31 @@ namespace unet
                 TimerQueue& operator=(TimerQueue&& lhs);
                 ~TimerQueue();
 
-                void addTimer(Timer&& timer_);
-                void removeTimer(const Timer& lhs);
+                void addTimer(TimerPtr&& timer_);
+                void addTimer(Timestamp&& time_,TimerPtr&& ptr);
+                void start();
+                void stop();
 
                 void setInsertChannelCallBack(const InsertChannelCallBack& cb)
                 {insertChannelCallBack = cb;};
 
                 void setEraseChannelCallBack(const EraseChannelCallBack& cb)
                 {eraseChannelCallBack = cb;};
-            
+                
+
             private:
                 void handleRead();
             
             private:
                 const int timefd;
-                ChannelPtr timefdChannel;
                 TimerMap timerMap;
                 bool started;
+                unet::thread::MutexLock mutex;
                 InsertChannelCallBack insertChannelCallBack;
                 EraseChannelCallBack eraseChannelCallBack;
         };
-
+        
+        struct timespec howMuchTimeFromNow(const Timestamp& lhs);
     }
 }
 

@@ -39,6 +39,9 @@ namespace unet
                 
                 void setTimeCallBack(const TimeCallBack& lhs)
                 {timeCallBack = lhs;};
+                
+                double getRepeatTime()
+                {return repeatTime;};
 
             private:
                 Timestamp time;
