@@ -10,12 +10,12 @@
 
 #include"Timer.h"
 #include"Timestamp.h"
-#include<set>
-#include<memory>
 #include"Channel.h"
-#include"Mutex.h"
 
-//将常数时间和其所对应的事件封装起来，并以set的方式进行排序
+#include<map>
+#include<sys/timerfd.h>
+#include<functional>
+#include<memory>
 
 namespace unet
 {
@@ -23,32 +23,39 @@ namespace unet
     {
         class TimerQueue final
         {
-            typedef std::pair<Timestamp,Timer*> Entry;
-            typedef std::set<Entry> TimerList;
-            typedef std::unique_ptr<unet::net::Channel> ClockChannel;
-            typedef std::function<void(unet::net::Channel*)> AddInServerLoop;
+            typedef std::unique_ptr<Timer> TimerPtr;
+            typedef std::map<Timestamp,TimerPtr> TimerMap;
+            typedef std::unique_ptr<unet::net::Channel> ChannelPtr;
+            typedef std::function<void(ChannelPtr&&)> InsertChannelCallBack;
+            typedef std::function<void(int)> EraseChannelCallBack;
 
             public:
                 TimerQueue();
                 TimerQueue(const TimerQueue& lhs) = delete;
                 TimerQueue& operator=(const TimerQueue& lhs) = delete;
+                TimerQueue(TimerQueue&& lhs);
+                TimerQueue& operator=(TimerQueue&& lhs);
                 ~TimerQueue();
 
-                void addTimer(Timer* timer_);
+                void addTimer(Timer&& timer_);
+                void removeTimer(const Timer& lhs);
 
-                void setAddInServerLoopCallBack(const AddInServerLoop& cb)
-                {addinserverloop = cb;};
+                void setInsertChannelCallBack(const InsertChannelCallBack& cb)
+                {insertChannelCallBack = cb;};
+
+                void setEraseChannelCallBack(const EraseChannelCallBack& cb)
+                {eraseChannelCallBack = cb;};
             
             private:
                 void handleRead();
-
+            
+            private:
                 const int timefd;
-                ClockChannel timefdchannel;
-                TimerList activetimers;
-                bool handlecalbacking;
-                Timer* nowtimer;
-                unet::thread::MutexLock lock;
-                AddInServerLoop addinserverloop;
+                ChannelPtr timefdChannel;
+                TimerMap timerMap;
+                bool started;
+                InsertChannelCallBack insertChannelCallBack;
+                EraseChannelCallBack eraseChannelCallBack;
         };
 
     }

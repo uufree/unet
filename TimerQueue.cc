@@ -6,8 +6,7 @@
  ************************************************************************/
 
 #include"TimerQueue.h"
-#include<sys/timerfd.h>
-#include<functional>
+#include"error.h"
 
 namespace unet
 {
@@ -17,19 +16,17 @@ namespace unet
         {
             int timefd = ::timerfd_create(CLOCK_MONOTONIC,TFD_NONBLOCK|TFD_CLOEXEC);
             if(timefd < 0)
-                perror("timefd create error!\n");
+                unet::handleError(errno);
             return timefd;
         }
         
         TimerQueue::TimerQueue() : 
             timefd(createTimefd()),
-            timefdchannel(new unet::net::Channel(timefd,unet::net::CLOCK)),
-            handlecalbacking(false),
-            lock()
-        {
-            nowtimer = nullptr;
-            timefdchannel->setReadCallBack(std::bind(&TimerQueue::handleRead,this));
-        };
+            started(false)
+        {};
+
+        TimerQueue::TimerQueue(TimerQueue&& lhs) :
+
         
         TimerQueue::~TimerQueue()
         {
