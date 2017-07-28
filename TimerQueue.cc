@@ -71,9 +71,9 @@ namespace unet
             if(timerMap.size() > 1 && now < timerMap.begin()->first)
             {//setTimer
                 struct itimerspec newSpec;
-                bzero(newSpec,sizeof(newSpec));
+                bzero(&newSpec,sizeof(newSpec));
                 struct itimerspec oldSpec;
-                bzero(oldSpec,sizeof(oldSpec));
+                bzero(&oldSpec,sizeof(oldSpec));
 
                 newSpec.it_value = howMuchTimeFromNow(now);
                 if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
@@ -82,9 +82,9 @@ namespace unet
             else if(timerMap.size() == 1)
             {
                 struct itimerspec newSpec;
-                bzero(newSpec,sizeof(newSpec));
+                bzero(&newSpec,sizeof(newSpec));
                 struct itimerspec oldSpec;
-                bzero(oldSpec,sizeof(oldSpec));
+                bzero(&oldSpec,sizeof(oldSpec));
 
                 newSpec.it_value = howMuchTimeFromNow(now);
                 if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
@@ -106,9 +106,9 @@ namespace unet
             if(timerMap.size() > 1 && time_ < timerMap.begin()->first)
             {//setTimer
                 struct itimerspec newSpec;
-                bzero(newSpec,sizeof(newSpec));
+                bzero(&newSpec,sizeof(newSpec));
                 struct itimerspec oldSpec;
-                bzero(oldSpec,sizeof(oldSpec));
+                bzero(&oldSpec,sizeof(oldSpec));
 
                 newSpec.it_value = howMuchTimeFromNow(time_);
                 if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
@@ -117,9 +117,9 @@ namespace unet
             else if(timerMap.size() == 1)
             {
                 struct itimerspec newSpec;
-                bzero(newSpec,sizeof(newSpec));
+                bzero(&newSpec,sizeof(newSpec));
                 struct itimerspec oldSpec;
-                bzero(oldSpec,sizeof(oldSpec));
+                bzero(&oldSpec,sizeof(oldSpec));
 
                 newSpec.it_value = howMuchTimeFromNow(time_);
                 if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
