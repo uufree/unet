@@ -20,11 +20,14 @@ namespace unet
             pool(size),
             epoller(),
             eventLoop(),
-            asyncAcceptor(serveraddr) 
+            asyncAcceptor(serveraddr),
+            timerQueue()
         {
             eventLoop.setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::GetActiveChannels,this));
             asyncAcceptor.setEraseChannelCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
             asyncAcceptor.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
+            timerQueue.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
+            timerQueue.setEraseChannelCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
         }
         
         AsyncTcpServer::AsyncTcpServer(AsyncTcpServer&& lhs) :
@@ -92,6 +95,7 @@ namespace unet
             asyncAcceptor.listen();
             pool.start();
             eventLoop.loop();
+            timerQueue.start();
         }
     }
 }

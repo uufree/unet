@@ -15,6 +15,8 @@
 #include"../TaskPool.h"
 #include"../Epoller.h"
 #include"../EventLoop.h"
+#include"../TimerQueue.h"
+
 namespace unet
 {
     namespace net
@@ -54,6 +56,7 @@ namespace unet
                 Epoller epoller;
                 EventLoop eventLoop;
                 AsyncAcceptor asyncAcceptor;
+                time::TimerQueue timerQueue;
 
                 MessageCallBack readCallBack;
         };

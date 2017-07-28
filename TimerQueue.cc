@@ -167,6 +167,17 @@ namespace unet
             }
         }
 
+        void TimerQueue::start()
+        {
+            ChannelPtr channel(new net::Channel(timefd,net::CLOCK));
+            insertChannelCallBack(std::move(channel));
+        }
+
+        void TimerQueue::stop()
+        {
+            eraseChannelCallBack(timefd);
+        }
+
     }
 }
 
