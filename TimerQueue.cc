@@ -170,6 +170,8 @@ namespace unet
         void TimerQueue::start()
         {
             ChannelPtr channel(new net::Channel(timefd,net::CLOCK));
+            channel->setReadCallBack(std::bind(&TimerQueue::handleRead,this));
+            
             insertChannelCallBack(std::move(channel));
         }
 

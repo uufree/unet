@@ -7,6 +7,7 @@
 
 #include"../../Buffer.h"
 #include"../../Socket.h"
+#include<iostream>
 
 using namespace unet;
 

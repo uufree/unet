@@ -93,9 +93,14 @@ namespace unet
         void AsyncTcpServer::start()
         {
             asyncAcceptor.listen();
-            pool.start();
+//            pool.start();
             eventLoop.loop();
-            timerQueue.start();
+//            timerQueue.start();
+        }
+
+        void AsyncTcpServer::addTimer(time::TimerPtr&& timer)
+        {
+            timerQueue.addTimer(std::move(timer));
         }
     }
 }

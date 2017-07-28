@@ -24,9 +24,10 @@ namespace unet
 {
     namespace time
     {
+        typedef std::shared_ptr<Timer> TimerPtr;
+        
         class TimerQueue final
         {
-            typedef std::shared_ptr<Timer> TimerPtr;
             typedef std::map<Timestamp,TimerPtr> TimerMap;
             typedef std::unique_ptr<unet::net::Channel> ChannelPtr;
             typedef std::function<void(ChannelPtr&&)> InsertChannelCallBack;

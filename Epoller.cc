@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"Epoller.h"
+#include<iostream>
 
 namespace unet
 {
@@ -16,7 +17,9 @@ namespace unet
             eventList()
         {
             if(epollfd < 0)
+            {
                 unet::handleError(errno);
+            }
 
             eventList.reserve(65536);
         }                     
@@ -69,7 +72,8 @@ namespace unet
                     if(type == CONNECT)
                     {
                         if(channel->read() > 0)
-                            channeList.push_back(channel);
+                            channel->handleEvent();
+//                            channeList.push_back(channel);
                         else
                             channel->handleClose();
                     }

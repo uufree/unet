@@ -38,7 +38,8 @@ namespace unet
                 {readCallBack = cb;};
                 
                 void start();
-             
+                void addTimer(time::TimerPtr&& timer);
+
             private:
                 void InsertChannel(ChannelPtr&& channel);
                 void EraseChannel(int fd);
