@@ -72,8 +72,7 @@ namespace unet
                     if(type == CONNECT)
                     {
                         if(channel->read() > 0)
-                            channel->handleEvent();
-//                            channeList.push_back(channel);
+                            channeList.push_back(channel);
                         else
                             channel->handleClose();
                     }

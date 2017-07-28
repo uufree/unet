@@ -41,7 +41,9 @@ namespace unet
             event.data.fd = fd;
             
             if(::epoll_ctl(epollfd,EPOLL_CTL_ADD,fd,&event) < 0)
+            {
                 unet::handleError(errno);
+            }
 
             {
                 thread::MutexLockGuard guard(mutex);
@@ -54,7 +56,11 @@ namespace unet
             thread::MutexLockGuard guard(mutex);
 
             if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
-                unet::handleError(errno);
+            {
+//                std::cout << "EventMap.cc del start" << std::endl;
+//                unet::handleError(errno);
+//                std::cout << "EventMap.cc del end" << std::endl;
+            }
             
             eventMap.erase(fd);
         }
