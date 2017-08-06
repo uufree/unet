@@ -11,9 +11,10 @@
 #include"Thread.h"
 #include"Mutex.h"
 #include"Condition.h"
+#include"Channel.h"
+
 #include<deque>
 #include<memory>
-#include"Channel.h"
 
 namespace unet
 {
