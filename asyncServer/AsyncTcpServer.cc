@@ -26,6 +26,7 @@ namespace unet
             eventLoop.setGetActiveChannelsCallBack(std::bind(&AsyncTcpServer::GetActiveChannels,this));
             asyncAcceptor.setEraseChannelCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
             asyncAcceptor.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
+            
             timerQueue.setInsertChannelCallBack(std::bind(&AsyncTcpServer::InsertChannel,this,std::placeholders::_1));
             timerQueue.setEraseChannelCallBack(std::bind(&AsyncTcpServer::EraseChannel,this,std::placeholders::_1));
         }
@@ -93,9 +94,10 @@ namespace unet
         void AsyncTcpServer::start()
         {
             asyncAcceptor.listen();
+            timerQueue.start();
             pool.start();
             eventLoop.loop();
-            timerQueue.start();
+            
         }
 
         void AsyncTcpServer::addTimer(time::TimerPtr&& timer)
