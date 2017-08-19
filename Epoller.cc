@@ -48,7 +48,7 @@ namespace unet
                 getActiveEvents(activeEvents,channelList,channelMap);
             else if(activeEvents == 0)
             {
-
+            
             }
             else
             {
@@ -83,8 +83,6 @@ namespace unet
                 }
             }
         }
-        
-
     }
 }
 

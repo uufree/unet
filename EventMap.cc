@@ -57,9 +57,7 @@ namespace unet
 
             if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
             {
-//                std::cout << "EventMap.cc del start" << std::endl;
-//                unet::handleError(errno);
-//                std::cout << "EventMap.cc del end" << std::endl;
+                unet::handleError(errno);
             }
             
             eventMap.erase(fd);

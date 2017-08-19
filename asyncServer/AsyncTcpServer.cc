@@ -97,7 +97,6 @@ namespace unet
             timerQueue.start();
             pool.start();
             eventLoop.loop();
-            
         }
 
         void AsyncTcpServer::addTimer(time::TimerPtr&& timer)
@@ -106,6 +105,3 @@ namespace unet
         }
     }
 }
-
-
-
