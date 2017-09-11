@@ -13,7 +13,7 @@
 
 FileSearched::FileSearched(const std::string& directoryName)
 {
-    
+     
 }
 
 int FileSearched::update()
@@ -39,8 +39,9 @@ int FileSearched::update()
             directoryList.push_back(drip->d_name);
         else
         {
-            std::string str = drip->d_name + "  " + std::to_string(statBuffer.st_size); 
+            std::string str = drip->d_name + std::to_string(statBuffer.st_size); 
         }
 
     }
+    return 0;
 }
