@@ -8,6 +8,8 @@
 #include<iostream>
 #include<deque>
 #include<string.h>
+#include<algorithm>
+#include<functional>
 #include"FileSearched.h"
 
 
