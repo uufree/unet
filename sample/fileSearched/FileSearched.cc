@@ -21,29 +21,39 @@ FileSearched::FileSearched(const std::string& directoryName)
 int FileSearched::update()
 {
     struct dirent* drip = nullptr;
-    DIR* dp = ::opendir(directoryPath.c_str());
     std::deque<std::string> directoryList;
     struct stat statBuffer;
 
-    if(dp == nullptr)
-    {
-        std::cerr << __FILE__ << " " << __LINE__ << "opendir error!" << std::endl;
-        return -1;
-    }
+    directoryList.push_back(directoryPath);
 
-    while((drip=::readdir(dp)) != nullptr)
+    while(!directoryList.empty())
     {
-        if((strcmp(drip->d_name,".")==0) || strcmp(drip->d_name,"..")==0)
-            continue;
+        const std::string& str = directoryList.front();
+        DIR* dp = ::opendir(str.c_str());
         
-        ::lstat(drip->d_name,&statBuffer);
-        if(S_ISDIR(statBuffer.st_mode))
-            directoryList.push_back(drip->d_name);
-        else
+        if(dp == nullptr)
         {
-            std::string str = drip->d_name + std::to_string(statBuffer.st_size); 
+            std::cerr << __FILE__ << " " << __LINE__ << "opendir error!" << std::endl;
+            return -1;
         }
 
+
+        while((drip=::readdir(dp)) != nullptr)
+        {
+            if((strcmp(drip->d_name,".")==0) || strcmp(drip->d_name,"..")==0)
+                continue;
+        
+            ::lstat(drip->d_name,&statBuffer);
+            if(S_ISDIR(statBuffer.st_mode))
+                directoryList.push_back(drip->d_name);
+            else
+            {
+                std::string str = drip->d_name;
+                str.push_back('\t');
+                str += std::to_string(statBuffer.st_size);
+            }
+        }
     }
+
     return 0;
 }
