@@ -13,10 +13,43 @@
 #include"FileSearched.h"
 
 
-FileSearched::FileSearched(const std::string& directoryName)
+FileSearched::FileSearched(const std::string& directoryName) :
+    directoryPath(directoryName)
+{};
+
+FileSearched::FileSearched(const FileSearched& lhs) : 
+    directoryPath(lhs.directoryPath),
+    fileNameList(lhs.fileNameList),
+    directoryBuffer(lhs.directoryBuffer)
+{};
+
+FileSearched::FileSearched(FileSearched&& lhs) : 
+    directoryPath(std::move(lhs.directoryPath)),
+    fileNameList(std::move(lhs.fileNameList)),
+    directoryBuffer(std::move(lhs.directoryBuffer))
+{};
+
+FileSearched& FileSearched::operator=(const FileSearched& lhs)
 {
-     
+    if(lhs == *this)
+        return *this;
+
+    directoryPath = lhs.directoryPath;
+    fileNameList = lhs.fileNameList;
+    directoryBuffer = lhs.directoryBuffer;
+
+    return *this;
 }
+
+FileSearched& FileSearched::operator=(FileSearched&& lhs)
+{
+    directoryPath = std::move(lhs.directoryPath);
+    fileNameList = std::move(lhs.fileNameList);
+    directoryBuffer = std::move(lhs.directoryBuffer);
+    return *this;
+}
+    
+
 
 int FileSearched::update()
 {
@@ -37,7 +70,6 @@ int FileSearched::update()
             return -1;
         }
 
-
         while((drip=::readdir(dp)) != nullptr)
         {
             if((strcmp(drip->d_name,".")==0) || strcmp(drip->d_name,"..")==0)
@@ -53,6 +85,8 @@ int FileSearched::update()
                 str += std::to_string(statBuffer.st_size);
             }
         }
+
+        ::closedir(dp);
     }
 
     return 0;
