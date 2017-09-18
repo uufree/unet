@@ -27,9 +27,10 @@ class FileSearched final
         FileSearched& operator=(FileSearched&& lhs);
         ~FileSearched();
 
-        const std::string& getDirectoryBuffer();
         const std::vector<std::string>& getFileNameList();
-        const std::string& getDirectoryPath();
+
+        const std::string& getDirectoryPath()
+        {return directoryPath;};
 
     private:
         int update();
@@ -37,7 +38,6 @@ class FileSearched final
     private:
         std::string directoryPath;
         std::vector<std::string> fileNameList;
-        std::string directoryBuffer;
 };
 
 #endif

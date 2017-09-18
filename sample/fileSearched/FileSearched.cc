@@ -19,14 +19,12 @@ FileSearched::FileSearched(const std::string& directoryName) :
 
 FileSearched::FileSearched(const FileSearched& lhs) : 
     directoryPath(lhs.directoryPath),
-    fileNameList(lhs.fileNameList),
-    directoryBuffer(lhs.directoryBuffer)
+    fileNameList(lhs.fileNameList)
 {};
 
 FileSearched::FileSearched(FileSearched&& lhs) : 
     directoryPath(std::move(lhs.directoryPath)),
-    fileNameList(std::move(lhs.fileNameList)),
-    directoryBuffer(std::move(lhs.directoryBuffer))
+    fileNameList(std::move(lhs.fileNameList))
 {};
 
 FileSearched& FileSearched::operator=(const FileSearched& lhs)
@@ -36,7 +34,6 @@ FileSearched& FileSearched::operator=(const FileSearched& lhs)
 
     directoryPath = lhs.directoryPath;
     fileNameList = lhs.fileNameList;
-    directoryBuffer = lhs.directoryBuffer;
 
     return *this;
 }
@@ -45,11 +42,12 @@ FileSearched& FileSearched::operator=(FileSearched&& lhs)
 {
     directoryPath = std::move(lhs.directoryPath);
     fileNameList = std::move(lhs.fileNameList);
-    directoryBuffer = std::move(lhs.directoryBuffer);
+    
     return *this;
 }
     
-
+FileSearched::~FileSearched()
+{};
 
 int FileSearched::update()
 {
@@ -83,6 +81,8 @@ int FileSearched::update()
                 std::string str = drip->d_name;
                 str.push_back('\t');
                 str += std::to_string(statBuffer.st_size);
+                
+                fileNameList.push_back(std::move(str));
             }
         }
 
@@ -91,3 +91,10 @@ int FileSearched::update()
 
     return 0;
 }
+
+const std::vector<std::string>& FileSearched::getFileNameList()
+{
+    update();
+    return fileNameList;
+}
+
