@@ -62,6 +62,10 @@ int FileSearched::update()
         const std::string& str = directoryList.front();
         DIR* dp = ::opendir(str.c_str());
         
+        std::cout << "---------------------------" << std::endl;
+        std::cout << str << std::endl;
+        std::cout << "---------------------------" << std::endl; 
+
         if(dp == nullptr)
         {
             std::cerr << __FILE__ << " " << __LINE__ << "opendir error!" << std::endl;
@@ -75,7 +79,12 @@ int FileSearched::update()
         
             ::lstat(drip->d_name,&statBuffer);
             if(S_ISDIR(statBuffer.st_mode))
+            {
+                std::cout << "????????" << std::endl;
+                std::cout << drip->d_name << std::endl;
+                std::cout << "????????" << std::endl;
                 directoryList.push_back(drip->d_name);
+            }
             else
             {
                 std::string str = drip->d_name;
@@ -85,7 +94,8 @@ int FileSearched::update()
                 fileNameList.push_back(std::move(str));
             }
         }
-
+                        
+        directoryList.pop_front();
         ::closedir(dp);
     }
 
@@ -98,3 +108,10 @@ const std::vector<std::string>& FileSearched::getFileNameList()
     return fileNameList;
 }
 
+
+bool operator==(const FileSearched& lhs,const FileSearched& rhs)
+{
+    if(lhs.directoryPath == rhs.directoryPath)
+        return true;
+    return false;
+}
