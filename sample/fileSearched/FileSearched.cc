@@ -11,7 +11,7 @@
 #include<algorithm>
 #include<functional>
 #include"FileSearched.h"
-
+#include<string.h>
 
 FileSearched::FileSearched(const std::string& directoryName) :
     directoryPath(directoryName)
@@ -56,19 +56,19 @@ int FileSearched::update()
     struct stat statBuffer;
 
     directoryList.push_back(directoryPath);
-
+    
     while(!directoryList.empty())
     {
-        const std::string& str = directoryList.front();
-        DIR* dp = ::opendir(str.c_str());
+        std::string& str = directoryList.front();
         
-        std::cout << "---------------------------" << std::endl;
-        std::cout << str << std::endl;
-        std::cout << "---------------------------" << std::endl; 
+        if(static_cast<int>(str.find_first_of('/')) == -1)
+            str = directoryPath + "/" + str; 
+        
+        DIR* dp = ::opendir(str.c_str());
 
         if(dp == nullptr)
         {
-            std::cerr << __FILE__ << " " << __LINE__ << "opendir error!" << std::endl;
+            std::cerr << __FILE__ << " " << __LINE__ << "  opendir error!" << std::endl;
             return -1;
         }
 
@@ -76,20 +76,18 @@ int FileSearched::update()
         {
             if((strcmp(drip->d_name,".")==0) || strcmp(drip->d_name,"..")==0)
                 continue;
-        
-            ::lstat(drip->d_name,&statBuffer);
+            
+            auto strP = directoryPath + "/" + drip->d_name;
+            bzero(&statBuffer,sizeof(statBuffer));
+            ::stat(strP.c_str(),&statBuffer);
+
             if(S_ISDIR(statBuffer.st_mode))
-            {
-                std::cout << "????????" << std::endl;
-                std::cout << drip->d_name << std::endl;
-                std::cout << "????????" << std::endl;
                 directoryList.push_back(drip->d_name);
-            }
             else
             {
                 std::string str = drip->d_name;
-                str.push_back('\t');
-                str += std::to_string(statBuffer.st_size);
+//                str.push_back('\t');
+//                str += std::to_string(statBuffer.st_size);
                 
                 fileNameList.push_back(std::move(str));
             }
