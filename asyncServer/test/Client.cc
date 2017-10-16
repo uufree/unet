@@ -16,10 +16,10 @@ int main(int argc,char** argv)
     while(1)
     {
         sleep(1);
-        net::socket::InetAddress server("127.0.0.1",7777);
+        net::socket::InetAddress server("192.168.1.105",6666);
         net::socket::Socket confd(net::socket::CONNECT);
         net::socket::connect(confd,server);
-        
+    
         std::string message("hello,server!");
         net::Buffer buffer(confd.getFd());
         buffer.appendInBuffer(message);
