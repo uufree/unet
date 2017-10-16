@@ -24,7 +24,7 @@ void timeReadCallBack()
 int main(int argc,char** argv)
 {
     unet::net::socket::InetAddress serveraddr(6666);
-    unet::net::AsyncTcpServer server(serveraddr,2);
+    unet::net::AsyncTcpServer server(serveraddr,1);
     server.setReadCallBack(std::bind(&readCallBack,std::placeholders::_1,std::placeholders::_2));
 
 //    unet::time::TimerPtr timer(new unet::time::Timer(true,1));

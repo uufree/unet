@@ -54,12 +54,15 @@ namespace unet
         void EventMap::erase(int fd,int epollfd)
         {
             thread::MutexLockGuard guard(mutex);
-
-            if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
-            {
-                unet::handleError(errno);
-            }
             
+            if(eventMap.find(fd) != eventMap.end())
+            {
+                if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,nullptr) < 0)
+                {
+                    unet::handleError(errno);
+                }
+            }
+
             eventMap.erase(fd);
         }
     }

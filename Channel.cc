@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"Channel.h"
-#include<iostream>
 
 namespace unet
 {
@@ -75,7 +74,6 @@ namespace unet
             }
             else if(type == CONNECT)
             {
-                std::cout << "connect" << std::endl;
                 handleEventing = true;
                 if((revent & EPOLLHUP) || (revent & EPOLLRDHUP) || (revent & EPOLLERR))
                 {
@@ -86,7 +84,6 @@ namespace unet
                 }
                 else if(revent & EPOLLIN)
                 {//存在无法正常关闭connection的问题
-                    std::cout << "connect->handleRead" << std::endl;
                     tcp->handleRead();
                 }
                 else if(revent & EPOLLOUT)
@@ -97,7 +94,6 @@ namespace unet
                 {
                     if(closeCallBack)
                     {
-                        std::cout << "connect->handleClose" << std::endl;
                         closeCallBack(fd);
                     }
                     else    

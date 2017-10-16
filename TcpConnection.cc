@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"TcpConnection.h"
+#include<iostream>
 
 namespace unet
 {
@@ -48,6 +49,7 @@ namespace unet
             {
                 closeCallBack(confd.getFd());
             }
+            
             return n;
         }
 
