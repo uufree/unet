@@ -11,46 +11,48 @@
  * 2.使用STL保证数据安全性
  */
 
-
 #ifndef _DIRECTORY_H
 #define _DIRECTORY_H
 
 #include"File.h"
-#include<vector>
+#include<list>
 
 namespace unet
 {
-    namespace file
+    namespace base
     {
         class Directory final
         {
-            friend bool operator==(const Directory& lhs,const Directory& rhs);
-
             public:
-                explicit Directory(const char* path);
-                explicit Directory(const std::string& lhs);
+                explicit Directory(const char* path) noexcept :
+                    _directoryPath(path)
+                {update(_directoryPath);};
 
-                Directory(const Directory& lhs);
-                Directory(Directory&& lhs);
-                Directory& operator=(const Directory& lhs);
-                Directory& operator=(Directory&& lhs);
-                ~Directory();
+                explicit Directory(const std::string& path) noexcept :
+                    _directoryPath(path)
+                {update(_directoryPath);};
             
-                const std::string& getDirBuffer() const
-                {return directoryBuffer;};
+                Directory(const Directory& lhs) = delete;
+                Directory(Directory&& lhs) : 
+                    _directoryPath(std::move(lhs._directoryPath))
+                {update(_directoryPath);};
+
+                Directory& operator=(const Directory& lhs) = delete;
+                Directory& operator=(Directory&& lhs);
+                ~Directory() noexcept {_directoryList.clear();};
                 
+                bool operator==(const Directory& dir) {return _directoryPath == dir._directoryPath;};
+                const std::string& getDirBuffer() const {return _directoryBuffer;};
                 void addInDirectoryList(const std::string& filename);
 
             private:
                 void update(const std::string& lhs);
 
             private:
-                std::string directorypath;
-                std::vector<std::string> directorylist;
-                std::string directoryBuffer;
+                std::string _directoryPath;
+                std::list<std::string> _directoryList;
+                std::string _directoryBuffer;
         };
-        
-        bool operator==(const Directory& lhs,const Directory& rhs);
     }
 }
 

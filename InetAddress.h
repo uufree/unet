@@ -19,58 +19,110 @@
 
 namespace unet
 {
-    namespace net
+    namespace base
     {
-        namespace socket
-        {
-            class InetAddress final
-            {   
-                static const int IPV4SIZE = 16;
-                static const int IPV6SIZE = 32;
-                friend bool operator==(const InetAddress& lhs,const InetAddress& rhs);
+        enum InetAddressType{IPV6,IPV4}; 
 
-                public:
-                    explicit InetAddress(int port);            
-                    explicit InetAddress(uint16_t port);
-                    explicit InetAddress(const std::string& ip,int port);
-                    explicit InetAddress(const std::string& ip,uint16_t port);
-
-                    InetAddress(const InetAddress& lhs) = delete; 
-                    InetAddress(InetAddress&& lhs);
-                    InetAddress& operator=(const InetAddress& lhs) = delete;
-                    InetAddress& operator=(InetAddress&& lhs);
-                    ~InetAddress();
-                    
-
-                    const std::string& getIpString() const
-                    {return ip;};
-                    
-                    const sockaddr_in& getSockaddr() const
-                    {return addr;}
-            
-                    uint32_t getIp() const
-                    {
-                        in_addr_t addr_ = ntohl(addr.sin_addr.s_addr);
-                        return static_cast<uint32_t>(addr_);
-                    };   
-
-                    uint16_t getPort() 
-                    {
-                        in_port_t port = ntohs(addr.sin_port);
-                        return static_cast<uint16_t>(port);
-                    };
-
-                private:
-                    void init(uint16_t port);
+        class InetAddress final
+        {   
+            public:
+                explicit InetAddress(int port,const std::string& ip = "INADDR_ANY",InetAddressType type = IPV4):
+                    _ip(ip),
+                    _type(type)
+                {init(static_cast<uint16_t>(port),type);};
                 
-                private:
-                    struct sockaddr_in addr;
-                    std::string ip = "INADDR_ANY";
-            };
+                explicit InetAddress(uint16_t port,const std::string& ip = "INADDR_ANY",InetAddressType type = IPV4) :
+                    _ip(ip),
+                    _type(type)
+                {init(port,type);};
+                
+                InetAddress(const InetAddress& lhs) :
+                    _addr(lhs._addr),
+                    _ip(lhs._ip),
+                    _type(lhs._type)
+                {};
 
-            bool operator==(const InetAddress& lhs,const InetAddress& rhs);
-        
-        }
+                InetAddress(InetAddress&& lhs) :
+                    _addr(std::move(lhs._addr)),
+                    _ip(std::move(lhs._ip)),
+                    _type(std::move(lhs._type))
+                {};
+
+                InetAddress& operator=(const InetAddress& lhs)
+                {
+                    if(*this == lhs)
+                        return *this;
+                    _addr = lhs._addr;
+                    _ip = lhs._ip;
+                    _type = lhs._type;
+                    return *this;
+                }
+
+                InetAddress& operator=(InetAddress&& lhs)
+                {
+                    if(*this == lhs)
+                        return *this;
+                    _addr = lhs._addr;
+                    _ip = lhs._ip;
+                    _type = lhs._type;
+                    return *this;
+                }
+
+                ~InetAddress() noexcept {};
+                
+                bool operator==(const InetAddress& addr)
+                {
+                    if(addr._type != _type)
+                        return false;
+                    return _type==IPV4 ? addr._addr._addrv4.sin_port==_addr._addrv4.sin_port : addr._addr._addrv6.sin6_port == addr._addr._addrv6.sin6_port;
+                };
+
+                const std::string& getIpString() const {return _ip;};
+                sockaddr* getSocketAddr() 
+                {return _type==IPV4 ? (sockaddr*)&_addr._addrv4 : (sockaddr*)&_addr._addrv6;}
+                
+            //这两个函数没有提供IPV6版本             
+                uint32_t getIp() const
+                {return static_cast<uint32_t>(ntohl(_addr._addrv4.sin_addr.s_addr));};   
+                uint16_t getPort() 
+                {return static_cast<uint16_t>(ntohs(_addr._addrv4.sin_port));};
+                
+                InetAddressType getType() const
+                {return _type;};
+
+            private:
+                void init(uint16_t port,InetAddressType type)
+                {
+                    if(type == IPV4)
+                    {
+                        _addr._addrv4.sin_port = htons(port);
+                        _addr._addrv4.sin_family = AF_INET;
+                        _ip=="INADDR_ANY" ? _addr._addrv4.sin_addr.s_addr=htonl(INADDR_ANY) : inet_pton(AF_INET,_ip.c_str(),&_addr._addrv4.sin_addr.s_addr);
+                        if(_ip == "INADDR_ANY")
+                            _addr._addrv4.sin_addr.s_addr = htonl(INADDR_ANY);
+                        else
+                        {
+                            inet_pton(AF_INET,_ip.c_str(),&_addr._addrv4.sin_addr);
+                            _addr._addrv4.sin_addr.s_addr = htonl(_addr._addrv4.sin_addr.s_addr);
+                        }
+                    }
+                    else
+                    {
+                        _addr._addrv6.sin6_port = htons(port);
+                        _addr._addrv6.sin6_family = AF_INET6;
+                        //不知如何初始化IPV6，反正也用不到... 
+                    }
+                }
+                
+            private:
+                union Inet 
+                {
+                    struct sockaddr_in _addrv4;
+                    struct sockaddr_in6 _addrv6;
+                } _addr;
+                std::string _ip;
+                InetAddressType _type;
+        };
     }
 }
 

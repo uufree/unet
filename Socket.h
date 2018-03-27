@@ -19,7 +19,6 @@
 #define _SOCKET_H
 
 #include<assert.h>
-#include"InetAddress.h"
 #include<netinet/in.h>
 #include<string.h>
 #include<arpa/inet.h>
@@ -28,103 +27,91 @@
 #include<netinet/tcp.h>
 #include<fcntl.h>
 #include<unistd.h>
-#include"error.h"
+
+#include"global.h"
+#include"InetAddress.h"
 
 namespace unet
 {
-    namespace net
+    namespace base
     {
-        namespace socket
-        {
-            enum SocketType{CONNECT,LISTEN};
-            const static int COMMSIZE = 256;
+        enum SocketType{CONNECT,LISTEN};
+        const static int COMMSIZE = 256;
+        
+        int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
+        void listen(int socketfd);
+        int accept(int socketfd);
+        void connect(int socketfd,InetAddress& addr);
+        void bind(int socketfd,InetAddress& addr);
+        void close(int socketfd);
             
-            class Socket final
-            {//用RAII处理sockfd
-                friend bool operator==(const Socket& lhs,const Socket& rhs);
+        class Socket final
+        {//用RAII处理sockfd
                 
-                public:
-                    explicit Socket(SocketType type_);
-                    explicit Socket(int connectfd);
+            public:
+                explicit Socket(SocketType type) noexcept :
+                    _type(type),
+                    _socketfd(socket()),
+                    _bit(0x00)
+                {};
 
-                    explicit Socket(const Socket& socketfd_);
-                    explicit Socket(Socket&& socketfd);
-                    Socket& operator=(const Socket& lhs);
-                    Socket& operator=(Socket&& lhs);
-                    ~Socket();
-                    
-                    int getFd() const
-                    {  
-                        assert(socketfd >= 0);
-                        return socketfd;
-                    }
+                explicit Socket(int connectfd) noexcept :
+                    _type(CONNECT),
+                    _socketfd(connectfd),
+                    _bit(0x00)
+                {};
 
-                    SocketType getType() const
-                    {return type;}
+                explicit Socket(const Socket& socketfd_) = delete;
+                explicit Socket(Socket&& socket) :
+                    _type(std::move(socket._type)),
+                    _socketfd(std::move(socket._socketfd)),
+                    _bit(std::move(socket._bit))
+                {};
+                Socket& operator=(const Socket& lhs) = delete;
+                Socket& operator=(Socket&& lhs)
+                {
+                    if(lhs == *this)
+                        return *this;
+                    close(_socketfd);
+                    _type = std::move(lhs._type);
+                    _socketfd = std::move(lhs._socketfd);
+                    _bit = std::move(lhs._bit);
+                    return *this;
+                }
 
-                    bool isUsed() const
-                    {return bit & (1 << 5);};
-                    void setUsedBit()
-                    {bit |= (1 << 5);}
-
-                    bool isKeepAlive() const
-                    {return bit & (1 << 4);};
-                    void setKeepAliveBit()
-                    {bit |= (1 << 4);}
-
-                    bool isNoDelay() const
-                    {return bit & (1 << 3);};
-                    void setNoDelayBit()
-                    {bit |= (1 << 3);}
-
-                    bool isNonBlockAndCloseOnExec() const
-                    {return bit & (1 << 2);};
-                    void setNonBlockAndCloseOnExecBit()
-                    {bit |= (1 << 2);}
-                    
-                    bool isReuseAddr() const
-                    {return bit & (1 << 1);};
-                    void setReuseAddrBit()
-                    {bit |= (1 << 1);}
-                    
-                    bool isReusePort() const
-                    {return bit & (1 << 0);};
-                    
-                    void setReusePortBit()
-                    {bit |= (1 << 0);}
+                ~Socket() noexcept{close(_socketfd);};
                 
-                private:
-                    const SocketType type;
-                    mutable int socketfd;
-                    unsigned char bit;
-            };
+                bool operator==(const Socket& socket) {return _socketfd == socket._socketfd;};
 
-            bool operator==(const Socket& lhs,const Socket& rhs);
-            
-            int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
-            void listen(int socketfd);
-            int accept(int socketfd);
-            void connect(int socketfd,InetAddress& addr);
-            void bind(int socketfd,InetAddress& addr);
-            void close(int socketfd);
-//这五组对fd的操作不暴露给用户        
-            bool setKeepAlive(int socketfd);
-            bool setNodelay(int sockfd);
-            bool setNonBlockAndCloseOnExec(int socketfd);
-            bool setReuseAddr(int socketfd);
-            bool setReusePort(int socketfd);
+                int getFd() const {return _socketfd;}
+                SocketType getType() const {return _type;}
+                bool isUsed() const {return _bit & (1 << 5);};
+                void setUsedBit(){_bit |= (1 << 5);}
+                bool isKeepAlive() const {return _bit & (1 << 4);};
+                void setKeepAliveBit(){_bit |= (1 << 4);}
+                bool isNoDelay() const{return _bit & (1 << 3);};
+                void setNoDelayBit(){_bit |= (1 << 3);}
+                bool isNonBlockAndCloseOnExec() const {return _bit & (1 << 2);};
+                void setNonBlockAndCloseOnExecBit(){_bit |= (1 << 2);}
+                bool isReuseAddr() const{return _bit & (1 << 1);};
+                void setReuseAddrBit(){_bit |= (1 << 1);}
+                bool isReusePort() const{return _bit & (1 << 0);};
+                void setReusePortBit(){_bit |= (1 << 0);}
+                
+                int setKeepAlive();
+                int setNodelay();
+                int setNonBlockAndCloseOnExec();
+                int setReuseAddr();
+                int setReusePort();
+                int setSendBuf(int sendbuf);    
+                int setRecvBuf(int recvbuf);
 
-            void setKeepAlive(Socket& sock);
-            void setNodelay(Socket& sock);
-            void setNonBlockAndCloseOnExec(Socket& sock);
-            void setReuseAddr(Socket& sock);
-            void setReusePort(Socket& sock);
-            
-            void listen(Socket& lhs);
-            void connect(Socket& lhs,InetAddress& addr);
-            void bind(Socket& lhs,InetAddress& addr);
-            int accept(Socket& lhs);
-        }
+            private:
+                SocketType _type;
+                mutable int _socketfd;
+                unsigned char _bit;
+        };
+
     }
 }
 

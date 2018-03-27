@@ -6,36 +6,34 @@
  ************************************************************************/
 
 #include"File.h"
-#include"error.h"
 #include<sys/stat.h>
 
 namespace unet
 {
-    namespace file
+    namespace base
     { 
-        File::File(const char* filename_,int type_) :       opened(false),
-            g_filename(filename_),
-            type(type_)
-        {
-            init();
-        }
+        File::File(const char* filename,int type) noexcept :       
+            _open(false),
+            _gfilename(filename),
+            _type(type)
+        {init();}
 
-        File::File(const std::string& filename_,int type_) : opened(false),
-        g_filename(filename_),
-        type(type_)
-        {
-            init();
-        }
+        File::File(const std::string& filename,int type) noexcept : 
+            _open(false),
+            _gfilename(filename),
+            _type(type)
+        {init();}
              
-        void File::init()
+        void File::init() noexcept
         {
-            char* index = strrchr(const_cast<char*>(g_filename.c_str()),'/');
+            char* index = strrchr(const_cast<char*>(_gfilename.c_str()),'/');
             char buf[64];
             bzero(buf,64);
+            
             if(index != NULL)
             {
                 ++index;
-                filename = index;
+                _filename = index;
             }
             else
             {
@@ -43,18 +41,18 @@ namespace unet
                 exit(1);
             }
             
-            fd = switchOperatorType(type);     
+            _fd = switchOperatorType(_type);     
 
             struct stat statBuf;
-            if(fstat(fd,&statBuf) < 0)
+            if(fstat(_fd,&statBuf) < 0)
                 unet::handleError(errno);
 
-            fileSize = statBuf.st_size;
+            _fileSize = statBuf.st_size;
         }
         
-        int File::switchOperatorType(int type_)
+        int File::switchOperatorType(int type)
         {
-            int fd = ::open(g_filename.c_str(),type_);
+            int fd = ::open(_gfilename.c_str(),type);
             
             if(fd < 0)
                 unet::handleError(errno);
@@ -62,149 +60,43 @@ namespace unet
         }
         
         File::File(File&& lhs) : 
-            opened(false),
-            filename(std::move(lhs.filename)),
-            g_filename(std::move(lhs.g_filename)),
-            type(lhs.type),
-            fileSize(lhs.fileSize)
+            _open(false),
+            _filename(std::move(lhs._filename)),
+            _gfilename(std::move(lhs._gfilename)),
+            _type(lhs._type),
+            _fileSize(lhs._fileSize)
         {
-            fd = switchOperatorType(type);
-            opened = true;
+            _fd = dup(lhs._fd);
+            _open = true;
             
-            if(::close(lhs.fd) < 0)
+            if(::close(lhs._fd) < 0)
                 unet::handleError(errno);
-            lhs.opened = false;
+            lhs._open = false;
         }
         
         File& File::operator=(File&& lhs)
         {
             if(*this == lhs)
                 return *this;
-
-            if(::close(this->fd) < 0)
-                unet::handleError(errno);
-            this->opened = false;
             
-            if(::close(lhs.fd) < 0)
-                unet::handleError(errno);
-            this->opened = false;
-
-            this->filename = std::move(lhs.filename);
-            this->g_filename = std::move(lhs.g_filename);
-            this->fd = switchOperatorType(this->type);
-            this->opened = true;
-            this->fileSize = lhs.fileSize;
-
+            _filename = std::move(lhs._filename);
+            _gfilename = std::move(lhs._gfilename);
+            _fileSize = lhs._fileSize;
+            _type = lhs._type;
+            if(_open)
+                ::close(_open);
+            
+            lhs._open ? _fd=dup(lhs._open) : _fd=switchOperatorType(_type);  
+            _open = true;
+            
             return *this;
         }
         
-        File::~File()
+        File::~File() noexcept
         {
-            if(opened)
-            {
-                if(::close(fd) < 0)
+            if(_open)
+                if(::close(_fd) < 0)
                     unet::handleError(errno);
-            }
-        }
-       
-        int readn(int fd,char* cptr,size_t nbytes)
-        {
-            int nleft,nread;
-            
-            int readsize = 0;
-            nleft = nbytes;
-
-            while(nleft > 0)
-            {
-                if((nread=read(fd,cptr,nleft)) < 0)
-                {
-                    if(errno == EINTR)
-                        nread = 0;
-                    else
-                    {
-                        perror("readn error!\n");
-                        exit(0);
-                    }
-                }
-                else if(nread == 0)
-                    break;
-                nleft -= nread;
-                cptr += nread;
-            }
-
-            readsize = nbytes - nleft;
-            return readsize;
-        }
-        
-        int readn(int fd,std::string& buf,size_t nbytes)
-        {
-            char cptr[nbytes];
-            bzero(cptr,nbytes);
-            
-            int nleft,nread;
-            int readsize = 0;
-            nleft = nbytes;
-
-            while(nleft > 0)
-            {
-                if((nread=read(fd,cptr,nleft)) < 0)
-                {
-                    if(errno == EINTR)
-                        nread = 0;
-                    else
-                    {
-                        perror("readn error!\n");
-                        exit(0);
-                    }
-                }
-                else if(nread == 0)
-                    break;
-                
-                nleft -= nread;
-            }
-            
-            readsize = nbytes - nleft;
-            buf = cptr;
-            return readsize;
-        }
-        
-        int writen(int fd,const char* cptr,size_t nbytes)
-        {
-            int nleft,nwriten;
-    
-            nleft = nbytes;
-            int writesize = 0;
-            while(nleft > 0)
-            {
-                if((nwriten=write(fd,cptr,nleft)) <= 0)
-                {
-                    if(nwriten<0 && errno!=EINTR)
-                    nwriten = 0;
-                    else
-                    {
-                        perror("writen error!\n");
-                        exit(0);
-                    }
-                }
-                nleft -= nwriten;
-                cptr += nwriten;
-            }
-            writesize  = nbytes - nleft;
-            
-            return writesize;
-        }
-        
-        int writen(int fd,const std::string& buf)
-        {
-            return writen(fd,buf.c_str(),buf.size());
-        }
-
-        bool operator==(const File& lhs,const File& rhs)
-        {
-            if(lhs.fd == rhs.fd && lhs.g_filename == rhs.g_filename )
-                return true;
-            else
-                return false;
         }
     }
 }
