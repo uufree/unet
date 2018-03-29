@@ -100,5 +100,31 @@ namespace unet
     {
         return writen(fd,buf.c_str(),buf.size());
     }
+    
+    void daemonize()
+    {
+        pid_t pid = fork();
+        if(pid < 0)
+            handleError(errno);
+        else if(pid > 0)
+            exit(0);
+
+        umask(0);
+        pid_t sid = setsid();
+        if(sid < 0)
+            handleError(errno);
+        
+        if(chdir("/") < 0)
+            handleError(errno);
+
+        close(STDIN_FILENO);
+        close(STDOUT_FILENO);
+        close(STDERR_FILENO);
+
+        open("/dev/null",O_RDONLY);
+        open("/dev/null",O_RDWR);
+        open("/dev/null",O_RDWR);
+    }
+
 }
 

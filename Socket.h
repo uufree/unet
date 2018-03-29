@@ -78,37 +78,47 @@ namespace unet
                 int getFd() const {return _socketfd;}
                 SocketType getType() const {return _type;}
                 bool isUsed() const {return _bit & (1 << 5);};
-                void setUsedBit(){_bit |= (1 << 5);}
                 bool isKeepAlive() const {return _bit & (1 << 4);};
-                void setKeepAliveBit(){_bit |= (1 << 4);}
                 bool isNoDelay() const{return _bit & (1 << 3);};
-                void setNoDelayBit(){_bit |= (1 << 3);}
-                bool isNonBlockAndCloseOnExec() const {return _bit & (1 << 2);};
-                void setNonBlockAndCloseOnExecBit(){_bit |= (1 << 2);}
                 bool isReuseAddr() const{return _bit & (1 << 1);};
-                void setReuseAddrBit(){_bit |= (1 << 1);}
+                bool isNonBlockAndCloseOnExec() const {return _bit & (1 << 2);};
                 bool isReusePort() const{return _bit & (1 << 0);};
-                void setReusePortBit(){_bit |= (1 << 0);}
                 
                 int setKeepAlive();
                 int setNodelay();
                 int setNonBlockAndCloseOnExec();
                 int setReuseAddr();
                 int setReusePort();
-                int setSendBuf(int sendbuf);    
-                int setRecvBuf(int recvbuf);
-                
+                int setSendBuf(int multiple);    
+                int setRecvBuf(int multiple);
+                int getSendBuf();
+                int getRecvBuf();
+
                 int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
                 int listen();
                 int accept();
                 int connect(InetAddress& addr);
                 int bind(InetAddress& addr);
                 int close();
+                
+                int blockRead(std::string& buf,size_t buflen) {return readn(_socketfd,buf,buflen);};
+                int blockRead(char* buf,size_t buflen) {return readn(_socketfd,buf,buflen);};
+                int blockWrite(const std::string& buf) {return writen(_socketfd,buf);};
+                int blockWrite(char* buf,size_t buflen) {return writen(_socketfd,buf,buflen);};
+            
+            private:
+                void setUsedBit(){_bit |= (1 << 5);}
+                void setKeepAliveBit(){_bit |= (1 << 4);}
+                void setNoDelayBit(){_bit |= (1 << 3);}
+                void setNonBlockAndCloseOnExecBit(){_bit |= (1 << 2);}
+                void setReuseAddrBit(){_bit |= (1 << 1);}
+                void setReusePortBit(){_bit |= (1 << 0);}
 
             private:
                 SocketType _type;
                 mutable int _socketfd;
                 unsigned char _bit;
+                static const int MSS = 1460;
         };
 
     }

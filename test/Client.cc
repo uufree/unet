@@ -14,12 +14,18 @@ using namespace unet::base;
 
 int main(int argc,char** argv)
 {
-    Socket connectfd(CONNECT);
+    Socket connectSocket(CONNECT);
     InetAddress serverAddr(6666);
-    connectfd.connect(serverAddr);
-    std::cout << "listenfd: " << connectfd.getFd() << std::endl;
+    connectSocket.connect(serverAddr);
+    std::cout << "listenfd: " << connectSocket.getFd() << std::endl;
     
-    sleep(10);
+    std::string message("hello,world!");
+    while(1)
+    {
+        connectSocket.blockWrite(message);
+        sleep(3);
+    }
+
     return 0;
 }
 

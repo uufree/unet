@@ -20,7 +20,11 @@ namespace unet
         }
 
         int Socket::listen()
-        {
+        {//以下设置针对服务器端
+            setKeepAlive();
+            setReuseAddr();
+            setReusePort();
+
             if(_type == LISTEN)
             {
                 int n = ::listen(_socketfd,COMMSIZE);
@@ -46,7 +50,9 @@ namespace unet
         }
             
         int Socket::connect(InetAddress& addr)
-        {
+        {//针对客户端
+            setKeepAlive();
+
             if(_type == CONNECT)
             {
                 sockaddr* s_addr = addr.getSocketAddr();
@@ -88,7 +94,8 @@ namespace unet
                 
             if(n == -1)
                 unet::handleError(errno);
-            return true;
+            setKeepAliveBit();
+            return 0;
         }
 
         int Socket::setNodelay()
@@ -98,7 +105,8 @@ namespace unet
                 
             if(n == -1)
                 unet::handleError(errno);
-            return true;
+            setNoDelayBit();
+            return 0;
         }
 
         int Socket::setNonBlockAndCloseOnExec()
@@ -110,7 +118,8 @@ namespace unet
 
             if(n == -1)
                 unet::handleError(errno);
-            return true;
+            setNonBlockAndCloseOnExecBit();
+            return 0;
         }
             
         int Socket::setReuseAddr()
@@ -120,7 +129,8 @@ namespace unet
                 
             if(n == -1)
                 unet::handleError(errno);
-            return true;
+            setReuseAddrBit();
+            return 0;
         }
 
         int Socket::setReusePort()
@@ -130,23 +140,48 @@ namespace unet
                 
             if(n == -1)
                 unet::handleError(errno);
-            return true;
+            setReusePortBit();
+            return 0;
         }
 
-        int Socket::setRecvBuf(int recvbuf)
+        int Socket::setRecvBuf(int multiple)
         {
+            int recvbuf;
+            multiple%2 ? recvbuf=(multiple-1)*MSS : recvbuf=multiple*MSS;
             int n = ::setsockopt(_socketfd,SOL_SOCKET,SO_SNDBUF,&recvbuf,sizeof(recvbuf));
             if(n < 0)
                 unet::handleError(errno);
-            return true;
+            return 0;
         }
 
-        int Socket::setSendBuf(int sendbuf)
+        int Socket::setSendBuf(int multiple)
         {
+            int sendbuf;
+            multiple%2 ? sendbuf=(multiple-1)*MSS : sendbuf=multiple*MSS;
             int n = ::setsockopt(_socketfd,SOL_SOCKET,SO_RCVBUF,&sendbuf,sizeof(sendbuf));
             if(n < 0)
                 unet::handleError(errno);
-            return true;
+            return 0;
+        }
+
+        int Socket::getRecvBuf()
+        {
+            int recvbuf = 0;
+            int len = sizeof(recvbuf);
+            int n = ::getsockopt(_socketfd,SOL_SOCKET,SO_SNDBUF,&recvbuf,(socklen_t*)&len);
+            if(n < 0)
+                unet::handleError(errno);
+            return recvbuf;
+        }
+
+        int Socket::getSendBuf()
+        {
+            int sendbuf = 0;
+            int len = sizeof(sendbuf);
+            int n = ::getsockopt(_socketfd,SOL_SOCKET,SO_RCVBUF,&sendbuf,(socklen_t*)&len);
+            if(n < 0)
+                unet::handleError(errno);
+            return sendbuf;
         }
     }
 }

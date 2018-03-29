@@ -22,7 +22,14 @@ int main(int argc,char** argv)
 
     int connectfd = listenSocket.accept();
     std::cout << "connectfd: " << connectfd << std::endl;
-    
+    Socket connectSocket(connectfd);
+
+    std::string message;
+    while(1)
+    {
+        connectSocket.blockRead(message,20);
+        std::cout << "Recv Message: " << message << std::endl;
+    }
 
     return 0;
 }
