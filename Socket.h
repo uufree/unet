@@ -36,18 +36,10 @@ namespace unet
     namespace base
     {
         enum SocketType{CONNECT,LISTEN};
-        const static int COMMSIZE = 256;
+        const static int COMMSIZE = 4096;
         
-        int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
-        void listen(int socketfd);
-        int accept(int socketfd);
-        void connect(int socketfd,InetAddress& addr);
-        void bind(int socketfd,InetAddress& addr);
-        void close(int socketfd);
-            
         class Socket final
         {//用RAII处理sockfd
-                
             public:
                 explicit Socket(SocketType type) noexcept :
                     _type(type),
@@ -72,14 +64,14 @@ namespace unet
                 {
                     if(lhs == *this)
                         return *this;
-                    close(_socketfd);
+                    close();
                     _type = std::move(lhs._type);
                     _socketfd = std::move(lhs._socketfd);
                     _bit = std::move(lhs._bit);
                     return *this;
                 }
 
-                ~Socket() noexcept{close(_socketfd);};
+                ~Socket() noexcept{close();};
                 
                 bool operator==(const Socket& socket) {return _socketfd == socket._socketfd;};
 
@@ -105,6 +97,13 @@ namespace unet
                 int setReusePort();
                 int setSendBuf(int sendbuf);    
                 int setRecvBuf(int recvbuf);
+                
+                int socket(int family=AF_INET,int type=SOCK_STREAM,int protocol=IPPROTO_TCP);
+                int listen();
+                int accept();
+                int connect(InetAddress& addr);
+                int bind(InetAddress& addr);
+                int close();
 
             private:
                 SocketType _type;

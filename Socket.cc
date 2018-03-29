@@ -11,7 +11,7 @@ namespace unet
 {
     namespace base
     {
-        int socket(int family,int type,int protocol)
+        int Socket::socket(int family,int type,int protocol)
         {
             int n = ::socket(family,type,protocol);
             if(n  < 0)
@@ -19,42 +19,66 @@ namespace unet
             return n;
         }
 
-        void listen(int socketfd)
+        int Socket::listen()
         {
-            int n = ::listen(socketfd,COMMSIZE);
-            if(n < 0)
-                unet::handleError(errno);
+            if(_type == LISTEN)
+            {
+                int n = ::listen(_socketfd,COMMSIZE);
+                if(n < 0)
+                    unet::handleError(errno);
+            }
+            else
+                return -1;
+            return 0;
         }
 
-        int accept(int socketfd)
+        int Socket::accept()
         {
-            int connectfd = ::accept(socketfd,nullptr,nullptr);
-            if(connectfd < 0)
-                unet::handleError(errno);
-            return connectfd;
+            if(_type == LISTEN)
+            {
+                int connectfd = ::accept(_socketfd,nullptr,nullptr);
+                if(connectfd < 0)
+                    unet::handleError(errno);
+                return connectfd;
+            }
+            else
+                return -1;
         }
             
-        void connect(int socketfd,InetAddress& addr)
+        int Socket::connect(InetAddress& addr)
         {
-            sockaddr* s_addr = addr.getSocketAddr();
-            int n = ::connect(socketfd,s_addr,static_cast<socklen_t>(sizeof(struct sockaddr_in)));
-            if(n < 0)
-               unet::handleError(errno);
+            if(_type == CONNECT)
+            {
+                sockaddr* s_addr = addr.getSocketAddr();
+                int n = ::connect(_socketfd,s_addr,static_cast<socklen_t>(sizeof(struct sockaddr_in)));
+                if(n < 0)
+                    unet::handleError(errno);
+            }
+            else
+                return -1;
+            return 0;
         }
             
-        void bind(int sockfd,InetAddress& addr)
+        int Socket::bind(InetAddress& addr)
         {
-            sockaddr* s_addr = addr.getSocketAddr();                
-            int n = ::bind(sockfd,s_addr,static_cast<socklen_t>(sizeof(struct sockaddr_in)));
-            if(n < 0)
-                unet::handleError(errno);
+            if(_type == LISTEN)
+            {
+                sockaddr* s_addr = addr.getSocketAddr();                
+                int n = ::bind(_socketfd,s_addr,static_cast<socklen_t>(sizeof(struct sockaddr_in)));
+                if(n < 0)
+                    unet::handleError(errno);
+            }
+            else
+                return -1;
+            return 0;
         }
             
-        void close(int sockfd)
+        int Socket::close()
         {
-            int n = ::close(sockfd);
+            int n = ::close(_socketfd);
             if(n < 0)
                 unet::handleError(errno);
+            return 0;
         }
 
         int Socket::setKeepAlive()

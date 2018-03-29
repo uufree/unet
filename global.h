@@ -19,7 +19,7 @@ namespace unet
     int readn(int fd,char* cptr,size_t nbytes);
     int readn(int fd,std::string& buf,size_t nbytes);
         
-    int writen(int fd,const char* cptr,size_t nbytes);
+    int writen(int fd,char const* cptr,size_t nbytes);
     int writen(int fd,const std::string& buf);
     
     inline void handleError(int saveErrno)

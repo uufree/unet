@@ -18,18 +18,26 @@
 #define _FILE_H
 
 #include"global.h"
+#include<sys/stat.h>
 
 namespace unet
 {
     namespace base
     {
+        static const int WRITE = O_WRONLY|O_APPEND|O_EXCL;
+        static const int C_WRITE = O_WRONLY|O_TRUNC|O_APPEND|O_CREAT;
+        static const int READ = O_RDONLY|O_EXCL;
+        static const int N_WRITE = O_RDWR|O_CREAT|O_APPEND; 
+
+        static const mode_t USER_RW = S_IRUSR | S_IWUSR;
+        static const mode_t USER_RWX = USER_RW | S_IXUSR;
+        static const mode_t GROUP_R = S_IRGRP;
+        static const mode_t GROUP_RW = S_IRGRP | S_IWGRP;
+        static const mode_t OTHER_R = S_IROTH;
+        static const mode_t OTHER_RW = S_IROTH | S_IWOTH;
+
         class File final
         {
-            static const int WRITE = O_WRONLY|O_APPEND|O_EXCL;
-            static const int C_WRITE = O_WRONLY|O_TRUNC|O_APPEND|O_CREAT;
-            static const int READ = O_RDONLY|O_EXCL;
-            static const int N_WRITE = O_WRONLY|O_CREAT|O_APPEND; 
-             
             public:
                 explicit File(const char* filename_,int type_) noexcept;
                 explicit File(const std::string& filename_,int type_) noexcept;
@@ -47,8 +55,11 @@ namespace unet
                 int getFd() const {return _fd;};
                 bool isOpened() const {return _open;};    
                 int getFileSize() const {return _fileSize;};
-                int blockRead(char buf[],size_t buflen) {return readn(_fd,buf,buflen);};
-                int blockWrite(char buf[],size_t buflen) {return writen(_fd,buf,buflen);};
+                int blockRead(char* buf,size_t buflen) {return readn(_fd,buf,buflen);};
+                int blockRead(std::string& buf,size_t buflen) {return readn(_fd,buf,buflen);}
+                int blockWrite(const char* buf,size_t buflen) {return writen(_fd,buf,buflen);};
+                int blockWrite(const std::string& buf) {return writen(_fd,buf);}
+                int close();
 
             private:
                 void init() noexcept;

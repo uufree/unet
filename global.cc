@@ -70,7 +70,7 @@ namespace unet
         return readsize;
     }
         
-    int writen(int fd,const char* cptr,size_t nbytes)
+    int writen(int fd,char const* cptr,size_t nbytes)
     {
         int nleft,nwriten;
     

@@ -6,7 +6,7 @@
  ************************************************************************/
 
 #include"File.h"
-#include<sys/stat.h>
+#include<iostream>
 
 namespace unet
 {
@@ -42,7 +42,7 @@ namespace unet
             }
             
             _fd = switchOperatorType(_type);     
-
+            _open = true;
             struct stat statBuf;
             if(fstat(_fd,&statBuf) < 0)
                 unet::handleError(errno);
@@ -52,8 +52,8 @@ namespace unet
         
         int File::switchOperatorType(int type)
         {
-            int fd = ::open(_gfilename.c_str(),type);
-            
+            int fd = ::open(_gfilename.c_str(),type,USER_RW | GROUP_R | OTHER_R);
+             
             if(fd < 0)
                 unet::handleError(errno);
             return fd;
@@ -92,11 +92,17 @@ namespace unet
             return *this;
         }
         
-        File::~File() noexcept
+        int File::close()
         {
             if(_open)
                 if(::close(_fd) < 0)
                     unet::handleError(errno);
+            return 1; 
+        }
+
+        File::~File() noexcept
+        {
+            close();
         }
     }
 }

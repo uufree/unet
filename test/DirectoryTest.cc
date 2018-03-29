@@ -10,7 +10,7 @@
 
 int main(int argc,char** argv)
 {
-    unet::file::Directory dir("/home/uuchen/unet");
+    unet::base::Directory dir("/home/uuchen");
     
     std::cout << dir.getDirBuffer() << std::endl;
     return 0;
