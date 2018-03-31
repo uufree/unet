@@ -32,16 +32,16 @@ namespace unet
         
     TimerMap::TimerMap() : 
         _timefd(createTimefd()),
+        _timerMaps(),
         _start(false),
         _mutex()
     {};
 
     TimerMap::TimerMap(TimerMap&& lhs) : 
         _timefd(createTimefd()),
+        _timerMaps(),
         _start(false),
-        _mutex(),
-        _insertChannelCallBack(std::move(lhs._insertChannelCallBack)),
-        _eraseChannelCallBack(std::move(lhs._eraseChannelCallBack))
+        _mutex()
     {};
 
     TimerMap& TimerMap::operator=(TimerMap&& lhs)
@@ -49,8 +49,8 @@ namespace unet
         if(*this == lhs)
             return *this;
         
-        _timerMap.clear();
-        _timerMap = std::move(lhs._timerMap);
+        _timerMaps.clear();
+        _timerMaps = std::move(lhs._timerMaps);
         _start = false;
 
         return *this;
@@ -60,7 +60,7 @@ namespace unet
     TimerMap::~TimerMap()
     {
         ::close(_timefd);
-        _timerMap.clear();
+        _timerMaps.clear();
     }
 
     void TimerMap::addTimer(TimerPtr&& timer)
@@ -68,21 +68,9 @@ namespace unet
         base::Time now;
         now.addTime(timer->getRepeatTime());
             
-        if(_timerMap.size() > 0)
-            {//setTimer
-                if(now < timerMap.begin()->first)
-                {
-                    struct itimerspec newSpec;
-                    bzero(&newSpec,sizeof(newSpec));
-                    struct itimerspec oldSpec;
-                    bzero(&oldSpec,sizeof(oldSpec));
-                    newSpec.it_value = howMuchTimeFromNow(now);
-                
-                    if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
-                        unet::handleError(errno);
-                }
-            }
-            else if(timerMap.size() == 0)
+        if(_timerMaps.size() > 0)
+        {//setTimer
+            if(now < _timerMaps.begin()->first)
             {
                 struct itimerspec newSpec;
                 bzero(&newSpec,sizeof(newSpec));
@@ -90,100 +78,104 @@ namespace unet
                 bzero(&oldSpec,sizeof(oldSpec));
                 newSpec.it_value = howMuchTimeFromNow(now);
                 
-                if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
+                if(::timerfd_settime(_timefd,0,&newSpec,&oldSpec) < 0)
                     unet::handleError(errno);
             }
-            else
-            {};
-
-            {
-                unet::thread::MutexLockGuard guard(mutex);
-                timerMap.insert({now,timer_});
-            }
         }
-
-        void TimerQueue::addTimer(Timestamp&& time_,TimerPtr&& ptr)
+        else if(_timerMaps.size() == 0)
         {
-            if(timerMap.size() > 0)
-            {//setTimer
-                if(time_ < timerMap.begin()->first)
-                {
-                    struct itimerspec newSpec;
-                    bzero(&newSpec,sizeof(newSpec));
-                    struct itimerspec oldSpec;
-                    bzero(&oldSpec,sizeof(oldSpec));
+            struct itimerspec newSpec;
+            bzero(&newSpec,sizeof(newSpec));
+            struct itimerspec oldSpec;
+            bzero(&oldSpec,sizeof(oldSpec));
+            newSpec.it_value = howMuchTimeFromNow(now);
+                
+            if(::timerfd_settime(_timefd,0,&newSpec,&oldSpec) < 0)
+                unet::handleError(errno);
+        }
+        else
+        {};
 
-                    newSpec.it_value = howMuchTimeFromNow(time_);
-                    if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
-                        unet::handleError(errno);
-                }
-            }
-            else if(timerMap.size() == 0)
+        {
+            base::MutexLockGuard guard(_mutex);
+            _timerMaps.insert({now,timer});
+        }
+    }
+
+    void TimerMap::addTimer(base::Time&& time,TimerPtr&& ptr)
+    {
+        if(_timerMaps.size() > 0)
+        {//setTimer
+            if(time < _timerMaps.begin()->first)
             {
                 struct itimerspec newSpec;
                 bzero(&newSpec,sizeof(newSpec));
                 struct itimerspec oldSpec;
                 bzero(&oldSpec,sizeof(oldSpec));
 
-                newSpec.it_value = howMuchTimeFromNow(time_);
-                if(::timerfd_settime(timefd,0,&newSpec,&oldSpec) < 0)
+                newSpec.it_value = howMuchTimeFromNow(time);
+                if(::timerfd_settime(_timefd,0,&newSpec,&oldSpec) < 0)
                     unet::handleError(errno);
             }
-            else
-            {};
-
-
-            {
-                unet::thread::MutexLockGuard guard(mutex);
-                timerMap.insert({time_,ptr});
-            }
         }
-
-        void TimerQueue::handleRead()
+        else if(_timerMaps.size() == 0)
         {
-            ::read(timefd,NULL,0);
+            struct itimerspec newSpec;
+            bzero(&newSpec,sizeof(newSpec));
+            struct itimerspec oldSpec;
+            bzero(&oldSpec,sizeof(oldSpec));
+
+            newSpec.it_value = howMuchTimeFromNow(time);
+            if(::timerfd_settime(_timefd,0,&newSpec,&oldSpec) < 0)
+                unet::handleError(errno);
+        }
+        else
+        {};
+
+        {
+            base::MutexLockGuard guard(_mutex);
+            _timerMaps.insert({time,ptr});
+        }
+    }
+
+    void TimerMap::handleRead()
+    {
+        ::read(_timefd,NULL,0);
             
-            TimestampList list;
-            Timestamp now;
+        std::vector<base::Time> list;
+        base::Time now;
             
-            for(auto iter=timerMap.begin();iter!=timerMap.end();++iter)
+        for(auto iter=_timerMaps.begin();iter!=_timerMaps.end();++iter)
+        {
+            if(iter->first < now)
             {
-                if(iter->first < now)
-                {
-                    iter->second->run();
+                iter->second->run();
                     
-                    if(iter->second->isRepeat())
-                    {
-                        list.push_back(iter->first);
-                        Timestamp time = iter->first;
-                        time.addTime(iter->second->getRepeatTime());
-                        addTimer(std::move(time),std::move(iter->second));
-                    }                        
-                }
-                else
-                    break;
+                if(iter->second->isRepeat())
+                {
+                    list.push_back(iter->first);
+                    base::Time time = iter->first;
+                    time.addTime(iter->second->getRepeatTime());
+                    addTimer(std::move(time),std::move(iter->second));
+                }                        
             }
-
-            {
-                unet::thread::MutexLockGuard guard(mutex);
-                for(auto iter=list.cbegin();iter!=list.cend();++iter)
-                    timerMap.erase(*iter);
-            }
+            else
+                break;
         }
 
-        void TimerQueue::start()
         {
-            ChannelPtr channel(new net::Channel(timefd,net::CLOCK));
-            channel->setReadCallBack(std::bind(&TimerQueue::handleRead,this));
-            
-            insertChannelCallBack(std::move(channel));
+            base::MutexLockGuard guard(_mutex);
+            for(auto iter=list.cbegin();iter!=list.cend();++iter)
+                _timerMaps.erase(*iter);
         }
+    }
 
-        void TimerQueue::stop()
-        {
-            eraseChannelCallBack(timefd);
-        }
+    void TimerMap::start()
+    {
+    }
 
+    void TimerMap::stop()
+    {
     }
 }
 

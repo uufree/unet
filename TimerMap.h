@@ -8,10 +8,6 @@
 #ifndef _TIMERMAP_H
 #define _TIMERMAP_H
 
-#include"base/Timer.h"
-#include"Channel.h"
-#include"base/Mutex.h"
-
 #include<map>
 #include<sys/timerfd.h>
 #include<functional>
@@ -19,17 +15,17 @@
 #include<vector>
 #include<string.h>
 
+#include"base/Timer.h"
+#include"Channel.h"
+#include"base/Mutex.h"
+
 namespace unet
 {
-    typedef std::shared_ptr<base::Timer> TimerPtr;
-        
     class TimerMap final
     {
+        typedef std::shared_ptr<base::Timer> TimerPtr;
         typedef std::map<base::Time,TimerPtr> TimerMaps;
         typedef std::unique_ptr<unet::net::Channel> ChannelPtr;
-        typedef std::function<void(ChannelPtr&&)> InsertChannelCallBack;
-        typedef std::function<void(int)> EraseChannelCallBack;
-        typedef std::vector<base::Time> TimeList;
 
         public:
             TimerMap();
@@ -46,19 +42,14 @@ namespace unet
             void start();
             void stop();
 
-            void setInsertChannelCallBack(const InsertChannelCallBack& cb){_insertChannelCallBack = cb;};
-            void setEraseChannelCallBack(const EraseChannelCallBack& cb){_eraseChannelCallBack = cb;};
-                
         private:
             void handleRead();
             
         private:
             const int _timefd;
-            TimerMaps _timerMap;
+            std::map<base::Time,TimerPtr> _timerMaps;
             bool _start;
             base::MutexLock _mutex;
-            InsertChannelCallBack _insertChannelCallBack;
-            EraseChannelCallBack _eraseChannelCallBack;
     };
 }
 
