@@ -16,6 +16,7 @@
 
 #include"File.h"
 #include<list>
+#include<string>
 
 namespace unet
 {
@@ -24,10 +25,6 @@ namespace unet
         class Directory final
         {
             public:
-                explicit Directory(const char* path) noexcept :
-                    _directoryPath(path)
-                {update(_directoryPath);};
-
                 explicit Directory(const std::string& path) noexcept :
                     _directoryPath(path)
                 {update(_directoryPath);};

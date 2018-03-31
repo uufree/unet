@@ -6,49 +6,49 @@
  ************************************************************************/
 
 #include"Mutex.h"
-#include<utility>
 
 namespace unet
 {
-    namespace thread
+    namespace base
     {
-        MutexLock::MutexLock() : pid(0)
+        MutexLock::MutexLock() : _pid(0)
         {
-            if(pthread_mutex_init(&mutex,NULL) < 0)
+            if(pthread_mutex_init(&_mutex,NULL) < 0)
                 unet::handleError(errno);
         }
 
         MutexLock::~MutexLock()
         {
-            if(pthread_mutex_destroy(&mutex) < 0)
+            if(pthread_mutex_destroy(&_mutex) < 0)
                 unet::handleError(errno);
         }
         
         MutexLock::MutexLock(MutexLock&& lhs) : 
-            pid(std::move(lhs.pid)),
-            mutex(std::move(lhs.mutex))
+            _pid(std::move(lhs._pid)),
+            _mutex(std::move(lhs._mutex))
         {}
 
         MutexLock& MutexLock::operator=(MutexLock&& lhs)
         {
-            pid = std::move(lhs.pid);
-            mutex = std::move(lhs.mutex);
-
+            if(*this == lhs)
+                return *this;
+            _pid = std::move(lhs._pid);
+            _mutex = std::move(lhs._mutex);
             return *this;
         }
 
         void MutexLock::lock()
         {        
-            if(pthread_mutex_lock(&mutex) < 0)
+            if(pthread_mutex_lock(&_mutex) < 0)
                     handleError(errno);
-                pid = now::pid();
+                _pid = pid();
         }
 
         void MutexLock::unlock()
         {
-            if(pthread_mutex_unlock(&mutex) < 0)
+            if(pthread_mutex_unlock(&_mutex) < 0)
                 handleError(errno);
-            pid = 0;
+            _pid = 0;
         }
 
         MutexLockGuard::MutexLockGuard(MutexLock& mutex_) :

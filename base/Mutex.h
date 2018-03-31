@@ -11,22 +11,16 @@
 #ifndef _MUTEX_H
 #define _MUTEX_H
 
+#include<utility>
 #include<pthread.h>
 #include<sys/syscall.h>
 #include<unistd.h>
-#include"error.h"
+
+#include"global.h"
 
 namespace unet
 {
-    namespace now
-    {
-        inline pid_t pid()
-        {
-            return ::syscall(SYS_gettid);
-        }
-    }
-
-    namespace thread
+    namespace base
     {    
         class MutexLock final
         {
@@ -38,20 +32,19 @@ namespace unet
                 MutexLock& operator=(MutexLock&& lhs);
                 ~MutexLock();
                     
-                void swap(MutexLock& lhs) = delete;
-
+                bool operator==(const MutexLock& lock) {return _pid==lock._pid;};
                 inline bool isLockInThisThread() const
-                {return pid==now::pid();};
+                {return _pid==pid();};
                 
                 inline pthread_mutex_t& getMutex()
-                {return mutex;};
+                {return _mutex;};
                 
                 inline void lock();
                 inline void unlock();
             
             private:
-                pid_t pid;
-                pthread_mutex_t mutex;
+                pid_t _pid;
+                mutable pthread_mutex_t _mutex;
         };
     
         class MutexLockGuard final

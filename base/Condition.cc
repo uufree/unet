@@ -6,53 +6,52 @@
  ************************************************************************/
 
 #include"Condition.h"
-#include<utility>
 
 namespace unet
 {
-    namespace thread
+    namespace base
     {
-        Condition::Condition(MutexLock& mutex_) :
-            mutex(mutex_)
+        Condition::Condition(MutexLock& mutex) :
+            _mutex(mutex)
         {
-            if(pthread_cond_init(&cond,NULL) < 0)
+            if(pthread_cond_init(&_cond,NULL) < 0)
                 unet::handleError(errno);
         }
 
         Condition::Condition(Condition&& lhs) :
-            mutex(lhs.mutex),
-            cond(std::move(lhs.cond))
+            _mutex(lhs._mutex),
+            _cond(std::move(lhs._cond))
         {};
         
         Condition& Condition::operator=(Condition&& lhs)
         {
-            mutex = std::move(lhs.mutex);
-            cond = std::move(lhs.cond);
+            _mutex = std::move(lhs._mutex);
+            _cond = std::move(lhs._cond);
             
             return *this;
         }
         
         Condition::~Condition()
         {
-            if(pthread_cond_destroy(&cond) < 0)
+            if(pthread_cond_destroy(&_cond) < 0)
                 unet::handleError(errno);
         }
         
         void Condition::notify()
         {
-            if(pthread_cond_signal(&cond) < 0)
+            if(pthread_cond_signal(&_cond) < 0)
                 unet::handleError(errno);
         }
 
         void Condition::notifyAll()
         {
-            if(pthread_cond_broadcast(&cond) < 0)
+            if(pthread_cond_broadcast(&_cond) < 0)
                 unet::handleError(errno);
         }
 
         void Condition::wait()
         {
-            if(pthread_cond_wait(&cond,&mutex.getMutex()) < 0)
+            if(pthread_cond_wait(&_cond,&_mutex.getMutex()) < 0)
                 unet::handleError(errno);
         }
         

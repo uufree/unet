@@ -14,15 +14,15 @@
 
 namespace unet
 {
-    namespace thread
+    namespace base
     { 
         class Condition final
         {
             public:
-                explicit Condition(MutexLock& mutex_);
+                explicit Condition(MutexLock& mutex);
             
                 Condition(const Condition& lhs) = delete;
-                Condition(Condition&& lhs) ;
+                Condition(Condition&& lhs);
                 Condition& operator=(const Condition& lhs) = delete;
                 Condition& operator=(Condition&& lhs);
                 ~Condition();
@@ -32,8 +32,8 @@ namespace unet
                 void wait();
     
             private:
-                MutexLock& mutex;
-                pthread_cond_t cond;
+                MutexLock& _mutex;
+                pthread_cond_t _cond;
         };
     }
 }

@@ -6,7 +6,6 @@
  ************************************************************************/
 
 #include"Buffer.h"
-#include<iostream>
 
 namespace unet
 {

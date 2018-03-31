@@ -9,42 +9,34 @@
 
 namespace unet
 {
-    namespace net
+
+    TcpConnectionMap::TcpConnectionMap(TcpConnectionMap&& lhs) :
+        _tcpConnectionMap(std::move(lhs._tcpConnectionMap))
+    {};
+
+    TcpConnectionMap& TcpConnectionMap::operator=(TcpConnectionMap&& lhs)
     {
-        TcpConnectionMap::TcpConnectionMap()
-        {};
+        _tcpConnectionMap = std::move(lhs._tcpConnectionMap);
+        return *this;
+    }
 
-        TcpConnectionMap::TcpConnectionMap(TcpConnectionMap&& lhs) :
-            tcpConnectionMap(std::move(lhs.tcpConnectionMap))
-        {};
+    void TcpConnectionMap::insert(int fd)
+    {
+        base::MutexLockGuard guard(_mutex);
+        TcpConnectionPtr tcp(new TcpConnection(fd));
+        _tcpConnectionMap.insert({fd,tcp});
+    }
 
-        TcpConnectionMap& TcpConnectionMap::operator=(TcpConnectionMap&& lhs)
-        {
-            tcpConnectionMap = std::move(lhs.tcpConnectionMap);
-            return *this;
-        }
+    void TcpConnectionMap::insert(const TcpConnectionPtr& lhs)
+    {
+        base::MutexLockGuard guard(_mutex);
+        _tcpConnectionMap.insert({lhs->getFd(),lhs});
+    }
 
-        TcpConnectionMap::~TcpConnectionMap()
-        {};
-
-        void TcpConnectionMap::insert(int fd)
-        {
-            thread::MutexLockGuard guard(mutex);
-            TcpConnectionPtr tcp(new TcpConnection(fd));
-            tcpConnectionMap.insert({fd,tcp});
-        }
-
-        void TcpConnectionMap::insert(const TcpConnectionPtr& lhs)
-            {
-                thread::MutexLockGuard guard(mutex);
-                tcpConnectionMap.insert({lhs->getFd(),lhs});
-        }
-
-        void TcpConnectionMap::erase(int fd) 
-        {
-            thread::MutexLockGuard guard(mutex);
-            tcpConnectionMap.erase(fd);
-        }
+    void TcpConnectionMap::erase(int fd) 
+    {
+        base::MutexLockGuard guard(_mutex);
+        _tcpConnectionMap.erase(fd);
     }
 }
 

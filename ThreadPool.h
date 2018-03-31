@@ -8,56 +8,55 @@
 #ifndef _THREADPOOL_H
 #define _THREADPOOL_H
 
-#include"Thread.h"
-#include"Mutex.h"
-#include"Condition.h"
+#include"base/Thread.h"
+#include"base/Mutex.h"
+#include"base/Condition.h"
 #include"Channel.h"
 
 #include<deque>
 #include<memory>
 
+//一个线程池只做一件事情
+
 namespace unet
 {
-    namespace thread
+    class ThreadPool final
     {
-        class ThreadPool final
-        {
-            typedef std::function<void()> ThreadFunc;
+        typedef std::function<void()> ThreadFunc;
 
-            public:
-                explicit ThreadPool(int size = 2);
-                explicit ThreadPool(int size,const ThreadFunc& cb);
-                ThreadPool(const ThreadPool& lhs) = delete;
-                ThreadPool(ThreadPool&& lhs);
-                ThreadPool& operator=(const ThreadPool& lhs) = delete;
-                ThreadPool& operator=(ThreadPool&& lhs);
-                ~ThreadPool();
+        public:
+            explicit ThreadPool(int size = 2);
+            explicit ThreadPool(int size,const ThreadFunc& cb);
+            ThreadPool(const ThreadPool& lhs) = delete;
+            ThreadPool(ThreadPool&& lhs);
+            ThreadPool& operator=(const ThreadPool& lhs) = delete;
+            ThreadPool& operator=(ThreadPool&& lhs);
+            ~ThreadPool();
+            
+            void setThreadCallBack(const ThreadFunc& cb)
+            {
+                if(!_start)
+                    _threadFunc = cb;
+            }
 
-                void setThreadCallBack(const ThreadFunc& cb)
-                {
-                    if(!started)
-                        threadFunc = cb;
-                }
+            void setThreadCallBack(ThreadFunc&& cb)
+            {
+                if(!_start)
+                    _threadFunc = std::move(cb);
+            }
 
-                void setThreadCallBack(ThreadFunc&& cb)
-                {
-                    if(!started)
-                        threadFunc = std::move(cb);
-                }
+            void start();
+            void joinAll();
 
-                void start();
-                void joinAll();
-
-            private:
-                bool started;
-                const int threadSize;
-                Thread* threadListPtr;
-                ThreadFunc threadFunc;
+        private:
+            bool _start;
+            const int _threadSize;
+            base::Thread* _threadListPtr;
+            ThreadFunc _threadFunc;
                 
-                MutexLock mutex;
-                Condition cond;
-        };
-    }
+            base::MutexLock _mutex;
+            base::Condition _cond;
+    };
 }
 #endif
 

@@ -9,72 +9,68 @@
 
 namespace unet
 {
-    namespace thread
+    ThreadPool::ThreadPool(int size) :
+        _start(false),
+        _threadSize(size),
+        _threadListPtr(new base::Thread[size]),
+        _mutex(),
+        _cond(_mutex)
+    {};
+        
+    ThreadPool::ThreadPool(int size,const ThreadFunc& cb) :
+        _start(false),
+        _threadSize(size),
+        _threadListPtr(new base::Thread[size]),
+        _threadFunc(cb),
+        _mutex(),
+        _cond(_mutex)
+    {};
+
+    ThreadPool::ThreadPool(ThreadPool&& lhs) : 
+        _start(false),
+        _threadSize(lhs._threadSize),
+        _threadListPtr(new base::Thread[_threadSize]),
+        _threadFunc(std::move(lhs._threadFunc)),
+        _mutex(),
+        _cond(_mutex)
+        {};
+        
+    ThreadPool& ThreadPool::operator=(ThreadPool&& lhs)
     {
-        ThreadPool::ThreadPool(int size) :
-            started(false),
-            threadSize(size),
-            threadListPtr(new Thread[size]),
-            mutex(),
-            cond(mutex)
-        {};
-        
-        ThreadPool::ThreadPool(int size,const ThreadFunc& cb) :
-            started(false),
-            threadSize(size),
-            threadListPtr(new Thread[size]),
-            threadFunc(cb),
-            mutex(),
-            cond(mutex)
-        {};
+        joinAll();
+        delete [] _threadListPtr;
 
-        ThreadPool::ThreadPool(ThreadPool&& lhs) : 
-            started(false),
-            threadSize(lhs.threadSize),
-            threadListPtr(new Thread[threadSize]),
-            threadFunc(std::move(lhs.threadFunc)),
-            mutex(),
-            cond(mutex)
-        {};
-        
-        ThreadPool& ThreadPool::operator=(ThreadPool&& lhs)
-        {
-            joinAll();
-            delete [] threadListPtr;
+        _start = false;
+        _threadListPtr = new base::Thread[_threadSize];
+        _threadFunc = std::move(lhs._threadFunc);
+        return *this;
+    }
 
-            started = false;
-            threadListPtr = new Thread[threadSize];
-            threadFunc = std::move(lhs.threadFunc);
-            return *this;
-        }
+    ThreadPool::~ThreadPool()
+    {
+        _start = false;
+        for(int i=0;i<_threadSize;++i)
+            ::pthread_detach(_threadListPtr[i].getThreadId());
 
-        ThreadPool::~ThreadPool()
-        {
-            started = false;
-            for(int i=0;i<threadSize;++i)
-                ::pthread_detach(threadListPtr[i].getThreadId());
-
-            delete [] threadListPtr;
-        }
+        delete [] _threadListPtr;
+    }
     
-        void ThreadPool::start()
+    void ThreadPool::start()
+    {
+        if(!_start)
         {
-            if(!started)
+            for(int i=0;i<_threadSize;++i)
             {
-                for(int i=0;i<threadSize;++i)
-                {
-                    threadListPtr[i].setThreadCallBack(threadFunc);
-                    threadListPtr[i].start();
-                }
-                started = true;
+                _threadListPtr[i].setThreadCallBack(_threadFunc);
+                _threadListPtr[i].start();
             }
+            _start = true;
         }
+    }
 
-        void ThreadPool::joinAll()
-        {
-            assert(started);
-            for(int i=0;i<threadSize;++i)
-                threadListPtr[i].join();
-        }
+    void ThreadPool::joinAll()
+    {
+        for(int i=0;i<_threadSize;++i)
+            _threadListPtr[i].join();
     }
 }

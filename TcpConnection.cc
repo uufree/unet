@@ -10,75 +10,66 @@
 
 namespace unet
 {
-    namespace net
+    TcpConnection::TcpConnection(int fd) : 
+        _confd(fd),
+        _outputBuffer(new base::StringBuffer(fd)),
+        _inputBuffer(new base::StringBuffer(fd))
+    {};
+
+    TcpConnection::TcpConnection(TcpConnection&& lhs):
+        _confd(std::move(lhs._confd)),
+        _outputBuffer(std::move(lhs._outputBuffer)),
+        _inputBuffer(std::move(lhs._inputBuffer)),
+        _readCallBack(std::move(lhs._readCallBack)),
+        _writeCallBack(std::move(lhs._writeCallBack)),
+        _closeCallBack(std::move(lhs._closeCallBack))
+    {};
+
+    TcpConnection& TcpConnection::operator=(TcpConnection&& lhs)
     {
-        TcpConnection::TcpConnection(int fd_) : 
-            confd(fd_),
-            outputBuffer(fd_),
-            inputBuffer(fd_)
-        {};
-
-        TcpConnection::TcpConnection(TcpConnection&& lhs):
-            confd(std::move(lhs.confd)),
-            outputBuffer(std::move(lhs.outputBuffer)),
-            inputBuffer(std::move(lhs.inputBuffer)),
-            readCallBack(std::move(lhs.readCallBack)),
-            writeCallBack(std::move(lhs.writeCallBack)),
-            closeCallBack(std::move(lhs.closeCallBack))
-        {};
-
-        TcpConnection& TcpConnection::operator=(TcpConnection&& lhs)
-        {
-            confd = std::move(lhs.confd);
-            outputBuffer = std::move(lhs.outputBuffer);
-            inputBuffer = std::move(lhs.inputBuffer);
-            readCallBack = std::move(lhs.readCallBack);
-            writeCallBack = std::move(lhs.writeCallBack);
-            closeCallBack = std::move(lhs.closeCallBack);
-
+        if(*this == lhs)
             return *this;
-        }
+        _confd = std::move(lhs._confd);
+        _outputBuffer = std::move(lhs._outputBuffer);
+        _inputBuffer = std::move(lhs._inputBuffer);
+        _readCallBack = std::move(lhs._readCallBack);
+        _writeCallBack = std::move(lhs._writeCallBack);
+        _closeCallBack = std::move(lhs._closeCallBack);
 
-        TcpConnection::~TcpConnection()
-        {};
+        return *this;
+    }
 
-        int TcpConnection::read()
-        {
-            int n = inputBuffer.readInSocket();
-            if(n <= 0)
-            {
-                closeCallBack(confd.getFd());
-            }
+    int TcpConnection::read()
+    {
+        int n = _inputBuffer->readInSocket();
+        if(n <= 0)
+            _closeCallBack(_confd.getFd());
             
-            return n;
-        }
+        return n;
+    }
 
-        void TcpConnection::handleRead()
-        {//处理读事件   
-            if(readCallBack)
-            {
-                readCallBack(&inputBuffer,&outputBuffer);
-            }
-            else
-                perror("没有注册readcallback\n");
-        }
+    void TcpConnection::handleRead()
+    {//处理读事件   
+        if(_readCallBack)
+            _readCallBack(_inputBuffer,_outputBuffer);
+        else
+            perror("没有注册readcallback\n");
+    }
 
-        void TcpConnection::handleWrite()
-        {//处理写事件
-            if(writeCallBack)
-                writeCallBack(&inputBuffer,&outputBuffer);
-            else
-                perror("没有注册writecallback");
-        }
+    void TcpConnection::handleWrite()
+    {//处理写事件
+        if(_writeCallBack)
+            _writeCallBack(_inputBuffer,_outputBuffer);
+        else
+            perror("没有注册writecallback");
+    }
 
-        void TcpConnection::handleClose()
-        {   
-            if(closeCallBack)
-                closeCallBack(confd.getFd());
-            else
-                perror("没有注册handlediedtcpconnection\n");
-
-        }
+    void TcpConnection::handleClose()
+    {   
+        if(_closeCallBack)
+            _closeCallBack(_confd.getFd());
+        else
+            perror("没有注册handlediedtcpconnection\n");
     }
 }
 

@@ -17,6 +17,8 @@
 #include<stdlib.h>
 #include<sys/stat.h>
 #include<cstdio>
+#include<pythread.h>
+#include<sys/syscall.h>
 
 namespace unet
 {
@@ -35,6 +37,8 @@ namespace unet
         perror(strerror_r(saveErrno,buf,256));
         exit(1);
     }
+
+    inline pid_t pid() {return ::syscall(SYS_gettid);}
 };
 
 #endif
