@@ -18,16 +18,16 @@ namespace unet
         class Buffer
         {
             public:
-                virtual int readInSocket() = 0;
-                virtual int writeInSocket() = 0;
-                virtual void appendInBuffer(const char* message) = 0;
-                virtual void appendInBuffer(const std::string& message) = 0;
-                virtual void getInBuffer(char message[],size_t size) = 0;
-                virtual void getInBuffer(std::string& message) = 0;
-                virtual void sendFile(const std::string& filename) = 0;
-                virtual void sendFile(const char* filename,size_t namelen) = 0;
-                virtual void recvFile(const char* filename,size_t namelen) = 0;
-                virtual void recvFile(std::string& file) = 0;
+                virtual int readInSocket();
+                virtual int writeInSocket();
+                virtual void appendInBuffer(const char* message);
+                virtual void appendInBuffer(const std::string& message);
+                virtual void getInBuffer(char message[],size_t size);
+                virtual void getInBuffer(std::string& message);
+                virtual void sendFile(const std::string& filename);
+                virtual void sendFile(const char* filename,size_t namelen);
+                virtual void recvFile(const char* filename,size_t namelen);
+                virtual void recvFile(std::string& file);
         };
         
         class StringBuffer : public Buffer

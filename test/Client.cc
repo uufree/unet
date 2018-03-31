@@ -8,6 +8,7 @@
 #include<iostream>
 #include"../InetAddress.h"
 #include"../Socket.h"
+#include"../Buffer.h"
 
 using namespace unet;
 using namespace unet::base;
@@ -17,13 +18,18 @@ int main(int argc,char** argv)
     Socket connectSocket(CONNECT);
     InetAddress serverAddr(6666);
     connectSocket.connect(serverAddr);
+    connectSocket.setNonBlockAndCloseOnExec();
     std::cout << "listenfd: " << connectSocket.getFd() << std::endl;
     
     std::string message("hello,world!");
-    while(1)
+    Buffer* buffer = new StringBuffer(connectSocket.getFd());
+    for(int i=0;i<3;i++)
     {
-        connectSocket.blockWrite(message);
-        sleep(3);
+        buffer->appendInBuffer(message);
+        std::cout << "Buffer Size: " << buffer->size() << std::endl;
+        buffer->writeInSocket();
+        std::cout << "Buffer Size: " << buffer->size() << std::endl;
+        sleep(1);
     }
 
     return 0;

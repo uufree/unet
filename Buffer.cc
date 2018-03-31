@@ -6,174 +6,76 @@
  ************************************************************************/
 
 #include"Buffer.h"
-#include"error.h"
-
 #include<iostream>
-#include<string.h>
-#include<unistd.h>
-#include<sys/sendfile.h>
-#include<sys/stat.h>
 
 namespace unet
 {
-    namespace net
+    namespace base
     {
-        Buffer::Buffer(int fd_) : 
-            confd(fd_),
-            buffer()
-        {};
-
-        Buffer::Buffer(Buffer&& lhs) : 
-            confd(lhs.confd),
-            buffer(std::move(lhs.buffer))
-        {};
-
-        Buffer& Buffer::operator=(Buffer&& lhs)
+        int StringBuffer::readInSocket()
         {
-            confd = lhs.confd;
-            buffer = std::move(lhs.buffer);
-
-            return *this;
-        }
-        
-        Buffer::~Buffer()
-        {};
-
-        void Buffer::swap(Buffer& lhs)
-        {
-            std::swap(confd,lhs.confd);
-            std::swap(buffer,lhs.buffer);
-        }
-        
-        bool operator==(const Buffer& lhs,const Buffer& rhs)
-        {
-            if(lhs.confd == rhs.confd)
-                return true;
-            return false;
-        };
-        
-        int Buffer::readInSocket()
-        {
-            char extraBuffer[65535];
-            bzero(extraBuffer,65535);
-            int n = ::read(confd,extraBuffer,65535);
-
-            if(n > 0)
-                appendInBuffer(extraBuffer);
-            
-            return n;
-        };
-
-        int Buffer::writeInSocket()
-        {
-            int n = ::write(confd,buffer.c_str(),buffer.size()); 
-            
-            if(n > 0)
-                buffer.erase(0,n);
-            else if(n == 0)
-            {}
-            else
-            {
-                unet::handleError(errno);
-            }
-
-            return n;
-        }
-        
-        void Buffer::appendInBuffer(const char* message)
-        {
-            buffer.append(message);
-            buffer.append("\r\n");
-        }
-
-        void Buffer::appendInBuffer(const std::string& message)
-        {
-            buffer.append(message);
-            buffer.append("\r\n");
-        }
-
-        void Buffer::getCompleteMessageInBuffer(std::string& message)
-        {
-            size_t index = buffer.find_first_of("\r\n");
-            message.clear();
-
-            if(index != std::string::npos)
-            {
-                message.append(buffer,0,index); 
-                buffer.erase(0,index+2);
-            }
-        }
-
-        void Buffer::sendFile(const char* filename)
-        {
-            int fd = ::open(filename,file::READ);
-            if(fd < 0)
-                unet::handleError(errno);
-            
-            struct stat statBuf;
-            if(fstat(fd,&statBuf) < 0)
-                unet::handleError(errno);
-
-/* 发送文件的通信协议设计           
-            char* index = strrchr(const_cast<char*>(filename),'/');
-            char* buf = NULL;
-            if(index != NULL)
-            {
-                ++index;
-                buf = index;
-            }
-            
-            appendInBuffer(buf);
-*/            
-            
-            sendfile(confd,fd,0,statBuf.st_size);
-            file::writen(confd,"\r\n",2);
-        }
-
-        void Buffer::sendFile(const std::string& filename)
-        {
-            sendFile(filename.c_str());
-        }
-        
-        void Buffer::sendFile(const file::File& lhs)
-        {
-            sendFile(lhs.getGlobalFilename().c_str());
-        }
-
-        void Buffer::recvFile(const char* filename)
-        {
-            int fd = ::open(filename,file::N_WRITE); 
-            size_t index = 0;
-
-            char buf[4096];
-            bzero(buf,4096);
-
+            char extraBuffer[65536];
+            int nbytes = 0;
             while(1)
             {
-                index = ::read(confd,buf,4096); 
-                
-                if(index == 4096)
+                memset(extraBuffer,'\0',65536);
+                nbytes = ::read(_confd,extraBuffer,65536); 
+                if(nbytes < 0)
                 {
-                    file::writen(fd,buf,4096);
-                    bzero(buf,4096);
-                    continue;
+                    if(errno==EAGAIN || errno==EWOULDBLOCK)
+                        break;
                 }
+                else if(nbytes > 0)
+                    appendInBuffer(extraBuffer,nbytes);
                 else
-                {
-                    file::writen(fd,buf,index);
-                    break;
-                }
-            }           
+                {};
+            }
+            
+            return nbytes;
         }
 
-        void Buffer::recvFile(const std::string& filename)
+        int StringBuffer::blockReadInSocket()
         {
-            recvFile(filename.c_str());
+            char extraBuffer[65536];
+            int nbytes = readn(_confd,extraBuffer,14);
+            if(nbytes > 0)
+                appendInBuffer(extraBuffer);
+            return nbytes;
         }
 
-        void Buffer::recvFile(const file::File& lhs)
+        int StringBuffer::writeInSocket() 
         {
-            recvFile(lhs.getGlobalFilename().c_str());
+            int n = ::write(_confd,_buffer.c_str(),_buffer.size());
+            if(n > 0)
+                _buffer.erase(0,n);
+            else if(n < 0)
+                handleError(errno);
+            else
+            {};
+            
+            return n;
+        }
+                
+        void StringBuffer::appendInBuffer(const char* message,size_t nbytes) 
+        {
+            _buffer.append(message,nbytes);
+            _buffer.append("\r\n");
+        }
+
+        void StringBuffer::appendInBuffer(const std::string& message)
+        {
+            _buffer.append(message);
+            _buffer.append("\r\n");
+        }
+
+        void StringBuffer::getInBuffer(std::string& message)
+        {
+            size_t index = _buffer.find_first_of("\r\n");
+            if(index != std::string::npos)
+            {
+                message.append(_buffer,0,index);
+                _buffer.erase(0,index+2);
+            }
         }
     }
 }

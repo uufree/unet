@@ -8,6 +8,7 @@
 #include<iostream>
 #include"../Socket.h"
 #include"../InetAddress.h"
+#include"../Buffer.h"
 
 using namespace unet;
 using namespace unet::base;
@@ -23,13 +24,19 @@ int main(int argc,char** argv)
     int connectfd = listenSocket.accept();
     std::cout << "connectfd: " << connectfd << std::endl;
     Socket connectSocket(connectfd);
-
+    connectSocket.setNonBlockAndCloseOnExec();
+    Buffer* buffer = new StringBuffer(connectfd);
     std::string message;
+     
     while(1)
     {
-        connectSocket.blockRead(message,20);
-        std::cout << "Recv Message: " << message << std::endl;
+        buffer->readInSocket();
+        buffer->getInBuffer(message);
+        if(!message.empty())
+            std::cout << "Recv Message: " << message << std::endl;
+        message.clear();
     }
+
 
     return 0;
 }
