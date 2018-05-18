@@ -8,6 +8,8 @@
 #ifndef _TYPE_H
 #define _TYPE_H
 
+#include<cstdint>
+
 //socket type
 #define LISTEN 0x01
 #define COMMON 0x02

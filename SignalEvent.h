@@ -14,15 +14,9 @@
 #include<netinet/in.h>
 #include<arpa/inet.h>
 #include<bitset>
-#include"base/global.h"
 
-/* 0: SIGHUP 挂起进程的控制终端
- * 1: SIGPIPE 往一个关闭的管道写数据
- * 2: SIGURG 带外数据到达
- * 3: SIGCHLD 子进程状态发生变化
- * 4: SIGTERM 终止进程 
- * 5: SIGINT 键盘输入终止进程
-*/
+#include"base/global.h"
+#include"type.h"
 
 namespace unet
 {
@@ -32,12 +26,12 @@ namespace unet
         public:
             SignalEvent();
             SignalEvent(const SignalEvent& sig) = delete;
-            SignalEvent(SignalEvent&& sig) = delete;
+            SignalEvent(SignalEvent&& sig);
             SignalEvent& operator=(const SignalEvent& sig) = delete;
             SignalEvent& operator=(SignalEvent&& sig) = delete;
             ~SignalEvent();
 
-            bool operator==(const SignalEvent& sig){return _pipefd[0]==sig._pipefd[0];};
+            bool operator==(const SignalEvent& signal){return u_signalfd==signal.u_signalfd;};
 
             void addSignal(int sig);
             void eraseSignal(int sig);
@@ -48,8 +42,7 @@ namespace unet
             void handleRead();
 
         private:
-            int _pipefd[2]; 
-            std::bitset<8> _bitmap;
+            int u_signalfd; 
     };
 }
 
