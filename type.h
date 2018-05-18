@@ -11,15 +11,16 @@
 #include<cstdint>
 
 //socket type
-#define LISTEN 0x01
-#define COMMON 0x02
-#define UDP 0x04
-#define TCP 0x08
+#define U_LISTEN 0x01
+#define U_COMMON 0x02
+#define U_UDP 0x04
+#define U_TCP 0x08
 
 //Event type
 //all event
 #define U_READ 0x0001
-#define U_WRIET 0x0002
+#define U_WRITE 0x0002
+#define U_EXCEPTION 0x0200
 
 //timer event 
 #define U_TIMEOUT 0x0004

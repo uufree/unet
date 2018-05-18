@@ -118,21 +118,21 @@ namespace unet
         ::read(u_timerfd,NULL,0);
         base::Time time;
         uint64_t now = time.getTime();
-        std::vector<TimerPair> handleList;
+        std::vector<TimerPtr> handleList;
 
         base::MutexLockGuard guard(u_mutex);
         {
             while(u_timerHeap.top().first < now)
             {
-                handleList.push_back(u_timerHeap.top()); 
+                handleList.push_back(u_timerHeap.top().second); 
                 if(u_timerHeap.top().second->isRepeat())
                     addTimer(u_timerHeap.top().second);
                 u_timerHeap.pop();
             }
         }
-
-        for(auto iter=handleList.begin();iter!=handleList.end();++iter)
-            iter->second->run();
+            
+        for(size_t i=0;i<handleList.size();++i)
+            handleList[i]->run();
     }
     
     void TimerEvent::stop()
