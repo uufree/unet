@@ -18,7 +18,7 @@
 #define _BUFFER_H
 
 #include<string>
-#include"../global.h"
+#include"global.h"
 
 namespace unet
 {
