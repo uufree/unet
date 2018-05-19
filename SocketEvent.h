@@ -11,11 +11,9 @@
 #include<memory>
 #include<functional>
 
-#include"TcpConnection.h"
-#include"type.h"
-
 namespace unet
 {
+    class TcpConnection;
     class SocketEvent 
     {
         protected:
@@ -25,7 +23,7 @@ namespace unet
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
         public:
-            SocketEvent(int _fd,int _type);
+            explicit SocketEvent(int _fd,int _type);
             SocketEvent(const SocketEvent&) = delete;
             SocketEvent& operator=(const SocketEvent&) = delete;
             SocketEvent(SocketEvent&&);
@@ -46,12 +44,12 @@ namespace unet
     class ListenSocketEvent final : public SocketEvent
     {
         public:
-            ListenSocketEvent(int fd,int type);
+            explicit ListenSocketEvent(int fd,int type);
             ListenSocketEvent(const ListenSocketEvent&) = delete;
             ListenSocketEvent& operator=(const ListenSocketEvent&) = delete;
             ListenSocketEvent(ListenSocketEvent&&);
             ListenSocketEvent& operator=(ListenSocketEvent&&);
-            ~ListenSocketEvent() override {};
+            ~ListenSocketEvent() override {SocketEvent::~SocketEvent();};
             
             bool operator==(const ListenSocketEvent& event) {return u_fd == event.u_fd && u_type == event.u_type;};
 
@@ -67,13 +65,13 @@ namespace unet
     class CommonSocketEvent final : public SocketEvent
     {
         public:
-            CommonSocketEvent(int fd,int type);
+            explicit CommonSocketEvent(int fd,int type);
             CommonSocketEvent(int fd,int type,const TcpConnectionPtr& ptr);
             CommonSocketEvent(const CommonSocketEvent&) = delete;
             CommonSocketEvent& operator=(const CommonSocketEvent&) = delete;
             CommonSocketEvent(CommonSocketEvent&&);
             CommonSocketEvent& operator=(CommonSocketEvent&&);
-            ~CommonSocketEvent() override {};
+            ~CommonSocketEvent() override {SocketEvent::~SocketEvent();};
             
             bool operator==(const CommonSocketEvent& event){return event.u_fd==u_fd && event.u_type==u_type;};
 

@@ -5,51 +5,41 @@
 	> Created Time: 2017年07月07日 星期五 13时04分02秒
  ************************************************************************/
 
-//保存事件的容器，由Server统一调度
-
 #ifndef _EVENTMAP_H
 #define _EVENTMAP_H
 
-#include<vector>
-#include<sys/epoll.h>
-#include<algorithm>
 #include<memory>
 #include<map>
 
-#include"Mutex.h"
+#include"base/Mutex.h"
 
 namespace unet
 {
-    namespace net
+    class Event;
+    class Mutex;
+    
+    class EventMap final
     {
-        typedef std::vector<struct epoll_event> EventList;
-
-        class EventMap final
-        {
-            public:
-                explicit EventMap();
-                EventMap(const EventMap& lhs) = delete;
-                EventMap(EventMap&& lhs);
-                EventMap& operator=(const EventMap& lhs) = delete;
-                EventMap& operator=(EventMap&& lhs);
-                ~EventMap();
+        public:
+            explicit EventMap();
+            EventMap(const EventMap& lhs) = delete;
+            EventMap(EventMap&& lhs);
+            EventMap& operator=(const EventMap& lhs) = delete;
+            EventMap& operator=(EventMap&& lhs);
+            ~EventMap(){};
             
-                inline void swap(EventMap& lhs);
+            bool operator==(const EventMap& event){return u_eventMap.size() == event.u_eventMap.size();};
 
-                int size() const
-                {return eventMap.size();};
+            int size() const{return u_eventMap.size();};
+            bool empty() const {return u_eventMap.empty();};
+            void insert(int fd,int type,int wevent);
+            void erase(int fd);
+            std::shared_ptr<Event> find(int fd) const;
 
-                bool empty() const
-                {return eventMap.empty();};
-
-                void insert(int fd,int event_,int epollfd);
-                void erase(int fd,int epollfd);
-
-            private:
-                thread::MutexLock mutex;
-                std::map<int,struct epoll_event> eventMap;
-        };
-    }
+        private:
+            base::MutexLock u_mutex;
+            std::map<int,std::shared_ptr<Event>> u_eventMap;
+    };
 }
 
 #endif

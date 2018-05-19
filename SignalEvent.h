@@ -46,7 +46,7 @@ namespace unet
         typedef std::function<void()> ReadConfigCallBack;
 
         public:
-            SignalEvent();
+            explicit SignalEvent();
             SignalEvent(int signal);
             SignalEvent(const SignalEvent& sig) = delete;
             SignalEvent(SignalEvent&& sig) = delete;

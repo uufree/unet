@@ -6,6 +6,8 @@
  ************************************************************************/
 
 #include"SocketEvent.h"
+#include"type.h"
+#include"TcpConnection.h"
 
 namespace unet
 {
@@ -55,7 +57,7 @@ namespace unet
     
     void ListenSocketEvent::handleEvent(int event)
     {
-        if((u_type & U_TCP) && (u_type & U_LISTEN))
+        if(u_type & U_LISTEN_SOCKET)
         {
             if((event & U_EXCEPTION))
             {
@@ -105,7 +107,7 @@ namespace unet
 
     void CommonSocketEvent::handleEvent(int event)
     {
-        if((u_type & U_TCP) && (u_type & U_COMMON))
+        if(u_type & U_COMMON_SOCKET)
         {
             TcpConnectionPtr ptr = u_conWPtr.lock();
             if(!ptr)

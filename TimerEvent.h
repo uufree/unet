@@ -32,7 +32,7 @@ namespace unet
             };
         
         public:
-            TimerEvent();
+            explicit TimerEvent();
             TimerEvent(const TimerEvent& event) = delete;
             TimerEvent& operator=(const TimerEvent& event) = delete;
             TimerEvent(TimerEvent&& event);

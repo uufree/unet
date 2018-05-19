@@ -6,65 +6,63 @@
  ************************************************************************/
 
 #include"EventMap.h"
-#include<iostream>
+#include"Event.h"
 
 namespace unet
 {
-    namespace net
+    EventMap::EventMap() :
+        u_mutex(),
+        u_eventMap()
+    {};
+    
+    EventMap::EventMap(EventMap&& event) :
+        u_mutex(),
+        u_eventMap(event.u_eventMap)
+    {};
+
+    EventMap& EventMap::operator=(EventMap&& event)
     {
-        EventMap::EventMap()
-        {};
-
-        EventMap::EventMap(EventMap&& lhs) :
-            eventMap(std::move(lhs.eventMap))
-        {};
-
-        EventMap& EventMap::operator=(EventMap&& lhs)
-        {
-            eventMap = std::move(lhs.eventMap);
+        if(event == *this)
             return *this;
+        {
+            base::MutexLockGuard guard(u_mutex); 
+            base::MutexLockGuard guardS(event.u_mutex);
+            std::swap(u_eventMap,event.u_eventMap);
         }
-
-        EventMap::~EventMap()
-        {};
-
-        void EventMap::swap(EventMap& lhs)
+        return *this;
+    }
+    
+    void EventMap::insert(int fd,int type,int wevent)
+    {
+        auto iter = u_eventMap.find(fd);
+        if(iter !=  u_eventMap.end())
+            return;
+        
         {
-            std::swap(eventMap,lhs.eventMap);
-        };
-
-        void EventMap::insert(int fd,int event_,int epollfd)
-        {
-            struct epoll_event event;
-            bzero(&event,sizeof(event));
-            event.events = event_;
-            event.data.fd = fd;
-            
-            if(::epoll_ctl(epollfd,EPOLL_CTL_ADD,fd,&event) < 0)
-            {
-                unet::handleError(errno);
-            }
-
-            {
-                thread::MutexLockGuard guard(mutex);
-                eventMap.insert({fd,event});
-            }
-        }
-
-        void EventMap::erase(int fd,int epollfd)
-        {
-            thread::MutexLockGuard guard(mutex);
-            
-            if(eventMap.find(fd) != eventMap.end())
-            {
-                if(::epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,nullptr) < 0)
-                {
-                    unet::handleError(errno);
-                }
-            }
-
-            eventMap.erase(fd);
+            base::MutexLockGuard guard(u_mutex);
+            u_eventMap.insert(std::make_pair(fd,std::make_shared<Event>(fd,type,wevent)));
         }
     }
+    
+    void EventMap::erase(int fd)
+    {
+        auto iter = u_eventMap.find(fd);
+        if(iter == u_eventMap.end())
+            return;
+        
+        {
+            base::MutexLockGuard guard(u_mutex);
+            u_eventMap.erase(fd);
+        }
+    }
+
+    std::shared_ptr<Event> EventMap::find(int fd) const
+    {
+        auto iter = u_eventMap.find(fd);
+        if(iter == u_eventMap.end())
+            return nullptr;
+        return iter->second;
+    }
+
 }
 

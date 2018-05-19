@@ -11,63 +11,63 @@
 #include<cstdint>
 #include<memory>
 
-#include"type.h"
-enum EventType{SOCKET,CLOCK,SIGNAL};
+/*
+ * 再三思索，还是决定暂时不把SignalEvent加入事件处理框架，原因如下：
+ *   Singal是一个全局事件，决定着整个库当前工作的平稳性，在事件线程进行处理的话，
+ *   缺少全局视角，就算回调函数可以解决，但是又需要使用锁去维护Signal状态，但是
+ *   Signal本身就具有随机性
+ */
 
-#define U_EPOLL_ET 0x01
-#define U_EPOLL_LT 0x02
+/* class设计目的：
+ * 1.将SocketEvent与TimerEvent同一起来，在事件发生后，将Event交由事件线程处理
+ * 2.Epoll会分离事件，处理的对象也是Event
+ * 3.Event保持事件状态，SocketEvent和TimerEvent只负责处理事件
+ */
 
-struct SocketEvent
+/* 因为以union存储对象的复杂度，故我们使用普通的指针存储对象
+ * 我们持有另一个对象的指针，并管理生命期，使用引用计数的话也不方便
+ * 故，去掉Copy与Move操作
+ */ 
+
+namespace unet
 {
-    int _socketfd;
-    SocketType _type;
-    int _event;
-    int _revent;
-};
+    class SocketEvent;
+    class SignalEvent;
+    class TimerEvent;
 
-struct SignalEvent
-{
-    int _signalfd;  //管道描述符的读端
-    int _event;     //关注的信号事件
-    int _revent;    //实际发生的信号事件
-};
+    class Event final
+    {
+        public:
+            explicit Event(int fd,int type,int wevent);
+            Event(const Event&) = delete;
+            Event& operator=(const Event&) = delete;
+            Event(Event&&) = delete;
+            Event& operator=(Event&&) = delete;
+            ~Event();
+            
+            bool operator==(const Event& event){return u_fd==event.u_fd && u_type==event.u_type;};
 
-struct TimerEvent
-{
-    int _timerfd;
-    int _event;
-};
+            int getFd() const{return u_fd;};
+            int getWEvent() const{return u_wevent;};
+            void setWEvent(int event) {u_wevent = event;};
+            void setREvent(int event) {u_revent = event;}; 
+            bool eventHappened(){return u_wevent & u_revent;};
+            
+            void handleEvent();
 
-//将事件统一起来，为每一个事件提供一个全局唯一的描述符(对描述符进行虚拟化)
-//这个结构将会传递给Epoll进行处理，随后返回
-class Event final
-{
-    public:
-        Event(int fd,int type) noexcept;
-        Event(const Event&) = delete;
-        Event& operator=(const Event&) = delete;
-        Event(Event&&);
-        Event& operator=(Event&&);
-        ~Event();
-    
-        int getFd() const{return _fd;};
-        int getEvent() const{return w_event;};
-        void setWEvent(int event) {w_event = event;};
-        void setREvent(int event) {r_event = event;}; 
-        bool eventHappened();
-        
-    private:
-        const int _fd;
-        EventType _type;
-        int w_event;    //关注的事件
-        int r_event;    //发生的事件
-
-        union
-        {
-            std::weak_ptr<SocketEvent> socket;
-            std::weak_ptr<SignalEvent> signal;
-            std::weak_ptr<TimerEvent> timer;
-        } _eventPtr;
+        private:
+            int u_fd;  //socketfd or timerfd   
+            int u_type;      //Socket or Timer 
+            int u_wevent;    //watch event
+            int u_revent;    //happeded
+            
+            union
+            {
+                SocketEvent* u_socket;
+                SignalEvent* u_signal;
+                TimerEvent* u_timer;
+            } u_event;
+    };
 };
 
 #endif
