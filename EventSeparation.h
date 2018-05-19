@@ -11,11 +11,15 @@
 #include<vector>
 #include<memory>
 #include<map>
+#include<set>
 
 #include<sys/epoll.h>
 #include<sys/select.h>
 #include<poll.h>
 
+/* 注意：EPoller
+ * 为了保证在多线程中的安全性，设置了EPOLLONESHOT属性，注意在使用之后再次填充事件
+ */
 
 namespace unet
 {
@@ -87,14 +91,18 @@ namespace unet
             Selecter(Selecter&&);
             Selecter& operator=(Selecter&&);
             ~Selecter() override;
-        
+            
+            bool operator==(const Selecter& select)const {return maxfd==select.maxfd;};
+
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
-    
+
         private:
             fd_set u_readSet,u_writeSet,u_exceptionSet;
-            std::vector<int> u_watchfds;     
+            fd_set u_readSetSave,u_writeSetSave,u_exceptionSetSave;
+            int maxfd;
+            std::set<int> u_set;
     };
 
     class Poller final : public EventDemultiplexer

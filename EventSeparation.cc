@@ -10,6 +10,7 @@
 #include"EventSeparation.h"
 #include"base/global.h"
 #include"type.h"
+#include"Event.h"
 #include"EventMap.h"
 
 namespace unet
@@ -133,6 +134,7 @@ namespace unet
             memset(event,'\0',sizeof(struct epoll_event));
             event->events = switchTo(wevent); 
             event->data.fd = fd;
+            ++u_wfds;
         }
 
         if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
@@ -140,7 +142,6 @@ namespace unet
             perror("epoll add error!\n");
             unet::handleError(errno);
         }
-        ++u_wfds;
     }
 
     void EPoller::delEvent(int fd)
@@ -158,6 +159,7 @@ namespace unet
         }
 
         delete iter->second;
+        u_eventMap.erase(iter);
         --u_wfds;
     }
     
@@ -192,8 +194,135 @@ namespace unet
             }
             
             std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
+            ptr->setREvent(revent);
+            eventList.push_back(ptr);
+        }
+    }
+
+    //selector
+    Selecter::Selecter() :
+        EventDemultiplexer(),
+        maxfd(0),
+        u_set()
+    {
+        FD_ZERO(&u_readSet);
+        FD_ZERO(&u_readSetSave);
+        FD_ZERO(&u_writeSet);
+        FD_ZERO(&u_writeSetSave);
+        FD_ZERO(&u_exceptionSet);
+        FD_ZERO(&u_exceptionSetSave);
+    };
+
+    Selecter::Selecter(Selecter&& select) :
+        EventDemultiplexer(),
+        u_readSet(select.u_readSet),
+        u_writeSet(select.u_writeSet),
+        u_exceptionSet(select.u_exceptionSet),
+        u_readSetSave(select.u_readSetSave),
+        u_writeSetSave(select.u_writeSetSave),
+        u_exceptionSetSave(select.u_exceptionSetSave),
+        maxfd(select.maxfd),
+        u_set(select.u_set)
+    {};
+
+    Selecter& Selecter::operator=(Selecter&& select)
+    {
+        if(*this == select)
+            return *this;
+        u_readSet = select.u_readSet;
+        u_readSetSave = select.u_readSetSave;
+        u_writeSet = select.u_writeSet;
+        u_writeSetSave = select.u_writeSetSave;
+        u_exceptionSet = select.u_exceptionSet;
+        u_exceptionSetSave = select.u_exceptionSetSave;
+        maxfd = select.maxfd;
+        u_set = select.u_set;
+
+        return *this;
+    }
+    
+    Selecter::~Selecter()
+    {
+        EventDemultiplexer::~EventDemultiplexer();
+    }
+    
+    void Selecter::addEvent(int fd,int wevent)
+    {
+        if(!u_start)
+            return;
+        
+        auto iter = u_set.find(fd);
+        if(iter == u_set.end())
+        {
+            ++u_wfds;
+            u_set.insert(fd);
         }
 
+        switch(wevent)
+        {
+            case U_EXCEPTION:
+            {
+                if(FD_ISSET(fd,&u_exceptionSet))
+                    FD_SET(fd,&u_exceptionSet);
+                if(FD_ISSET(fd,&u_exceptionSetSave))
+                    FD_SET(fd,&u_exceptionSetSave);
+            }
+            case U_WRITE:
+            {
+                if(FD_ISSET(fd,&u_writeSet))
+                    FD_SET(fd,&u_writeSet);
+                if(FD_ISSET(fd,&u_writeSetSave))
+                    FD_SET(fd,&u_writeSetSave);
+            }
+            case U_READ:
+            {
+                if(FD_ISSET(fd,&u_readSet))
+                    FD_SET(fd,&u_readSet);
+                if(FD_ISSET(fd,&u_readSetSave))
+                    FD_SET(fd,&u_readSetSave);
+            }
+        }
+
+        if(fd > maxfd)
+            maxfd = fd;
+    }
+
+    void Selecter::delEvent(int fd)
+    {
+        if(!u_start)
+            return;
+        auto iter = u_set.find(fd);
+        if(iter == u_set.end())
+            return;
+        
+        --u_wfds;
+        u_set.erase(iter);
+
+        if(FD_ISSET(fd,&u_readSet))
+            FD_CLR(fd,&u_readSet);
+        if(FD_ISSET(fd,&u_readSetSave))
+            FD_CLR(fd,&u_readSetSave);
+        if(FD_ISSET(fd,&u_writeSet))
+            FD_CLR(fd,&u_writeSet);
+        if(FD_ISSET(fd,&u_writeSetSave))
+            FD_CLR(fd,&u_writeSetSave);
+        if(FD_ISSET(fd,&u_exceptionSet))
+            FD_CLR(fd,&u_exceptionSet);
+        if(FD_ISSET(fd,&u_exceptionSetSave))
+            FD_CLR(fd,&u_exceptionSetSave);
+    }
+
+    void Selecter::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
+    {
+        u_rfds = ::select(maxfd+1,&u_readSet,&u_writeSet,&u_exceptionSet,NULL);
+        if(u_rfds < 0)
+        {
+            perror("select error!\n");
+            unet::handleError(errno);
+            return;
+        }
+
+        
     }
 
 }

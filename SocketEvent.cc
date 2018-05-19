@@ -59,22 +59,25 @@ namespace unet
     {
         if(u_type & U_LISTEN_SOCKET)
         {
-            if((event & U_EXCEPTION))
+            switch(event)
             {
-                if(u_closeCallBack)
-                    u_closeCallBack(u_fd);
-                else
-                    perror("This is no registration CloseCallBack!\n");
+                case U_EXCEPTION:
+                {
+                    if(u_closeCallBack)
+                        u_closeCallBack(u_fd);
+                    else
+                        perror("This is no registration CloseCallBack!\n");
+                    break;
+                }
+                case U_WRITE:
+                case U_READ:
+                {
+                    if(u_readCallBack)
+                        u_readCallBack(u_fd);
+                    else
+                        perror("This is no registration ReadCallBack!\n");
+                }
             }
-            else if(event & U_READ)
-            {
-                if(u_readCallBack)
-                    u_readCallBack(u_fd);
-                else
-                    perror("This is no registration ReadCallBack!\n");
-            }
-            else if(event & U_WRITE)
-                perror("ListenSocketEvent is no registration WriteCallBack!\n");
         }
     }
     
@@ -113,12 +116,18 @@ namespace unet
             if(!ptr)
                 return;
 
-            if(event & U_READ)
-                ptr->handleRead();
-            if(event & U_WRITE)
-                ptr->handleWrite();
-            if(event & U_EXCEPTION)
-                ptr->handleClose();
+            switch(event)
+            {
+                case U_EXCEPTION:
+                {
+                    ptr->handleClose();
+                    break;
+                }
+                case U_READ:
+                    ptr->handleRead();
+                case U_WRITE:
+                    ptr->handleWrite();
+            }
         }
     }
 }
