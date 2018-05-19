@@ -25,13 +25,6 @@
 //timer event 
 #define U_TIMEOUT 0x0004
 
-//signal event
-#define U_SIGHUP 0x0008
-#define U_SIGPIPE 0x0010
-#define U_SIGURG 0x0020
-#define U_SIGCHLD 0x0040
-#define U_SIGTERM 0x0080
-#define U_SIGINT 0x0100
 
 //epoll operator type
 #define U_EPOLL_LT 0x01

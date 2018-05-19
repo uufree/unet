@@ -10,7 +10,7 @@
 
 #include<queue>
 #include<utility>
-#include<list>
+#include<vector>
 #include<memory>
 
 #include"type.h"
@@ -53,7 +53,7 @@ namespace unet
             int u_timerfd;
             bool u_start;
 
-            std::priority_queue<TimerPair,std::list<TimerPair>,op> u_timerHeap;
+            std::priority_queue<TimerPair,std::vector<TimerPair>,op> u_timerHeap;
             base::MutexLock u_mutex;
     };
 }
