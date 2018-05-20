@@ -12,6 +12,7 @@
 #include<memory>
 #include<map>
 #include<set>
+#include<algorithm>
 
 #include<sys/epoll.h>
 #include<sys/select.h>
@@ -114,13 +115,16 @@ namespace unet
             Poller(Poller&&);
             Poller& operator=(Poller&&);
             ~Poller() override;
-        
+            
+            bool operator==(const Poller& poll) const{return u_eventList.size() == poll.u_eventList.size();};
+
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
     
         private:
             std::vector<struct pollfd> u_eventList;
+            std::set<int> u_set;
     };
 }
 

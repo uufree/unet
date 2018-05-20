@@ -101,17 +101,14 @@ namespace unet
     uint32_t EPoller::switchTo(int event)
     {
         uint32_t sysEvent;
-        switch(event)
-        {
-            case U_EXCEPTION: 
-                sysEvent |= EPOLLPRI;   //带外数据 
-            case U_WRITE:
-                sysEvent |= EPOLLOUT;
-            case U_READ:
-                sysEvent |= EPOLLIN;
-            default:
-                sysEvent |= EPOLLONESHOT;
-        }
+
+        if(event & U_EXCEPTION)
+            sysEvent |= EPOLLPRI;   //检测带外数据
+        if(event & EPOLLOUT)
+            sysEvent |= EPOLLOUT;
+        if(event & EPOLLIN)
+            sysEvent |= EPOLLIN;
+        sysEvent |= EPOLLONESHOT;   //默认开启ONTSHOT
 
         if(u_openET)
             sysEvent |= EPOLLET;
@@ -165,6 +162,9 @@ namespace unet
     
     void EPoller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        if(!u_start)
+            return;
+
         u_activeList.clear();
         u_rfds = ::epoll_wait(u_epollfd,&*u_activeList.begin(),65536,-1);
         if(u_rfds < 0)
@@ -174,28 +174,24 @@ namespace unet
             return;
         }
         
-        int revent = 0;
+        int revent;
         for(int i=0;i<u_rfds;++i)
         {
             revent = 0;
-            switch(u_activeList[i].events)
-            {
-                case EPOLLERR:
-                case EPOLLHUP:
-                case EPOLLRDHUP:
-                {
-                    revent |= U_EXCEPTION;
-                    break;
-                } 
-                case EPOLLIN:
-                    revent |= U_READ;
-                case EPOLLOUT:
-                    revent |= U_WRITE;
-            }
+
+            if((u_activeList[i].events & EPOLLERR) || (u_activeList[i].events & EPOLLHUP) || (u_activeList[i].events & EPOLLRDHUP))
+                revent |= U_EXCEPTION;
+            if(u_activeList[i].events & EPOLLIN)
+                revent |= U_READ;
+            if(u_activeList[i].events & EPOLLOUT)
+                revent |= U_WRITE;
             
-            std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
-            ptr->setREvent(revent);
-            eventList.push_back(ptr);
+            if(revent)
+            {
+                std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
+                ptr->setREvent(revent);
+                eventList.push_back(ptr);
+            }
         }
     }
 
@@ -258,29 +254,28 @@ namespace unet
             u_set.insert(fd);
         }
 
-        switch(wevent)
+        if(wevent & U_EXCEPTION)
         {
-            case U_EXCEPTION:
-            {
-                if(FD_ISSET(fd,&u_exceptionSet))
-                    FD_SET(fd,&u_exceptionSet);
-                if(FD_ISSET(fd,&u_exceptionSetSave))
-                    FD_SET(fd,&u_exceptionSetSave);
-            }
-            case U_WRITE:
-            {
-                if(FD_ISSET(fd,&u_writeSet))
-                    FD_SET(fd,&u_writeSet);
-                if(FD_ISSET(fd,&u_writeSetSave))
-                    FD_SET(fd,&u_writeSetSave);
-            }
-            case U_READ:
-            {
-                if(FD_ISSET(fd,&u_readSet))
-                    FD_SET(fd,&u_readSet);
-                if(FD_ISSET(fd,&u_readSetSave))
-                    FD_SET(fd,&u_readSetSave);
-            }
+            if(FD_ISSET(fd,&u_exceptionSet))
+                FD_SET(fd,&u_exceptionSet);
+            if(FD_ISSET(fd,&u_exceptionSetSave))
+                FD_SET(fd,&u_exceptionSetSave);
+        }
+
+        if(wevent & U_WRITE)
+        {
+            if(FD_ISSET(fd,&u_writeSet))
+                FD_SET(fd,&u_writeSet);
+            if(FD_ISSET(fd,&u_writeSetSave))
+                FD_SET(fd,&u_writeSetSave);
+        }
+        
+        if(wevent & U_READ)
+        {
+            if(FD_ISSET(fd,&u_readSet))
+                FD_SET(fd,&u_readSet);
+            if(FD_ISSET(fd,&u_readSetSave))
+                FD_SET(fd,&u_readSetSave);
         }
 
         if(fd > maxfd)
@@ -314,6 +309,9 @@ namespace unet
 
     void Selecter::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        if(!u_start)
+            return;
+
         u_rfds = ::select(maxfd+1,&u_readSet,&u_writeSet,&u_exceptionSet,NULL);
         if(u_rfds < 0)
         {
@@ -322,7 +320,136 @@ namespace unet
             return;
         }
 
-        
+        int revent;
+        for(auto iter=u_set.begin();iter!=u_set.end();++iter)
+        {
+            revent = 0;
+            if(FD_ISSET(*iter,&u_readSetSave))
+                revent |= U_READ;
+            if(FD_ISSET(*iter,&u_writeSetSave))
+                revent |= U_WRITE;
+            if(FD_ISSET(*iter,&u_exceptionSetSave))
+                revent |= U_EXCEPTION;
+            
+            if(revent)
+            {
+                std::shared_ptr<Event> ptr = eventMap.find(*iter);
+                if(ptr)
+                {
+                    ptr->setREvent(revent);
+                    eventList.push_back(ptr);
+                }
+            }
+        }
+
+        u_readSet = u_readSetSave;
+        u_writeSet = u_writeSetSave;
+        u_exceptionSet = u_exceptionSetSave;
     }
 
+    //poller
+    Poller::Poller() : 
+        EventDemultiplexer(),
+        u_eventList(),
+        u_set()
+    {};
+
+    Poller::Poller(Poller&& poll) :
+        EventDemultiplexer(),
+        u_eventList(poll.u_eventList),
+        u_set()
+    {};
+
+    Poller& Poller::operator=(Poller&& poll)
+    {
+        if(*this == poll)
+            return *this;
+        std::swap(poll.u_eventList,u_eventList);
+        std::swap(u_set,poll.u_set);
+
+        return *this;
+    }
+
+    Poller::~Poller()
+    {
+        EventDemultiplexer::~EventDemultiplexer();
+        u_eventList.clear();
+        u_set.clear();
+    };
+
+    void Poller::addEvent(int fd,int wevent)
+    {
+        if(!u_start)
+            return;
+        
+        if(u_set.find(fd) == u_set.end())
+        {
+            ++u_wfds;
+            u_set.insert(fd);
+            struct pollfd pfd;
+            pfd.fd = fd;
+            pfd.events = wevent;
+            pfd.events = 0;
+            u_eventList.push_back(pfd);
+        }
+        else
+        {
+            auto iter = std::find(u_eventList.begin(),u_eventList.end(),[fd](const struct pollfd& pfd){return pfd.fd==fd;});
+            if(iter != u_eventList.end())
+            {
+                (*iter).events = wevent;
+                (*iter).events = 0;
+            }
+        }
+    }
+
+    void Poller::delEvent(int fd)
+    {
+        if(!u_start)
+            return;
+        if(u_set.find(fd) == u_set.end())
+            return;
+        u_set.erase(fd);
+        --u_wfds;
+
+        auto iter = std::find(u_eventList.begin(),u_eventList.end(),[fd](const struct pollfd& pfd){return fd == pfd.fd;});
+        if(iter != u_eventList.end())
+            u_eventList.erase(iter);
+    }
+    
+    void Poller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
+    {
+        if(!u_start)
+            return;
+        
+        u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),-1);
+        if(u_rfds < 0)
+        {
+            perror("poll error!\n");
+            unet::handleError(errno);
+        }
+
+        int revent = 0;
+        for(auto iter=u_eventList.begin();iter!=u_eventList.end();++iter)
+        {
+            revent = 0;
+            if((iter->revents & POLLRDHUP) || (iter->revents & POLLERR) || (iter->revents & POLLHUP) || (iter->revents & POLLNVAL))
+                revent |= U_EXCEPTION;
+            if(iter->revents & POLLIN)
+                revent |= U_READ;
+            if(iter->revents & POLLOUT)
+                revent |= U_WRITE;
+
+            if(revent)
+            {
+                std::shared_ptr<Event> ptr = eventMap.find((*iter).fd);
+                if(ptr)
+                {
+                    ptr->setREvent(revent);
+                    eventList.push_back(ptr);
+                }
+            }
+        }
+
+    }
 }
