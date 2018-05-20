@@ -6,81 +6,165 @@
  ************************************************************************/
 
 #include"Epoller.h"
-#include<iostream>
+#include"base/global.h"
+#include"type.h"
+#include"EventMap.h"
+#include"Event.h"
 
 namespace unet
 {
-    namespace net
+    EPoller::EPoller() : 
+        EventDemultiplexer(),
+        u_epollfd(::epoll_create(65536)),
+        u_eventMap(),
+        u_activeList(),
+        u_openET(false)
     {
-        Epoller::Epoller() :
-            epollfd(::epoll_create(65536)),
-            eventList()
+        if(u_epollfd < 0)
         {
-            if(epollfd < 0)
-            {
-                unet::handleError(errno);
-            }
+            perror("epollfd create error!\n");
+            unet::handleError(errno);
+        }
+        u_activeList.reserve(65536);
+    }
 
-            eventList.reserve(65536);
-        }                     
-        
-        Epoller::Epoller(Epoller&& lhs) : 
-            epollfd(std::move(lhs.epollfd))
-        {};
-        
-        Epoller& Epoller::operator=(Epoller&& lhs)
+    EPoller::EPoller(EPoller&& epoller) : EventDemultiplexer()
+    {
+        if((u_epollfd = ::dup(epoller.u_epollfd)) < 0)
         {
-            eventList = std::move(lhs.eventList);
+            perror("epollfd dup error!\n");
+            unet::handleError(errno);
+        }
+        u_eventMap.swap(epoller.u_eventMap);
+        u_activeList.clear();
+        u_openET = false; 
+    };
+    
+    EPoller& EPoller::operator=(EPoller&& epoller)
+    {
+        if(*this == epoller)
             return *this;
+        u_start = false;
+        u_wfds = epoller.u_wfds;
+        u_rfds = 0;
+        u_openET = epoller.u_openET;
+        
+        if((u_epollfd = ::dup(epoller.u_epollfd)) < 0)
+        {
+            perror("epollfd dup error!\n");
+            unet::handleError(errno);
+        }
+        u_eventMap.swap(epoller.u_eventMap);
+        u_activeList.clear();
+
+        return *this;
+    }
+
+    EPoller::~EPoller()
+    {
+        EventDemultiplexer::~EventDemultiplexer();
+        if(::close(u_epollfd) < 0)
+        {
+            perror("close epollfd error!\n");
+            unet::handleError(errno);
+        }
+        for(auto iter=u_eventMap.begin();iter!=u_eventMap.end();++iter)
+            delete iter->second;
+    }
+    
+    uint32_t EPoller::switchTo(int event)
+    {
+        uint32_t sysEvent;
+
+        if(event & U_EXCEPTION)
+            sysEvent |= EPOLLPRI;   //检测带外数据
+        if(event & EPOLLOUT)
+            sysEvent |= EPOLLOUT;
+        if(event & EPOLLIN)
+            sysEvent |= EPOLLIN;
+        sysEvent |= EPOLLONESHOT;   //默认开启ONTSHOT
+
+        if(u_openET)
+            sysEvent |= EPOLLET;
+        return sysEvent;
+    }
+
+    void EPoller::addEvent(int fd,int wevent)
+    {
+        if(!u_start)
+            return;
+        
+        struct epoll_event* event = NULL;
+        auto iter = u_eventMap.find(fd);
+        if((iter != u_eventMap.end()))
+            event = iter->second;
+        
+        if(!event)
+        {
+            event = new epoll_event;
+            memset(event,'\0',sizeof(struct epoll_event));
+            event->events = switchTo(wevent); 
+            event->data.fd = fd;
+            ++u_wfds;
+        }
+
+        if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
+        {
+            perror("epoll add error!\n");
+            unet::handleError(errno);
+        }
+    }
+
+    void EPoller::delEvent(int fd)
+    {
+        if(!u_start)
+            return;
+        
+        auto iter = u_eventMap.find(fd);
+        if(iter == u_eventMap.end())
+            return;
+        if(::epoll_ctl(u_epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
+        {
+            perror("epoll del error!\n");
+            unet::handleError(errno);
+        }
+
+        delete iter->second;
+        u_eventMap.erase(iter);
+        --u_wfds;
+    }
+    
+    void EPoller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
+    {
+        if(!u_start)
+            return;
+
+        u_activeList.clear();
+        u_rfds = ::epoll_wait(u_epollfd,&*u_activeList.begin(),65536,-1);
+        if(u_rfds < 0)
+        {
+            perror("epoll_wait error!\n");
+            unet::handleError(errno);
+            return;
         }
         
-        Epoller::~Epoller()
+        int revent;
+        for(int i=0;i<u_rfds;++i)
         {
-            ::close(epollfd);
-        }
+            revent = 0;
 
-        void Epoller::epoll(ChannelList& channelList,ChannelMap& channelMap)
-        {
-            eventList.clear();
-            int activeEvents = ::epoll_wait(epollfd,&*eventList.begin(),65536,-1);
-             
-            if(activeEvents > 0)
-                getActiveEvents(activeEvents,channelList,channelMap);
-            else if(activeEvents == 0)
-            {
+            if((u_activeList[i].events & EPOLLERR) || (u_activeList[i].events & EPOLLHUP) || (u_activeList[i].events & EPOLLRDHUP))
+                revent |= U_EXCEPTION;
+            if(u_activeList[i].events & EPOLLIN)
+                revent |= U_READ;
+            if(u_activeList[i].events & EPOLLOUT)
+                revent |= U_WRITE;
             
-            }
-            else
+            if(revent)
             {
-                unet::handleError(errno);
-            }
-        }
-
-        void Epoller::getActiveEvents(int activeEvents,ChannelList& channeList,ChannelMap& channelMap)
-        {
-            int fd;
-
-            for(int i=0;i<activeEvents;++i)
-            {
-                if((eventList[i].events & EPOLLIN) || (eventList[i].events & EPOLLOUT))
-                {
-                    fd = eventList[i].data.fd;
-                    ChannelPtr channel = channelMap.findChannel(fd); 
-                    channel->setRevent(eventList[i].events);
-
-                    int type = channel->getType();
-                    if(type == CONNECT)
-                    {
-                        if(channel->read() > 0)
-                            channeList.push_back(channel);
-                        else
-                            channel->handleClose();
-                    }
-                    else
-                    {
-                        channel->handleEvent();
-                    }
-                }
+                std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
+                ptr->setREvent(revent);
+                eventList.push_back(ptr);
             }
         }
     }

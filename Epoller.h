@@ -5,57 +5,47 @@
 	> Created Time: 2017年03月09日 星期四 00时00分59秒
  ************************************************************************/
 
-/*设计理念：Epoller仅负责事件分离，将已发生的事件与数据集合相关联
- * 
- * 1.Epoller将分离的Channel依旧保存在Server的可见域内
- * 2.由Server使用并且将处理后的数据集交由Server进一步处理
- * 3.可加入回调函数增加Epoller的灵活性
- * 4.加入的回调函数依旧处理Server的数据集
- */ 
-
-
 #ifndef _EPOLLER_H
 #define _EPOLLER_H
 
 #include<sys/epoll.h>
-#include<vector>
+#include<map>
 
-#include"ChannelMap.h"
-#include"TcpConnectionMap.h"
-#include"error.h"
+#include"EventDemultiplexer.h"
+
+/* 注意：EPoller
+ * 为了保证在多线程中的安全性，设置了EPOLLONESHOT属性，注意在使用之后再次填充事件
+ */
 
 namespace unet
 {
-    namespace net
+    class EPoller final : public EventDemultiplexer
     {
-        static const int timeoutMs = 200;//默认poll阻塞200ms
-        
-        class Epoller final
-        {
-            typedef std::vector<ChannelPtr> ChannelList;
-            typedef std::vector<struct epoll_event> EventList;
+        public:
+            explicit EPoller();
+            EPoller(const EPoller&) = delete;
+            EPoller& operator=(const EPoller&) = delete;
+            EPoller(EPoller&&);
+            EPoller& operator=(EPoller&&);
+            ~EPoller() override;
+            
+            bool operator==(const EPoller& epoller){return u_epollfd==epoller.u_epollfd;};
 
-            public:    
-                explicit Epoller();
-                Epoller(const Epoller&) = delete;
-                Epoller& operator=(const Epoller&) = delete;
-                Epoller(Epoller&& lhs);
-                Epoller& operator=(Epoller&& lhs);
-                ~Epoller();
+            void addEvent(int,int) override;
+            void delEvent(int) override;
+            void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
+            void openET(){u_openET = true;};
+            void closeET(){u_openET = false;};
 
-                void epoll(ChannelList& channelList,ChannelMap& channelMap);
-                
-                int getEpollfd()
-                {return epollfd;};
+        private:
+            uint32_t switchTo(int);
 
-            private:
-                void getActiveEvents(int activeEvents,ChannelList& channelList,ChannelMap& channelMap);
-
-            private:
-                int epollfd;
-                EventList eventList;
-        };    
-    }
+        private:
+            int u_epollfd;
+            std::map<int,struct epoll_event*> u_eventMap; 
+            std::vector<struct epoll_event> u_activeList;
+            bool u_openET;
+    };
 }
 
 
