@@ -11,8 +11,6 @@
 #include<pthread.h>
 #include<functional>
 
-#include"global.h"
-
 namespace unet
 {
     namespace base
@@ -24,25 +22,25 @@ namespace unet
             
             public:
                 explicit Thread();
-                explicit Thread(const ThreadFunc& lhs);
-                Thread(const Thread& lhs) = delete;
-                Thread(Thread&& lhs);
-                Thread& operator=(const Thread& lhs) = delete;
-                Thread& operator=(Thread&& lhs);
+                explicit Thread(const ThreadFunc&);
+                Thread(const Thread&) = delete;
+                Thread& operator=(const Thread&) = delete;
+                Thread(Thread&&);
+                Thread& operator=(Thread&&);
                 ~Thread();
                 
-                bool operator==(const Thread& thread){return _threadId==thread._threadId;};
+                bool operator==(const Thread& thread){return u_threadId==thread.u_threadId;};
                 void start();
                 void join();
             
-                bool isStart() const{return _isStart;};
-                void setThreadCallBack(const ThreadFunc& cb){_threadFunc = cb;};
-                pthread_t getThreadId() const{return _threadId;};  
+                bool start() const{return u_start;};
+                void setThreadCallBack(const ThreadFunc& cb){u_threadFunc = cb;};
+                pthread_t getThreadId() const{return u_threadId;};  
 
             private:
-                pthread_t _threadId;
-                bool _isStart;
-                ThreadFunc _threadFunc;
+                pthread_t u_threadId;
+                bool u_start;
+                ThreadFunc u_threadFunc;
         };
     }
 }

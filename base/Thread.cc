@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"Thread.h"
+#include"global.h"
 
 namespace unet
 {
@@ -19,55 +20,55 @@ namespace unet
         };
 
         Thread::Thread() : 
-            _threadId(0),
-            _isStart(false)
+            u_threadId(0),
+            u_start(false)
         {};
 
         Thread::Thread(const ThreadFunc& lhs) : 
-            _threadId(0),
-            _isStart(false),
-            _threadFunc(lhs)
+            u_threadId(0),
+            u_start(false),
+            u_threadFunc(lhs)
         {};
        
         Thread::~Thread()
         {
-            if(_isStart)
-                if(_threadId)
-                    ::pthread_detach(_threadId);;
+            if(u_start)
+                if(u_threadId)
+                    ::pthread_detach(u_threadId);;
         }
     
         Thread::Thread(Thread&& lhs) : 
-            _threadId(0),
-            _isStart(false),
-            _threadFunc(lhs._threadFunc)
+            u_threadId(0),
+            u_start(false),
+            u_threadFunc(lhs.u_threadFunc)
         {};
 
         Thread& Thread::operator=(Thread&& lhs)
         {
             if(*this == lhs)
                 return *this;
-            _threadId = 0;
-            _isStart = false;
-            _threadFunc = std::move(lhs._threadFunc);
+            u_threadId = 0;
+            u_start = false;
+            u_threadFunc = std::move(lhs.u_threadFunc);
             return *this;
         }
 
         void Thread::start()
         {
-            if(!_isStart)
-                if(::pthread_create(&_threadId,NULL,runInThread,&_threadFunc)!=0)
+            if(!u_start)
+                if(::pthread_create(&u_threadId,NULL,runInThread,&u_threadFunc)!=0)
                     unet::handleError(errno);
-            _isStart = true;
-            _threadId = unet::pid();
+            u_start = true;
+            u_threadId = unet::pid();
         }
 
         void Thread::join()
         {
-            if(_isStart)
+            if(u_start)
             {
-                ::pthread_join(_threadId,NULL);
-                _isStart = false;
-                _threadId = 0;
+                ::pthread_join(u_threadId,NULL);
+                u_start = false;
+                u_threadId = 0;
             }
         }
     }

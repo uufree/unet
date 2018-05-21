@@ -1,11 +1,11 @@
 /*************************************************************************
-	> File Name: Allocator.cc
+	> File Name: Alloc.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2018年05月20日 星期日 16时13分23秒
+	> Created Time: 2018年05月21日 星期一 00时08分11秒
  ************************************************************************/
 
-#include"Allocator.h"
+#include"Alloc.h"
 
 namespace unet
 {
@@ -102,6 +102,7 @@ namespace unet
                 alloc.u_usrBufferSize = 0;
             }
         }
+        return *this;
     }
 
     Allocator::~Allocator()

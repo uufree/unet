@@ -1,12 +1,12 @@
 /*************************************************************************
-	> File Name: Allocator.h
+	> File Name: Alloc.h
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2018年05月20日 星期日 16时13分15秒
+	> Created Time: 2018年05月21日 星期一 00时07分41秒
  ************************************************************************/
 
-#ifndef _ALLOCATOR_H
-#define _ALLOCATOR_H
+#ifndef _ALLOC_H
+#define _ALLOC_H
 
 #include<malloc.h>
 #include<list>
@@ -111,7 +111,18 @@ namespace unet
             base::MutexLock u_logMutex;
             base::MutexLock u_usrMutex;
     };
+    
+    
+    namespace alloc
+    {
+        class Allocator allocator;
+        LogBuffer* allocLogBuffer(){return allocator.allocLogBuffer();};
+        void deallocLogBuffer(LogBuffer* buf){allocator.deallocLogBuffer(buf);};
+        UsrBuffer* allocUsrBuffer(){return allocator.allocUsrBuffer();};
+        void deallocUsrBuffer(UsrBuffer* buf){allocator.deallocUsrBuffer(buf);};
+    };
 };
 
 
 #endif
+

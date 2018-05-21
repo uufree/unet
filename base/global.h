@@ -17,7 +17,7 @@
 #include<stdlib.h>
 #include<sys/stat.h>
 #include<cstdio>
-#include<pythread.h>
+#include<pthread.h>
 #include<sys/syscall.h>
 
 namespace unet
