@@ -34,14 +34,6 @@ namespace unet
         size_t u_length;    //free length
         int u_flag;
         char u_buf[LOG_BUF_SIZE];
-        
-        void init()
-        {
-            u_data = u_buf;
-            u_length = LOG_BUF_SIZE;
-            u_flag = 0;
-            u_flag |= U_BUFFER_FREE;
-        }
     };
     
     struct UsrBuffer
@@ -50,14 +42,6 @@ namespace unet
         size_t u_length;
         int u_flag;
         char u_buf[USR_BUF_SIZE];
-        
-        void init()
-        {
-            u_data = u_buf;
-            u_length = USR_BUF_SIZE;    //free length
-            u_flag = 0;
-            u_flag |= U_BUFFER_FREE;
-        }
     };
     
     /*状态调整使用宏，Buffer操作使用模板函数*/
@@ -70,15 +54,18 @@ namespace unet
      *  5.清理数据时，测试Buffer是否为Dirty（通用）
      */
 
-#define BUFFER_SET_INUSE(buf) (buf->u_flag=0;buf->u_flag|=U_BUFFER_INUSE)
+#define BUFFER_CLEAR_FLAG(buf) (buf->u_flag=0)
+#define BUFFER_SET_INUSE(buf) (buf->u_flag|=U_BUFFER_INUSE)
 #define BUFFER_TEST_INUSE(buf) (buf->u_flag & U_BUFFER_INUSE)
-#define BUFFER_SET_FREE(buf) (buf->u_flag=0;buf->u_flag|=U_BUFFER_FREE)
+#define BUFFER_SET_FREE(buf) (buf->u_flag|=U_BUFFER_FREE)
 #define BUFFER_TEST_FREE(buf) (buf->u_flag & U_BUFFER_FREE)
 #define BUFFER_SET_DIRTY(buf) (buf->u_flag|=U_BUFFER_DIRTY)
 #define BUFFER_TEST_DIRTY(buf) (buf->u_flag & U_BUFFER_DIRTY)
 #define BUFFER_SET_FULL(buf) (buf->u_flag |= U_BUFFER_FULL)
 #define BUFFER_TEST_FULL(buf) (buf->u_flag & U_BUFFER_FULL)
 #define BUFFER_LENGTH(buf) (buf->u_length)
+#define BUFFER_SET_LENGTH(buf,len) (buf->u_length=len)
+#define BUFFER_CLEAR_DATA(buf) (buf->u_data=buf->u_buf)
 
 #define LOG_BUFFER_HAS_ENOUTH_SPACE(buf) (buf->u_length > 200)
     

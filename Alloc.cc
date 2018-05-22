@@ -112,14 +112,12 @@ namespace unet
         for(int i=0;i<u_logListSize;++i)
         {
             logTemp = (LogBuffer*)SimpleAllocator::allocate(sizeof(LogBuffer));
-            logTemp->init();
             u_logBufferList.push_back(logTemp);
         }
         
         for(int i=0;i<u_usrListSize;++i)
         {
             usrTemp = (UsrBuffer*)SimpleAllocator::allocate(sizeof(UsrBuffer));
-            usrTemp->init();
             u_usrBufferList.push_back(usrTemp);
         }
     }
@@ -136,6 +134,11 @@ namespace unet
             res = u_logBufferList.front();
             u_logBufferList.pop_front();
         }
+        
+        BUFFER_CLEAR_FLAG(res);
+        BUFFER_SET_INUSE(res);
+        BUFFER_SET_LENGTH(res,LOG_BUF_SIZE);
+        BUFFER_CLEAR_DATA(res);
 
         return res;
     }
@@ -159,6 +162,11 @@ namespace unet
             u_usrBufferList.pop_front();
         }
         
+        BUFFER_CLEAR_FLAG(res);
+        BUFFER_SET_INUSE(res);
+        BUFFER_SET_LENGTH(res,LOG_BUF_SIZE);
+        BUFFER_CLEAR_DATA(res);
+        
         return res;
     }
     
@@ -175,7 +183,6 @@ namespace unet
         for(int i=0;i<u_logListSize;++i)
         {
             logTemp = (LogBuffer*)SimpleAllocator::allocate(sizeof(LogBuffer));
-            logTemp->init();
             logBufferList.push_back(logTemp);
         }
         
@@ -194,7 +201,6 @@ namespace unet
         for(int i=0;i<u_usrListSize;++i)
         {
             usrTemp = (UsrBuffer*)SimpleAllocator::allocate(sizeof(UsrBuffer));
-            usrTemp->init();
             u_usrBufferList.push_back(usrTemp);
         }
         

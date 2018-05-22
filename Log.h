@@ -32,7 +32,7 @@ namespace unet
         FATAL,
         NUM_LOG_LEVELS
     };
-    
+
     /*设计目的：
      * 细化LogBuffer锁的粒度，所有的Queue又共享一个WriteBackQueue。
      * 每个工作线程会向线程专属所属的LogBuffer写入日志，定时清理LogBuffer。
@@ -79,48 +79,43 @@ namespace unet
             static base::MutexLock u_writeBackMutex;
     };
     
-    namespace log
+    /*
+     * 具体的日志格式参照muduo提供的日志格式：
+     * 日期-时间-微秒-线程-级别-正文-源文件名-行号（以空格隔开）
+     * 20180522 21:20:35.125880Z 2501 INFO hello,world Poll.cc:78 
+     */
+    
+    /*设计目的：
+     * 使用这个类缓存上述的信息，每次从Log的<<获取一个字符串的时候，将缓存的数据重
+     * 组成字符串，返回给Log进行处理。主要还是避免重复的系统调用，缓存时间等的信息
+     */
+    class LogFormat final
     {
-        void LogFunc(pid_t,short);
-        void LogFunc(pid_t,unsigned short);
-        void LogFunc(pid_t,int);
-        void LogFunc(pid_t,unsigned int);
-        void LogFunc(pid_t,double);
-        void LogFunc(pid_t,float);
-        void LogFunc(pid_t,long);
-        void LogFunc(pid_t,unsigned long);
-        void LogFunc(pid_t,unsigned long long);
-        void LogFunc(pid_t,long long);
-        void LogFunc(pid_t,const char*);
-    }
+        public:
+            explicit LogFormat();  
+            LogFormat(const LogFormat&) = delete;
+            LogFormat& operator=(const LogFormat&) = delete;
+            LogFormat(LogFormat&&);
+            LogFormat& operator=(LogFormat&&);
+            ~LogFormat();
+        
+            
 
+        private:
+            base::Timer u_minTimer; //每60s使用系统调用，更新各种数据
+            base::Timer u_secTimer; //每1s处理一次，不使用系统调用
+            
+            std::string u_data; //日期
+            std::string u_time; //时间
+            std::string u_utime; //微秒
+    };
+    
+    // Log << Log::LogFunc(pid_t,const char*);
     class Log final
     {
-        typedef std::unordered_map<int,LogBufferQueue> HashBuckets;
-        typedef void (*LogFuncS)(pid_t,short);
-        typedef void (*LogFuncUS)(pid_t,unsigned short);
-        typedef void (*LogFuncI)(pid_t,int);
-        typedef void (*LogFuncUI)(pid_t,unsigned int);
-        typedef void (*LogFuncD)(pid_t,double);
-        typedef void (*LogFuncF)(pid_t,float);
-        typedef void (*LogFuncUL)(pid_t,unsigned long);
-        typedef void (*LogFuncULL)(pid_t,unsigned long long);
-        typedef void (*LogFuncLL)(pid_t,long long);
+        typedef std::shared_ptr<LogBufferQueue> LogBufferQueuePtr;
+        typedef std::unordered_map<int,LogBufferQueuePtr> HashBuckets;
         typedef void (*LogFuncCC)(pid_t,const char*);
-        typedef void (*LogFuncCS)(pid_t,const std::string&);
-        typedef void (*LogFuncL)(pid_t,long);
-        
-        friend void LogFunc(pid_t,short);
-        friend void LogFunc(pid_t,unsigned short);
-        friend void LogFunc(pid_t,int);
-        friend void LogFunc(pid_t,unsigned int);
-        friend void LogFunc(pid_t,double);
-        friend void LogFunc(pid_t,float);
-        friend void LogFunc(pid_t,long);
-        friend void LogFunc(pid_t,unsigned long);
-        friend void LogFunc(pid_t,unsigned long long);
-        friend void LogFunc(pid_t,long long);
-        friend void LogFunc(pid_t,const char*);
         
         public:
             Log(LogLevel level);
@@ -130,26 +125,48 @@ namespace unet
             Log& operator=(Log&&);
             ~Log();
             
-            Log& operator<<(LogFuncS);
-            Log& operator<<(LogFuncUS);
-            Log& operator<<(LogFuncI);
-            Log& operator<<(LogFuncUI);
-            Log& operator<<(LogFuncD);
-            Log& operator<<(LogFuncF);
-            Log& operator<<(LogFuncUL);
-            Log& operator<<(LogFuncULL);
-            Log& operator<<(LogFuncLL);
             Log& operator<<(LogFuncCC);
-            Log& operator<<(LogFuncCS);
-            Log& operator<<(LogFuncL);
             
+            static void LogFunc(pid_t,const char*);
+
         private:
             void append(const char*);
 
         private:    
-            LogLevel u_logLevel;
             static HashBuckets u_buckets;
     };
+
+    struct Logger
+    {
+        static Log& log(const char*,int,LogLevel)
+        {
+            
+            return u_log;
+        }
+
+        LogLevel u_logLevel;
+        static Log u_log;
+    };
+
+#define LOG_TRACE if(Logger::u_logLevel <= TRACE) \
+    Logger::log(__FILE__,__LINE__,TRACE)
+
+#define LOG_DEBUG if(Logger::u_logLevel <= DEBUG) \
+    Logger::log(__FILE__,__LINE__,DEBUG)
+
+#define LOG_INFO if(Logger::u_logLevel <= INFO) \
+    Logger::log(__FILE__,__LINE__,INFO)
+
+#define LOG_WARN if(Logger::u_logLevel <= WARN) \
+    Logger::log(__FILE__,__LINE__,WARN)
+
+#define LOG_ERROR if(Logger::u_logLevel <= ERROR) \
+    Logger::log(__FILE__,__LINE__,ERROR)
+
+#define LOG_FATAL if(Logger::u_logLevel <= FATAL) \
+    Logger::log(__FILE__,__LINE__,FATAL)
 }
+
+
 
 #endif

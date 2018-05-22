@@ -144,7 +144,12 @@ namespace unet
             alloc::deallocLogBuffer(buffer);
         }
     }
+    
+    void Log::LogFunc(pid_t tid,const char* str)
+    {
+        LogBufferQueuePtr ptr = u_buckets[tid];
 
+    }
 
 }
 
