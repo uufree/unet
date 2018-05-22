@@ -12,11 +12,13 @@
 #include<unordered_map>
 #include<queue>
 #include<string>
+#include<list>
 
 #include"Alloc.h"
 #include"base/Mutex.h"
 #include"base/Thread.h"
 #include"base/global.h"
+#include"base/Timer.h"
 
 namespace unet
 {
@@ -31,29 +33,50 @@ namespace unet
         NUM_LOG_LEVELS
     };
     
-    struct LogBufferQueue
+    /*设计目的：
+     * 细化LogBuffer锁的粒度，所有的Queue又共享一个WriteBackQueue。
+     * 每个工作线程会向线程专属所属的LogBuffer写入日志，定时清理LogBuffer。
+     * 定时清理WriteBackQueue。
+     */ 
+    class LogBufferQueue final
     {
-        LogBuffer* u_head;
-        LogBuffer* u_current;
-        int u_length;
-        base::MutexLock u_mutex;
-        
-        LogBufferQueue(int length) : 
-            u_head(NULL),
-            u_current(NULL),
-            u_length(length),
-            u_mutex()
-        {
-            LogBuffer* head = alloc::allocLogBuffer();
-            u_head = head;
-            u_current = head;
-            head = head->u_next;
-            for(int i=0;i<length-1;++i)
-            {
-                head = alloc::allocLogBuffer();
-                head = head->u_next;
-            }
-        }
+        typedef std::shared_ptr<base::Timer> TimerPtr;
+        typedef std::function<void(TimerPtr)> AddTimerCallBack;
+        typedef std::function<void(TimerPtr)> DeleteTimerCallBack;
+
+        public:
+            LogBufferQueue(int length = 2);
+            LogBufferQueue(const LogBufferQueue&) = delete;
+            LogBufferQueue& operator=(const LogBufferQueue&) = delete;
+            LogBufferQueue(LogBufferQueue&&);
+            LogBufferQueue& operator=(LogBufferQueue&&);
+            ~LogBufferQueue();
+            
+            bool operator==(const LogBufferQueue& log){return u_bufferList.front() == log.u_bufferList.front();};
+
+            void start();
+            void stop();
+            void setADCallBack(const AddTimerCallBack&,const DeleteTimerCallBack&);
+
+        private:
+            void handleSwapEvent();
+            void handleWriteBackEvent();
+
+        private:
+            bool u_start;
+            int u_length;
+            std::list<LogBuffer*> u_bufferList;
+            base::MutexLock u_mutex;
+            TimerPtr u_timer;
+            
+            static bool u_adInit;
+            static AddTimerCallBack u_addInTimerCallBack;
+            static DeleteTimerCallBack u_deleteTimerCallBack;
+
+            static bool u_writeBackInit;
+            static std::list<LogBuffer*> u_writeBackList;
+            static TimerPtr u_writeBackTimer;
+            static base::MutexLock u_writeBackMutex;
     };
     
     namespace log
@@ -69,7 +92,6 @@ namespace unet
         void LogFunc(pid_t,unsigned long long);
         void LogFunc(pid_t,long long);
         void LogFunc(pid_t,const char*);
-        void LogFunc(pid_t,const std::string&);
     }
 
     class Log final
@@ -99,7 +121,6 @@ namespace unet
         friend void LogFunc(pid_t,unsigned long long);
         friend void LogFunc(pid_t,long long);
         friend void LogFunc(pid_t,const char*);
-        friend void LogFunc(pid_t,const std::string&);
         
         public:
             Log(LogLevel level);

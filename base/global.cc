@@ -83,10 +83,7 @@ namespace unet
                 if(nwriten<0 && errno!=EINTR)
                     nwriten = 0;
                 else
-                {
-                    perror("writen error!\n");
-                    exit(0);
-                }
+                    return -1;
             }
             nleft -= nwriten;
             cptr += nwriten;

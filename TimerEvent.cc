@@ -52,6 +52,8 @@ namespace unet
             unet::handleError(errno);
         u_timerHeap.swap(event.u_timerHeap);
         u_start = false;
+
+        return *this;
     }
 
     TimerEvent::~TimerEvent()
