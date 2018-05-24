@@ -67,6 +67,10 @@ namespace unet
     {
         if(u_start == false)
             return;
+        
+        /*not-thread safety*/
+        if(timer->isStart())
+            return;
 
         base::Time now;
         now.addTime(timer->getRepeatTime());
@@ -86,6 +90,9 @@ namespace unet
         {
             base::MutexLockGuard guard(u_mutex);
             u_timerHeap.push(std::make_pair(now.getTime(),timer));
+            
+            /*not-thread safety*/
+            timer->setStart();
         }
     }
     
@@ -110,6 +117,9 @@ namespace unet
         }
         
         u_timerHeap.push(std::make_pair(now.getTime(),timer));
+        
+        /*not-thread safety*/
+        timer->setStart();
     }
 
     void TimerEvent::handleEvent()
@@ -129,6 +139,10 @@ namespace unet
                 handleList.push_back(u_timerHeap.top().second); 
                 if(u_timerHeap.top().second->repeat())
                     addTimer(u_timerHeap.top().second);
+                
+                /*not-thread safety*/
+                u_timerHeap.top().second->setStop();
+                
                 u_timerHeap.pop();
             }
         }
@@ -144,8 +158,14 @@ namespace unet
         {
             base::MutexLockGuard guard(u_mutex);
             while(!u_timerHeap.empty())
+            {
+                /*not-thread safety*/
+                u_timerHeap.top().second->setStop();
+                
                 u_timerHeap.pop();
+            }
         }
     }
 }
+
 

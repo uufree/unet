@@ -41,14 +41,16 @@ namespace unet
             
             bool operator==(const TimerEvent& event){return u_timerfd==event.u_timerfd;};
             void addTimerWithLock(TimerPtr timer);
-            void addTimer(TimerPtr timer);
             void start(){u_start = true;};
             void stop();
             bool isStart(){return u_start;};
             int getTimerfd() const{return u_timerfd;};
 
             void handleEvent();
-
+        
+        private:
+            void addTimer(TimerPtr timer);
+        
         private:
             int u_timerfd;
             bool u_start;

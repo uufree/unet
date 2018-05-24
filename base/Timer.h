@@ -12,6 +12,12 @@
 #include<functional>
 #include<memory>
 
+/*关于为什么会在Timer和TimerEvent中大量的标记not-thread safety？
+ *Timer的两个标记repeat和start在多线程中使用，但是没有使用锁保护
+ * start在Timer中只读，在TimerEvent中读写
+ * repeat在TimerEvent在只读，在Timer中读写
+ * 可以判断，出现状态不一致的情况非常少，故不使用锁来维护标志的状态
+ */
 
 namespace unet
 {
@@ -19,18 +25,24 @@ namespace unet
     {
         class Time final
         {
+            friend bool operator==(const Time& a,const Time& b);
+            friend bool operator<(const Time& a,const Time& b);
+            
             public:
                 static const int KMicroseconds = 1000000;
-                
                 explicit Time();
-                bool operator<(const Time& time){return u_microseconds<time.u_microseconds;};
-                bool operator==(const Time& time){return u_microseconds==time.u_microseconds;};
-                void addTime(int seconds){u_microseconds += seconds * KMicroseconds;};
+                void addTime(int seconds){u_microseconds+=seconds*KMicroseconds;};
                 uint64_t getTime() const {return u_microseconds;};
 
             private:
                 uint64_t u_microseconds;
         };
+
+        bool operator==(const Time& a,const Time& b)
+        {return a.u_microseconds == b.u_microseconds;};
+
+        bool operator<(const Time& a,const Time& b)
+        {return a.u_microseconds < b.u_microseconds;};
     }
         
     class TimerEvent;
@@ -64,6 +76,9 @@ namespace unet
             void stop();
             bool isStart() const{return u_start;};
             bool isStop() const{return !u_start;};
+            const base::Time& time(){return u_time;};
+            void setStart(){u_start = true;};
+            void setStop(){u_start = false;};
 
         private:
             bool u_start;

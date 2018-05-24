@@ -62,9 +62,9 @@ namespace unet
             log.stop();
 
         {
-            base::MutexLockGuard guard(u_mutex);
+            base::MutexLockGuard guard(log.u_mutex);
             {
-                base::MutexLockGuard guard(log.u_mutex);
+                base::MutexLockGuard guard(u_mutex);
                 std::swap(u_bufferList,log.u_bufferList);
                 std::swap(u_length,log.u_length);
             }
@@ -183,6 +183,8 @@ namespace unet
         struct timeval val;
         ::gettimeofday(&val,NULL);
         u_utime = std::to_string(val.tv_usec) + "Z";
+
+        u_secTimer.start();
     };
 
     LogFormat::LogFormat(LogFormat&& format) :
@@ -195,10 +197,15 @@ namespace unet
             std::swap(u_time,format.u_time);
             std::swap(u_utime,format.u_utime);
         }
+        u_secTimer.setTimeCallBack(std::bind(&LogFormat::handleSecTimerEvent,this));
+        u_secTimer.start();
     }
     
     LogFormat& LogFormat::operator=(LogFormat&& format)
     {
+        format.u_secTimer.stop();
+        u_secTimer.stop();
+        
         {
             base::MutexLockGuard guard(format.u_mutex);
             {
@@ -208,13 +215,14 @@ namespace unet
                 std::swap(u_utime,format.u_utime);
             }
         }
+        u_secTimer.start();
 
         return *this;
     }
     
     LogFormat::~LogFormat()
     {
-         
+        u_secTimer.stop(); 
     }
 }
 

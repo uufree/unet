@@ -102,10 +102,9 @@ namespace unet
 
         private:
             void handleSecTimerEvent();
-            void handleMinTimerEvent();
             
         private:
-            base::Timer u_secTimer; //每1s使用系统调用，更新一下本地的缓存
+            Timer u_secTimer; //每1s使用系统调用，更新一下本地的缓存
             base::MutexLock u_mutex;
 
             std::string u_data; //日期
