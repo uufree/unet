@@ -16,6 +16,7 @@
 #include"../Epoller.h"
 #include"../EventLoop.h"
 #include"../TimerQueue.h"
+#include"../TimerEvent.h"
 
 namespace unet
 {
@@ -25,6 +26,7 @@ namespace unet
         {
             typedef std::function<void(Buffer*,Buffer*)> MessageCallBack;
             typedef std::vector<ChannelPtr> ChannelList;
+            typedef std::shared_ptr<TimerEvent> TimerEventPtr;
 
             public:
                 explicit AsyncTcpServer(socket::InetAddress& server,int size = 2);
@@ -60,6 +62,7 @@ namespace unet
                 time::TimerQueue timerQueue;
 
                 MessageCallBack readCallBack;
+                static TimerEventPtr u_timerEvent; 
         };
     }
 }

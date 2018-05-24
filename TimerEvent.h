@@ -22,7 +22,7 @@ namespace unet
     class TimerEvent final
     {
         private:
-            typedef std::shared_ptr<base::Timer> TimerPtr;
+            typedef std::shared_ptr<Timer> TimerPtr;
             typedef std::pair<uint64_t,TimerPtr> TimerPair;
 
             struct op

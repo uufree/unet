@@ -40,9 +40,7 @@ namespace unet
      */ 
     class LogBufferQueue final
     {
-        typedef std::shared_ptr<base::Timer> TimerPtr;
-        typedef std::function<void(TimerPtr)> AddTimerCallBack;
-        typedef std::function<void(TimerPtr)> DeleteTimerCallBack;
+        typedef std::shared_ptr<Timer> TimerPtr;
 
         public:
             LogBufferQueue(int length = 2);
@@ -56,11 +54,13 @@ namespace unet
 
             void start();
             void stop();
-            void setADCallBack(const AddTimerCallBack&,const DeleteTimerCallBack&);
+            static void startWriteBack();
+            static void stopWriteBack();
 
         private:
             void handleSwapEvent();
             void handleWriteBackEvent();
+            void initWriteBack(); 
 
         private:
             bool u_start;
@@ -69,11 +69,8 @@ namespace unet
             base::MutexLock u_mutex;
             TimerPtr u_timer;
             
-            static bool u_adInit;
-            static AddTimerCallBack u_addInTimerCallBack;
-            static DeleteTimerCallBack u_deleteTimerCallBack;
-
             static bool u_writeBackInit;
+            static bool u_writeBackStart;
             static std::list<LogBuffer*> u_writeBackList;
             static TimerPtr u_writeBackTimer;
             static base::MutexLock u_writeBackMutex;
@@ -88,6 +85,8 @@ namespace unet
     /*设计目的：
      * 使用这个类缓存上述的信息，每次从Log的<<获取一个字符串的时候，将缓存的数据重
      * 组成字符串，返回给Log进行处理。主要还是避免重复的系统调用，缓存时间等的信息
+     *考虑多线程使用场景：
+     * 多线程共享一个时间缓存肯定是要加锁的，所以决定让每个线程单独维护一个Time
      */
     class LogFormat final
     {
@@ -98,73 +97,60 @@ namespace unet
             LogFormat(LogFormat&&);
             LogFormat& operator=(LogFormat&&);
             ~LogFormat();
-        
             
+            const char* format();//返回当时缓存的时间
 
         private:
-            base::Timer u_minTimer; //每60s使用系统调用，更新各种数据
-            base::Timer u_secTimer; //每1s处理一次，不使用系统调用
+            void handleSecTimerEvent();
+            void handleMinTimerEvent();
             
+        private:
+            base::Timer u_secTimer; //每1s使用系统调用，更新一下本地的缓存
+            base::MutexLock u_mutex;
+
             std::string u_data; //日期
             std::string u_time; //时间
             std::string u_utime; //微秒
     };
     
-    // Log << Log::LogFunc(pid_t,const char*);
     class Log final
     {
         typedef std::shared_ptr<LogBufferQueue> LogBufferQueuePtr;
         typedef std::unordered_map<int,LogBufferQueuePtr> HashBuckets;
-        typedef void (*LogFuncCC)(pid_t,const char*);
         
         public:
-            Log(LogLevel level);
-            Log(const LogLevel&) = delete;
+            explicit Log();
+            Log(const Log&) = delete;
             Log& operator=(const Log&) = delete;
-            Log(Log&&);
             Log& operator=(Log&&);
+            Log(Log&&);
             ~Log();
-            
-            Log& operator<<(LogFuncCC);
-            
-            static void LogFunc(pid_t,const char*);
+
+            static void log(pid_t,const char*,int,const char*,LogLevel);
 
         private:
-            void append(const char*);
-
-        private:    
+            LogLevel u_logLevel;
+            LogFormat u_format;
             static HashBuckets u_buckets;
     };
 
-    struct Logger
-    {
-        static Log& log(const char*,int,LogLevel)
-        {
-            
-            return u_log;
-        }
+#define LOG_TRACE(tid,str) if(Logger::u_logLevel <= TRACE) \
+    Log::log(tid,str,__FILE__,__LINE__,TRACE)
 
-        LogLevel u_logLevel;
-        static Log u_log;
-    };
+#define LOG_DEBUG(tid,str) if(Logger::u_logLevel <= DEBUG) \
+    Log::log(tid,str,__FILE__,__LINE__,DEBUG)
 
-#define LOG_TRACE if(Logger::u_logLevel <= TRACE) \
-    Logger::log(__FILE__,__LINE__,TRACE)
+#define LOG_INFO(tid,str) if(Logger::u_logLevel <= INFO) \
+    Log::log(tid,str,,__FILE__,__LINE__,INFO)
 
-#define LOG_DEBUG if(Logger::u_logLevel <= DEBUG) \
-    Logger::log(__FILE__,__LINE__,DEBUG)
+#define LOG_WARN(tid,str) if(Logger::u_logLevel <= WARN) \
+    Log::log(tid,str,__FILE__,__LINE__,WARN)
 
-#define LOG_INFO if(Logger::u_logLevel <= INFO) \
-    Logger::log(__FILE__,__LINE__,INFO)
+#define LOG_ERROR(tid,str) if(Logger::u_logLevel <= ERROR) \
+    Log::log(tid,str,__FILE__,__LINE__,ERROR)
 
-#define LOG_WARN if(Logger::u_logLevel <= WARN) \
-    Logger::log(__FILE__,__LINE__,WARN)
-
-#define LOG_ERROR if(Logger::u_logLevel <= ERROR) \
-    Logger::log(__FILE__,__LINE__,ERROR)
-
-#define LOG_FATAL if(Logger::u_logLevel <= FATAL) \
-    Logger::log(__FILE__,__LINE__,FATAL)
+#define LOG_FATAL(tid,str) if(Logger::u_logLevel <= FATAL) \
+    Log::log(tid,str,__FILE__,__LINE__,FATAL)
 }
 
 

@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"Timer.h"
+#include"../TimerEvent.h"
 
 #include<time.h>
 #include<sys/time.h>
@@ -21,44 +22,91 @@ namespace unet
             ::gettimeofday(&tv,NULL);
             u_microseconds = tv.tv_sec * Time::KMicroseconds + tv.tv_usec;
         }
+    }
 
-        Timer::Timer(Time time,bool repeat,double repeatTime) :
-            u_time(time),
-            u_repeat(repeat),
-            u_repeatTime(repeatTime)
-        {};
+    Timer::Timer(base::Time time,bool repeat,double repeatTime) :
+        u_start(false),
+        u_time(time),
+        u_repeat(repeat),
+        u_repeatTime(repeatTime),
+        u_timeCallBack(),
+        u_timers()
+    {};
 
-        Timer::Timer(bool repeat,double repeatTime) :
-            u_time(Time()),
-            u_repeat(repeat),
-            u_repeatTime(repeatTime)
-        {};
+    Timer::Timer(bool repeat,double repeatTime) :
+        u_start(false),
+        u_time(base::Time()),
+        u_repeat(repeat),
+        u_repeatTime(repeatTime),
+        u_timeCallBack(),
+        u_timers()
+    {};
         
-        Timer::Timer(bool repeat,double repeatTime,const TimeCallBack& callback) :
-            u_time(Time()),
-            u_repeat(repeat),
-            u_repeatTime(repeatTime),
-            u_timeCallBack(callback)
-        {};
+    Timer::Timer(bool repeat,double repeatTime,const TimeCallBack& callback) :
+        u_start(false),
+        u_time(base::Time()),
+        u_repeat(repeat),
+        u_repeatTime(repeatTime),
+        u_timeCallBack(callback),
+        u_timers()
+    {};
 
-        Timer::Timer(Timer&& lhs) :
-            u_time(std::move(lhs.u_time)),
-            u_repeat(lhs.u_repeat),
-            u_repeatTime(lhs.u_repeatTime),
-            u_timeCallBack(std::move(lhs.u_timeCallBack))
-        {};
+    Timer::Timer(Timer&& lhs) :
+        u_start(false),
+        u_time(base::Time()),
+        u_repeat(lhs.u_repeat),
+        u_repeatTime(lhs.u_repeatTime),
+        u_timeCallBack(lhs.u_timeCallBack),
+        u_timers(lhs.u_timers)
+    {
+        lhs.stop();
+        lhs.u_start = false;
+    };
           
-        Timer& Timer::operator=(Timer&& lhs)
-        {
-            if(*this == lhs)
-                return *this;
-            u_time = std::move(lhs.u_time);
-            u_repeat = lhs.u_repeat;
-            u_repeatTime = lhs.u_repeatTime;
-            u_timeCallBack = std::move(lhs.u_timeCallBack);
-            
+    Timer& Timer::operator=(Timer&& lhs)
+    {
+        if(*this == lhs)
             return *this;
-        }
+        lhs.stop();
+        lhs.u_start = false;
+            
+        u_start = false;
+        u_time = base::Time();
+        u_repeat = lhs.u_repeat;
+        u_repeatTime = lhs.u_repeatTime;
+        u_timeCallBack = lhs.u_timeCallBack;
+        u_timers = lhs.u_timers;
+
+        return *this;
+    }
+        
+    Timer::~Timer()
+    {
+        if(u_start)
+            stop();
+    }
+
+    void Timer::start()
+    {
+        if(u_start)
+            return;
+
+        std::shared_ptr<TimerEvent> ptr = u_timers.lock();
+        if(ptr)
+        {
+            ptr->addTimerWithLock(shared_from_this());    
+            u_start = true;
+        }               
+    }
+
+    void Timer::stop()
+    {
+        if(!u_start)
+            return;
+        
+        /*Not-thread safety*/
+        u_repeat = false;
+        u_start = false;
     }
 }
 

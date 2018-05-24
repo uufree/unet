@@ -10,6 +10,8 @@
 
 #include<stdint.h>
 #include<functional>
+#include<memory>
+
 
 namespace unet
 {
@@ -29,36 +31,48 @@ namespace unet
             private:
                 uint64_t u_microseconds;
         };
-
-        class Timer final
-        {
-            typedef std::function<void()> TimeCallBack;
-
-            public:
-                explicit Timer(Time time,bool repeat,double repeatTime);
-                explicit Timer(bool repeat,double repeatTime);
-                explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback);
-                Timer(const Timer& lhs) = delete;
-                Timer(Timer&& lhs);
-                Timer& operator=(const Timer& lhs) = delete;
-                Timer& operator=(Timer&& lhs);
-                ~Timer(){};
-                
-                bool operator==(const Timer& timer){return u_time<timer.u_time;};
-                bool operator<(const Timer& timer) {return u_time<timer.u_time;};
-                void run() const {u_timeCallBack();};
-                bool isRepeat() const {return u_repeat;};
-                void setTimeCallBack(const TimeCallBack& callback){u_timeCallBack = callback;};
-                bool hasCallBack()const{return u_timeCallBack?true:false;};
-                double getRepeatTime()const{return u_repeatTime;};
-
-            private:
-                Time u_time;
-                bool u_repeat;
-                double u_repeatTime;
-                TimeCallBack u_timeCallBack;
-        };
     }
+        
+    class TimerEvent;
+
+    class Timer final : public std::enable_shared_from_this<Timer> 
+    {
+        typedef std::function<void()> TimeCallBack;
+        typedef std::weak_ptr<TimerEvent> TimerEventWPtr;
+        typedef std::shared_ptr<TimerEvent> TimerEventPtr;
+
+        public:
+            explicit Timer(base::Time time,bool repeat,double repeatTime);
+            explicit Timer(bool repeat,double repeatTime);
+            explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback);
+            Timer(const Timer& lhs) = delete;
+            Timer(Timer&& lhs);
+            Timer& operator=(const Timer& lhs) = delete;
+            Timer& operator=(Timer&& lhs);
+            ~Timer();
+                
+            bool operator==(const Timer& timer){return u_time<timer.u_time;};
+            bool operator<(const Timer& timer) {return u_time<timer.u_time;};
+            void run() const {u_timeCallBack();};
+            bool repeat() const {return u_repeat;};
+            void setTimeCallBack(const TimeCallBack& callback){u_timeCallBack = callback;};
+            void setTimesPtr(const TimerEventPtr& ptr){u_timers=ptr;};
+            bool hasCallBack()const{return u_timeCallBack?true:false;};
+            bool hasTimers() const{return u_timers.lock()?true:false;}
+            double getRepeatTime()const{return u_repeatTime;};
+            void start();
+            void stop();
+            bool isStart() const{return u_start;};
+            bool isStop() const{return !u_start;};
+
+        private:
+            bool u_start;
+            base::Time u_time;
+            bool u_repeat;
+            double u_repeatTime;
+            TimeCallBack u_timeCallBack;
+            TimerEventWPtr u_timers;
+    };
 }
 
 #endif

@@ -127,7 +127,7 @@ namespace unet
             while(u_timerHeap.top().first < now)
             {
                 handleList.push_back(u_timerHeap.top().second); 
-                if(u_timerHeap.top().second->isRepeat())
+                if(u_timerHeap.top().second->repeat())
                     addTimer(u_timerHeap.top().second);
                 u_timerHeap.pop();
             }
