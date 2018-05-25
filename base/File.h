@@ -48,30 +48,30 @@ namespace unet
                 File& operator=(File&& lhs);
                 ~File() noexcept;  
                 
-                bool operator==(const File& lhs) {return _fd == lhs._fd;};
+                bool operator==(const File& lhs) {return u_fd == lhs.u_fd;};
 
-                const std::string& getFilename() const {return _filename;};
-                const std::string& getGlobalFilename() const {return _gfilename;};
-                int getFd() const {return _fd;};
-                bool isOpened() const {return _open;};    
-                int getFileSize() const {return _fileSize;};
-                int blockRead(char* buf,size_t buflen) {return readn(_fd,buf,buflen);};
-                int blockRead(std::string& buf,size_t buflen) {return readn(_fd,buf,buflen);}
-                int blockWrite(const char* buf,size_t buflen) {return writen(_fd,buf,buflen);};
-                int blockWrite(const std::string& buf) {return writen(_fd,buf);}
+                const std::string& getFilename() const {return u_filename;};
+                const std::string& getGlobalFilename() const {return u_gfilename;};
+                int getFd() const {return u_fd;};
+                bool isOpened() const {return u_open;};    
+                int getFileSize() const {return u_fileSize;};
+                int blockRead(char* buf,size_t buflen) {return readn(u_fd,buf,buflen);};
+                int blockRead(std::string& buf,size_t buflen) {return readn(u_fd,buf,buflen);}
+                int blockWrite(const char* buf,size_t buflen) {return writen(u_fd,buf,buflen);};
+                int blockWrite(const std::string& buf) {return writen(u_fd,buf);}
                 int close();
 
             private:
                 void init() noexcept;
-                int switchOperatorType(int type_);
+                int switchOperatorType(int);
 
             private:
-                int _fd;
-                bool _open;
-                std::string _filename;
-                std::string _gfilename;
-                int _type;
-                unsigned long _fileSize;
+                int u_fd;
+                bool u_open;
+                std::string u_filename;
+                std::string u_gfilename;
+                int u_type;
+                unsigned long u_fileSize;
         };
     }
 }

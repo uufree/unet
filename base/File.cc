@@ -13,27 +13,31 @@ namespace unet
     namespace base
     { 
         File::File(const char* filename,int type) noexcept :       
-            _open(false),
-            _gfilename(filename),
-            _type(type)
-        {init();}
+            u_open(false),
+            u_gfilename(filename),
+            u_type(type)
+        {
+            init();
+        }
 
         File::File(const std::string& filename,int type) noexcept : 
-            _open(false),
-            _gfilename(filename),
-            _type(type)
-        {init();}
+            u_open(false),
+            u_gfilename(filename),
+            u_type(type)
+        {
+            init();
+        }
              
         void File::init() noexcept
         {
-            char* index = strrchr(const_cast<char*>(_gfilename.c_str()),'/');
+            char* index = strrchr(const_cast<char*>(u_gfilename.c_str()),'/');
             char buf[64];
             bzero(buf,64);
             
             if(index != NULL)
             {
                 ++index;
-                _filename = index;
+                u_filename = index;
             }
             else
             {
@@ -41,18 +45,18 @@ namespace unet
                 exit(1);
             }
             
-            _fd = switchOperatorType(_type);     
-            _open = true;
+            u_fd = switchOperatorType(u_type);     
+            u_open = true;
             struct stat statBuf;
-            if(fstat(_fd,&statBuf) < 0)
+            if(fstat(u_fd,&statBuf) < 0)
                 unet::handleError(errno);
 
-            _fileSize = statBuf.st_size;
+            u_fileSize = statBuf.st_size;
         }
         
         int File::switchOperatorType(int type)
         {
-            int fd = ::open(_gfilename.c_str(),type,USER_RW | GROUP_R | OTHER_R);
+            int fd = ::open(u_gfilename.c_str(),type,USER_RW | GROUP_R | OTHER_R);
              
             if(fd < 0)
                 unet::handleError(errno);
@@ -60,18 +64,18 @@ namespace unet
         }
         
         File::File(File&& lhs) : 
-            _open(false),
-            _filename(std::move(lhs._filename)),
-            _gfilename(std::move(lhs._gfilename)),
-            _type(lhs._type),
-            _fileSize(lhs._fileSize)
+            u_open(false),
+            u_filename(std::move(lhs.u_filename)),
+            u_gfilename(std::move(lhs.u_gfilename)),
+            u_type(lhs.u_type),
+            u_fileSize(lhs.u_fileSize)
         {
-            _fd = dup(lhs._fd);
-            _open = true;
+            u_fd = dup(lhs.u_fd);
+            u_open = true;
             
-            if(::close(lhs._fd) < 0)
+            if(::close(lhs.u_fd) < 0)
                 unet::handleError(errno);
-            lhs._open = false;
+            lhs.u_open = false;
         }
         
         File& File::operator=(File&& lhs)
@@ -79,23 +83,23 @@ namespace unet
             if(*this == lhs)
                 return *this;
             
-            _filename = std::move(lhs._filename);
-            _gfilename = std::move(lhs._gfilename);
-            _fileSize = lhs._fileSize;
-            _type = lhs._type;
-            if(_open)
-                ::close(_open);
+            u_filename = std::move(lhs.u_filename);
+            u_gfilename = std::move(lhs.u_gfilename);
+            u_fileSize = lhs.u_fileSize;
+            u_type = lhs.u_type;
+            if(u_open)
+                ::close(u_open);
             
-            lhs._open ? _fd=dup(lhs._open) : _fd=switchOperatorType(_type);  
-            _open = true;
+            lhs.u_open ? u_fd=dup(lhs.u_open) : u_fd=switchOperatorType(u_type);  
+            u_open = true;
             
             return *this;
         }
         
         int File::close()
         {
-            if(_open)
-                if(::close(_fd) < 0)
+            if(u_open)
+                if(::close(u_fd) < 0)
                     unet::handleError(errno);
             return 1; 
         }
