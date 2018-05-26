@@ -18,6 +18,7 @@ namespace unet
     std::shared_ptr<Timer> LogBufferQueue::u_writeBackTimer(std::make_shared<Timer>(true,3)); 
     base::MutexLock LogBufferQueue::u_writeBackMutex;
     LogFile LogBufferQueue::u_logFile;
+    base::MutexLock LogBufferQueue::u_fileMutex;
 
     LogBufferQueue::LogBufferQueue(int length) : 
         u_start(false),
@@ -76,6 +77,8 @@ namespace unet
         return *this;
     }
     
+    /*在析构的时候，将所有Buffer中的数据同意写入LogFile*/
+    /*析构的时候不能用锁*/
     LogBufferQueue::~LogBufferQueue()
     {
         if(u_start)
@@ -98,8 +101,48 @@ namespace unet
 
         u_timer->stop();
         u_start = false;
+
+        //将start关闭之后，Timer与WorkThread不再向LogBuffer中增添数据
+        LogBuffer* current = u_bufferList.front();
+        {
+            base::MutexLockGuard guard(u_fileMutex);
+            u_logFile.writen(current);
+        }
     }
     
+    /*全局的核心工作，将log写入缓冲区Buffer中,根据writeBuffer传回的参数进行
+     * 详细的分析*/
+    void LogBufferQueue::append(const char* message)
+    {
+        if(!u_start)
+            return;
+        LogBuffer* current = u_bufferList.front();
+        int returned = writeInLogBuffer(current,message,strlen(message));
+        
+        switch(returned)
+        {
+            case -1:
+            {
+                perror("memcpy error!\n");
+                unet::handleError(errno);
+                break;
+            }
+            case 2:
+            {
+                perror("buffer not in use!\n");
+                break;
+            }
+            case 1: /*这个Buffer已满，需要更换*/
+            {
+                handleSwapEvent();
+                break;
+            }
+            case 3:
+            case 0:
+                break;
+        }
+    }
+
     void LogBufferQueue::startWriteBack()
     {
         if(u_writeBackStart)
@@ -152,10 +195,11 @@ namespace unet
         {
             buffer = handleList.front();
             handleList.pop_front();
-           
-            //将写入的任务交给LogFile
-            u_logFile.writen(buffer);;
-
+            
+            {
+                base::MutexLockGuard guard(u_fileMutex);
+                u_logFile.writen(buffer);;
+            }
             alloc::deallocLogBuffer(buffer);
         }
     }

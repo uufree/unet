@@ -22,14 +22,16 @@ namespace unet
 
     /*
      * 整个Log由以下几部分组成：
-     *  LogFile：负责LogFile的滚动
-     *  LogFormat：
-     *  LogBufferQueue：
+     *  LogFile：负责LogFile的滚动,以及将LogBuffer写入到具体的Log文件中
+     *  LogFormat：格式化字符串，缓存一些时间数据，避免重复的系统调用
+     *  LogBufferQueue：LogBuffer实体，缓存写入的Log
+     *  Log：外部接口，可以调整Log等级
      */
     class Log final
     {
         typedef std::shared_ptr<LogBufferQueue> LogBufferQueuePtr;
         typedef std::unordered_map<int,LogBufferQueuePtr> HashBuckets;
+        friend void log(pid_t,const char*,const char*,int,LogLevel,Log&);
         
         public:
             explicit Log();
@@ -38,32 +40,45 @@ namespace unet
             Log& operator=(Log&&);
             Log(Log&&);
             ~Log();
+            
+            bool operator==(const Log& log){return u_buckets.begin()->first == log.u_buckets.begin()->first && u_buckets.size() == log.u_buckets.size();};
 
-            static void log(pid_t,const char*,int,const char*,LogLevel);
+            void setLogLevel(LogLevel level){u_logLevel = level;};
+            LogLevel level() const{return u_logLevel;};
+            void addWorkThread(int);
+            void deleteWorkThread(int);
+            void start();
+            void stop();
+            bool isStart() const{return u_start;};
 
         private:
+            bool u_start;
             LogLevel u_logLevel;
             LogFormat u_format;
-            static HashBuckets u_buckets;
+            HashBuckets u_buckets;
     };
+    
+    /*注意，将来在这块填充TcpServer的全局静态Log*/
+    void log(pid_t,const char*,const char*,int,LogLevel,Log&);
+    
 
 #define LOG_TRACE(tid,str) if(Logger::u_logLevel <= TRACE) \
-    Log::log(tid,str,__FILE__,__LINE__,TRACE)
+    log(tid,str,__FILE__,__LINE__,TRACE)
 
 #define LOG_DEBUG(tid,str) if(Logger::u_logLevel <= DEBUG) \
-    Log::log(tid,str,__FILE__,__LINE__,DEBUG)
+    log(tid,str,__FILE__,__LINE__,DEBUG)
 
 #define LOG_INFO(tid,str) if(Logger::u_logLevel <= INFO) \
-    Log::log(tid,str,,__FILE__,__LINE__,INFO)
+    log(tid,str,__FILE__,__LINE__,INFO)
 
 #define LOG_WARN(tid,str) if(Logger::u_logLevel <= WARN) \
-    Log::log(tid,str,__FILE__,__LINE__,WARN)
+    log(tid,str,__FILE__,__LINE__,WARN)
 
 #define LOG_ERROR(tid,str) if(Logger::u_logLevel <= ERROR) \
-    Log::log(tid,str,__FILE__,__LINE__,ERROR)
+    log(tid,str,__FILE__,__LINE__,ERROR)
 
 #define LOG_FATAL(tid,str) if(Logger::u_logLevel <= FATAL) \
-    Log::log(tid,str,__FILE__,__LINE__,FATAL)
+    log(tid,str,__FILE__,__LINE__,FATAL)
 }
 
 

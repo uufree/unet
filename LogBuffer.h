@@ -41,6 +41,7 @@ namespace unet
 
             void start();
             void stop();
+            void append(const char* message);
             static void startWriteBack();
             static void stopWriteBack();
 
@@ -62,6 +63,7 @@ namespace unet
             static TimerPtr u_writeBackTimer;
             static base::MutexLock u_writeBackMutex;
             static LogFile u_logFile;
+            static base::MutexLock u_fileMutex;
     };
 }
 
