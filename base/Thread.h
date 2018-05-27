@@ -15,6 +15,9 @@ namespace unet
 {
     namespace base
     {
+        /*
+         * 封装Pthread的函数，对象的生命期决定线程的生命期
+         */
         class Thread final
         {
             typedef std::function<void()> ThreadFunc;
@@ -31,11 +34,12 @@ namespace unet
                 
                 bool operator==(const Thread& thread){return u_threadId==thread.u_threadId;};
                 void start();
-                void join();
+                void stop();
             
-                bool start() const{return u_start;};
+                bool isStart() const{return u_start;};
                 void setThreadCallBack(const ThreadFunc& cb){u_threadFunc = cb;};
                 pthread_t getThreadId() const{return u_threadId;};  
+                const ThreadFunc& getThreadFunc() const{return u_threadFunc;};
 
             private:
                 pthread_t u_threadId;

@@ -24,6 +24,11 @@ int main(int argc,char** argv)
     thread.setThreadCallBack(std::bind(&threadFunc));
     thread.start();
     ::sleep(5);
-    thread.join();
-    while(1);
+    thread.stop();
+    sleep(2);
+    thread.start();
+    ::sleep(5);
+    thread.stop();
+
+    return 0;
 }

@@ -1,0 +1,153 @@
+/*************************************************************************
+	> File Name: ThreadPool.cc
+	> Author: uuchen
+	> Mail: 1319081676@qq.com
+	> Created Time: 2017年03月27日 星期一 23时31分49秒
+ ************************************************************************/
+
+#include"ThreadPool.h"
+#include"base/Timer.h"
+
+namespace unet
+{
+    ThreadPool::ThreadPool() :
+        u_threadSize(0),
+        u_startSize(0),
+        u_thread(),
+        u_mutex(),
+        u_description(),
+        u_timer(std::make_shared<Timer>(std::bind(&ThreadPool::handleStopList,this),true,30)),
+        u_stopList()
+    {   
+        /*not-thread safety*/
+        init();
+    }
+
+    ThreadPool::ThreadPool(ThreadPool&& pool):
+        u_threadSize(pool.u_threadSize),
+        u_startSize(0),
+        u_thread(std::move(pool.u_thread)),
+        u_mutex(),
+        u_description(std::move(pool.u_description)),
+        u_timer(std::move(pool.u_timer)),
+        u_stopList(std::move(pool.u_stopList))
+    {
+        pool.stopAll();
+    };
+
+    ThreadPool& ThreadPool::operator=(ThreadPool&& pool)
+    {
+        if(pool == *this)
+            return *this;
+
+        pool.stopAll();
+        
+        {
+            base::MutexLockGuard guard(pool.u_mutex);
+            {
+                base::MutexLockGuard guard(u_mutex);
+                u_threadSize = pool.u_threadSize;
+                u_startSize = pool.u_startSize;
+                u_thread = std::move(pool.u_thread);
+                u_description = std::move(pool.u_description);
+                u_timer = std::move(pool.u_timer);
+                u_stopList = std::move(pool.u_stopList);
+            }
+        }
+
+        return *this;
+    }
+
+    ThreadPool::~ThreadPool()
+    {
+        stopAll();
+    }
+    
+    void ThreadPool::init()
+    {
+        for(int i=0;i<INIT_THREADS;i++)
+        {
+            u_thread[i] = std::make_shared<base::Thread>();
+            u_description[i] = std::make_tuple(u_thread[i]->getThreadId(),"NULL",false); 
+        }
+    }
+    
+    
+    /*
+     * 完成两项工作：
+     * 1.首先检测与stopList中的编号是否依旧匹配
+     * 2.重新填充stopList
+     */
+    void ThreadPool::handleStopList()
+    {
+        base::MutexLockGuard guard(u_mutex);
+        for(auto iter=u_stopList.begin();iter!=u_stopList.end();++iter)
+        {
+            if(std::get<2>(u_description[*iter]) == false) 
+                std::get<0>(u_description[*iter]) = -1; 
+        }
+        
+        u_stopList.clear();
+        int size = u_description.size();
+        for(int i=0;i<size;i++)
+        {
+            if(std::get<0>(u_description[i]) && std::get<2>(u_description[i]) == false)
+                u_stopList.push_back(i);
+        }
+    }
+    
+    int ThreadPool::findAvailable()
+    {
+        base::MutexLockGuard guard(u_mutex);
+        int size = u_description.size();
+        for(int i=0;i<size;i++)
+        {
+            if(std::get<0>(u_description[i]) == (unsigned long)-1 && 
+                    std::get<2>(u_description[i]) == false)
+                return i;      
+        }
+        return -1;
+    }
+
+    /*
+     * 在添加线程之前首先需要说明一点：若一个线程的tid=-1，则可以直接使用
+     * 存在这样一种情况，一个线程启动之后，被停止了，之后不再运行。于是，tid
+     * 一直被占用，怎么办呢？
+     * 启动一个定时器，每30s检测一次已经停止，但是资源被占用的tid，重新初始化，
+     * 使之可以被复用
+     */
+
+    /*
+     *向线程池中添加一个线程的步骤：
+     * 1.首先搜索pthread_t为-1的线程,找到之后直接使用即可
+     * 2.如果不存在，重添加
+     */
+    const TidList& ThreadPool::addThread(const ThreadFunc& func,int size,const char* des)
+    {
+        int index = -1;
+        for(int i=0;i<size;i++)
+        {
+            index = findAvailable();
+            if(index == -1)
+            {
+                u_thread[u_threadSize] = std::make_shared<base::Thread>();
+                index = u_threadSize;
+                ++u_threadSize;
+            }
+
+            u_thread[index]->setThreadCallBack(func);
+            
+            {
+                base::MutexLockGuard guard(u_mutex);
+                std::get<2>(u_description[index]) = des;
+            }
+        }
+        
+        return u_description;
+    }
+    
+    const TidList& ThreadPool::addThread(base::Thread& thread,int size,const char* des)
+    {
+        addThread(thread.getThreadFunc(),size,des);
+    }
+}

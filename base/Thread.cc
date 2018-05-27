@@ -7,6 +7,7 @@
 
 #include"Thread.h"
 #include"global.h"
+#include<iostream>
 
 namespace unet
 {
@@ -20,55 +21,49 @@ namespace unet
         };
 
         Thread::Thread() : 
-            u_threadId(0),
+            u_threadId(-1),
             u_start(false)
         {};
-
-        Thread::Thread(const ThreadFunc& lhs) : 
-            u_threadId(0),
-            u_start(false),
-            u_threadFunc(lhs)
-        {};
-       
-        Thread::~Thread()
-        {
-            if(u_start)
-                if(u_threadId)
-                    ::pthread_detach(u_threadId);;
-        }
-    
+        
         Thread::Thread(Thread&& lhs) : 
-            u_threadId(0),
+            u_threadId(-1),
             u_start(false),
-            u_threadFunc(lhs.u_threadFunc)
+            u_threadFunc(std::move(lhs.u_threadFunc))
         {};
 
         Thread& Thread::operator=(Thread&& lhs)
         {
             if(*this == lhs)
                 return *this;
-            u_threadId = 0;
+
+            u_threadId = -1;
             u_start = false;
             u_threadFunc = std::move(lhs.u_threadFunc);
             return *this;
         }
 
+        Thread::~Thread()
+        {
+            if(u_start)
+                stop();
+        }
+    
         void Thread::start()
         {
             if(!u_start)
                 if(::pthread_create(&u_threadId,NULL,runInThread,&u_threadFunc)!=0)
                     unet::handleError(errno);
             u_start = true;
-            u_threadId = unet::pid();
+            ::pthread_detach(u_threadId);
         }
 
-        void Thread::join()
+        void Thread::stop()
         {
             if(u_start)
             {
-                ::pthread_join(u_threadId,NULL);
+                ::pthread_cancel(u_threadId);
                 u_start = false;
-                u_threadId = 0;
+                u_threadId = -1;
             }
         }
     }
