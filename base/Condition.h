@@ -5,8 +5,6 @@
 	> Created Time: 2017年03月28日 星期二 16时04分46秒
  ************************************************************************/
 
-//封装条件变量，虽然说封装的不咋地，但是还能用
-
 #ifndef _CONDITION_H
 #define _CONDITION_H
 
@@ -16,8 +14,11 @@ namespace unet
 {
     namespace base
     { 
+        /*下次找找有没有封装的比较漂亮的条件变量...这个也太简陋了吧..*/
+        /*代码读的少，轮子造的都不好看*/
         class Condition final
         {
+            friend bool operator==(const Condition& lhs,const Condition& rhs);
             public:
                 explicit Condition(MutexLock& mutex);
             
@@ -26,14 +27,14 @@ namespace unet
                 Condition& operator=(const Condition& lhs) = delete;
                 Condition& operator=(Condition&& lhs);
                 ~Condition();
-
+                
                 void notify();
                 void notifyAll();
                 void wait();
     
             private:
-                MutexLock& _mutex;
-                pthread_cond_t _cond;
+                MutexLock& u_mutex;
+                pthread_cond_t u_cond;
         };
     }
 }

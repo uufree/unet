@@ -6,8 +6,8 @@
  ************************************************************************/
 
 #include"Thread.h"
-#include"global.h"
-#include<iostream>
+#include"Global.h"
+#include<pthread.h>
 
 namespace unet
 {

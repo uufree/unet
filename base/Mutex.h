@@ -5,23 +5,24 @@
 	> Created Time: 2017年02月25日 星期六 23时04分44秒
  ************************************************************************/
 
-//封装互斥锁
-
-
 #ifndef _MUTEX_H
 #define _MUTEX_H
 
-#include<utility>
 #include<pthread.h>
-#include<sys/syscall.h>
-#include<unistd.h>
+#include"Global.h"
 
-#include"global.h"
+/*对对象移动语义的测试：
+ * 进行了对象的移动时，依旧会出现两个对象析构,需要对被移动对象的状态手动进行修改。
+ * 栈上对象：可以认为在内部进行字节移动，不需要手动管理状态
+ * 堆上对象：移动对象，指针置空
+ */
 
 namespace unet
 {
     namespace base
-    {    
+    {   
+        /*对线程锁这个资源使用RAII方法进行封装，即存在即初始化*/
+        /*为了保证mutex可以与Cond配合使用，将mutex声明为mutable的*/
         class MutexLock final
         {
             public:
@@ -32,25 +33,27 @@ namespace unet
                 MutexLock& operator=(MutexLock&& lhs);
                 ~MutexLock();
                     
-                bool operator==(const MutexLock& lock) {return _pid==lock._pid;};
-                inline bool isLockInThisThread() const
-                {return _pid==pid();};
+                bool operator==(const MutexLock& lock) const
+                {return u_tid==lock.u_tid;};
                 
-                inline pthread_mutex_t& getMutex()
-                {return _mutex;};
+                bool isLockInThisThread()
+                {return u_tid == tid();};
                 
-                inline void lock();
-                inline void unlock();
+                pthread_mutex_t& getMutex()
+                {return *u_mutex;};
+                
+                void lock();
+                void unlock();
             
             private:
-                pid_t _pid;
-                mutable pthread_mutex_t _mutex;
+                pthread_t u_tid;
+                mutable pthread_mutex_t* u_mutex;
         };
     
         class MutexLockGuard final
         {
             public:
-                explicit MutexLockGuard(MutexLock& mutex_);
+                explicit MutexLockGuard(MutexLock& mutex);
                 ~MutexLockGuard();
             
                 MutexLockGuard(MutexLockGuard&) = delete;

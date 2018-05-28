@@ -10,40 +10,51 @@
 
 #include<string>
 #include<vector>
-#include<utility>
 
-namespace utime
+/*对系统中的日期与时间做简单的封装*/
+/*2018.05.28 测试完成*/
+
+namespace unet
 {
-    class UClock final
+    namespace base
     {
-        friend bool operator==(const UClock& lhs,const UClock& rhs);
+        class Clock final
+        {
+            friend bool operator==(const Clock& lhs,const Clock& rhs);
         
-        public:
-            explicit UClock();
-            UClock(const UClock& lhs);
-            UClock(UClock&& lhs);
-            UClock& operator=(const UClock& lhs);
-            UClock& operator=(UClock&& lhs);
-            ~UClock();
+            public:
+                explicit Clock(){update();};
+                Clock(const Clock& lhs) = delete;
+                Clock(Clock&& lhs);
+                Clock& operator=(const Clock& lhs) = delete;
+                Clock& operator=(Clock&& lhs);
+                ~Clock(){};
             
-            void swap(UClock& lhs);
-
-            const std::string& getHourAndMinutes() const
-            {return hourAndMinutes;};
-
-            const std::string& getMouthAndDays() const
-            {return mouthAndDays;};
+                const std::string& getHourAndMinutes() const
+                {return u_hourAndMinutes;};
+                const std::string& getMouthAndDays()const{return u_mouthAndDays;};
+                const std::string& getMouth() const {return u_mouth;};
+                const std::string& getWeak() const {return u_weak;};
+                const std::string& getDay() const {return u_day;};
+                const std::string& getTime() const{return u_time;};
+                const std::string& getYear() const{return u_year;};
+                void update();
         
-            void update();
-        
-        private:
-            void split(const std::string& lhs,const std::string& rhs,std::vector<std::string>& vecStr);
+            private:
+                void split(const std::string& lhs,const std::string& rhs,std::vector<std::string>& vecStr);
 
-        private:
-            std::string hourAndMinutes;
-            std::string mouthAndDays;
-            std::vector<std::string> strList;
-    };
+            private:
+                std::string u_mouth;
+                std::string u_weak;
+                std::string u_day;
+                std::string u_time;
+                std::string u_year;
+
+                std::string u_hourAndMinutes;
+                std::string u_mouthAndDays;
+                std::vector<std::string> u_strList;
+        };
+    }
 
 }
 

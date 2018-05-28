@@ -12,51 +12,54 @@ namespace unet
     namespace base
     {
         Condition::Condition(MutexLock& mutex) :
-            _mutex(mutex)
+            u_mutex(mutex)
         {
-            if(pthread_cond_init(&_cond,NULL) < 0)
+            if(pthread_cond_init(&u_cond,NULL) < 0)
                 unet::handleError(errno);
         }
 
         Condition::Condition(Condition&& lhs) :
-            _mutex(lhs._mutex),
-            _cond(std::move(lhs._cond))
+            u_mutex(lhs.u_mutex),
+            u_cond(std::move(lhs.u_cond))
         {};
         
         Condition& Condition::operator=(Condition&& lhs)
         {
-            _mutex = std::move(lhs._mutex);
-            _cond = std::move(lhs._cond);
+            if(lhs == *this)
+                return *this;
+
+            u_mutex = std::move(lhs.u_mutex);
+            u_cond = std::move(lhs.u_cond);
             
             return *this;
         }
         
         Condition::~Condition()
         {
-            if(pthread_cond_destroy(&_cond) < 0)
+            if(pthread_cond_destroy(&u_cond) < 0)
                 unet::handleError(errno);
         }
         
         void Condition::notify()
         {
-            if(pthread_cond_signal(&_cond) < 0)
+            if(pthread_cond_signal(&u_cond) < 0)
                 unet::handleError(errno);
         }
 
         void Condition::notifyAll()
         {
-            if(pthread_cond_broadcast(&_cond) < 0)
+            if(pthread_cond_broadcast(&u_cond) < 0)
                 unet::handleError(errno);
         }
 
         void Condition::wait()
         {
-            if(pthread_cond_wait(&_cond,&_mutex.getMutex()) < 0)
+            if(pthread_cond_wait(&u_cond,&u_mutex.getMutex()) < 0)
                 unet::handleError(errno);
         }
         
-
-        
+        bool operator==(const Condition& lhs,const Condition& rhs)
+        {return lhs.u_mutex == rhs.u_mutex;};
     }
 }
 

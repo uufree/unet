@@ -8,15 +8,19 @@
 #ifndef _THREAD_H
 #define _THREAD_H
 
-#include<pthread.h>
 #include<functional>
 
 namespace unet
 {
     namespace base
     {
-        /*
-         * 封装Pthread的函数，对象的生命期决定线程的生命期
+        /*封装Pthread函数，对象的生命期决定线程的生命期*/
+        /*每个线程管理自己的资源，启动即分离*/
+        /*由于启动时已经进行分离，使用join函数已经失效，所以使用cancle取消*/
+        
+        /*是否需要向线程注册线程资源清理函数?
+         * 使用cancle的取消线程运行，但是线程仍然存在于分离状态，线程函数中存在的
+         * 对象资源依旧存在一个明显的生命周期，所以暂时不需要注册资源清理
          */
         class Thread final
         {

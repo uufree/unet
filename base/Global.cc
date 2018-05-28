@@ -1,14 +1,22 @@
 /*************************************************************************
-	> File Name: global.cc
+	> File Name: Global.cc
 	> Author: uuchen
 	> Mail: 1319081676@qq.com
-	> Created Time: 2018年03月28日 星期三 02时33分57秒
+	> Created Time: 2018年05月29日 星期二 04时47分00秒
  ************************************************************************/
 
-#include"global.h"
+#include"Global.h"
 
 namespace unet
 {
+    void handleError(int saveErrno)
+    {
+        char buf[256];
+        bzero(buf,256);
+        perror(strerror_r(saveErrno,buf,256));
+        exit(1);
+    }
+    
     int readn(int fd,char* cptr,size_t nbytes)
     {
         int nleft,nread;
@@ -23,10 +31,7 @@ namespace unet
                 if(errno == EINTR)
                     nread = 0;
                 else
-                {
-                    perror("readn error!\n");
-                    exit(0);
-                }
+                    return -1;
             }
             else if(nread == 0)
                 break;
@@ -37,39 +42,7 @@ namespace unet
         readsize = nbytes - nleft;
         return readsize;
     }
-        
-    int readn(int fd,std::string& buf,size_t nbytes)
-    {
-        char cptr[nbytes];
-        bzero(cptr,nbytes);
-            
-        int nleft,nread;
-        int readsize = 0;
-        nleft = nbytes;
 
-        while(nleft > 0)
-        {
-            if((nread=read(fd,cptr,nleft)) < 0)
-            {
-                if(errno == EINTR)
-                    nread = 0;
-                else
-                {
-                    perror("readn error!\n");
-                    exit(0);
-                }
-            }
-            else if(nread == 0)
-                break;
-                
-            nleft -= nread;
-        }
-            
-        readsize = nbytes - nleft;
-        buf = cptr;
-        return readsize;
-    }
-        
     int writen(int fd,char const* cptr,size_t nbytes)
     {
         int nleft,nwriten;
@@ -91,11 +64,6 @@ namespace unet
         
         writesize  = nbytes - nleft;
         return writesize;
-    }
-        
-    int writen(int fd,const std::string& buf)
-    {
-        return writen(fd,buf.c_str(),buf.size());
     }
     
     void daemonize()
@@ -121,7 +89,8 @@ namespace unet
         open("/dev/null",O_RDONLY);
         open("/dev/null",O_RDWR);
         open("/dev/null",O_RDWR);
+        
     }
-
+    
 }
 
