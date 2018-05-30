@@ -65,6 +65,9 @@ namespace unet
 
         Buffer& Buffer::operator=(Buffer&& buf)
         {
+            if(buf == *this)
+                return *this;
+
             while(!u_readList.empty())
             {
                 alloc::deallocUsrBuffer(u_readList.front());
@@ -95,6 +98,8 @@ namespace unet
             u_readListFreeLength = buf.u_readListFreeLength;
             u_writeStart = buf.u_writeStart;
             u_writeListUsedLength = buf.u_writeListUsedLength;
+           
+            return *this;
         }
 
         Buffer::~Buffer()
@@ -164,7 +169,7 @@ namespace unet
             size_t usedBuf = 0;
 
             /*将Buffer调整好了位置*/
-            for(int i;i<u_readListFreeLength;++i)
+            for(int i = 0;i<u_readListFreeLength;++i)
             {
                 if(reads > (*iter)->u_length)/*这个Buffer全部读满*/
                 {
