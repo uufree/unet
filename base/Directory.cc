@@ -13,21 +13,31 @@ namespace unet
 {
     namespace base
     {
+        Directory::Directory(const std::string& path) noexcept :
+            u_directoryPath(path)
+        {update(u_directoryPath);};
+        
+        Directory::Directory(Directory&& dir) :
+            u_directoryPath(std::move(dir.u_directoryPath)),
+            u_directoryList(std::move(dir.u_directoryList)),
+            u_directoryBuffer(std::move(dir.u_directoryBuffer))
+        {update(u_directoryPath);};
+
         Directory& Directory::operator=(Directory&& lhs)
         {
             if(*this == lhs)
                 return *this;
                 
-            _directoryPath = std::move(lhs._directoryPath);
-            _directoryList.clear();
-
-            update(_directoryPath);
+            u_directoryPath = std::move(lhs.u_directoryPath);
+            u_directoryList.clear();
+            
+            update(u_directoryPath);
             return *this;
         }
 
         void Directory::update(const std::string& lhs)
         {
-            _directoryList.clear();
+            u_directoryList.clear();
             struct dirent* drip = NULL;
             DIR* dp = ::opendir(lhs.c_str());
             if(dp == NULL)
@@ -38,18 +48,20 @@ namespace unet
                 if((strcmp(drip->d_name,".")==0) || (strcmp(drip->d_name,"..")==0))
                     continue;
             
-                _directoryList.push_back(drip->d_name);
+                u_directoryList.push_back(drip->d_name);
                 
-                _directoryBuffer.append(drip->d_name);
-                _directoryBuffer.append("\t");
+                u_directoryBuffer.append(u_directoryPath);
+                u_directoryBuffer.append("/");
+                u_directoryBuffer.append(drip->d_name);
+                u_directoryBuffer.append("\r\n");
             }
         }
 
         void Directory::addInDirectoryList(const std::string& filename)
         {
-            _directoryList.push_back(filename);
-            _directoryBuffer.append(filename);
-            _directoryBuffer.append("\t");
+            u_directoryList.push_back(filename);
+            u_directoryBuffer.append(filename);
+            u_directoryBuffer.append("\r\n");
         }
     }
 }

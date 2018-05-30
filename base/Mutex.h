@@ -17,6 +17,7 @@
  * 堆上对象：移动对象，指针置空
  */
 
+/*2018.05.29 测试完成*/
 namespace unet
 {
     namespace base
@@ -40,14 +41,14 @@ namespace unet
                 {return u_tid == tid();};
                 
                 pthread_mutex_t& getMutex()
-                {return *u_mutex;};
+                {return u_mutex;};
                 
                 void lock();
                 void unlock();
             
             private:
                 pthread_t u_tid;
-                mutable pthread_mutex_t* u_mutex;
+                mutable pthread_mutex_t u_mutex;
         };
     
         class MutexLockGuard final

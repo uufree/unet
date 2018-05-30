@@ -6,74 +6,77 @@
  ************************************************************************/
 
 #include"Buffer.h"
+#include"Alloc.h"
+#include"UsrBuffer.h"
 
 namespace unet
 {
     namespace base
     {
-        int StringBuffer::readInSocket()
+        Buffer::Buffer(int fd) :
+            u_fd(fd),
+            u_readSize(0),
+            u_writeSize(0),
+            u_readList(),
+            u_writeList()
         {
-            char extraBuffer[65536];
-            int nbytes = 0;
-            while(1)
+            for(int i=0;i<USR_BUFFER_INIT_LENGTH;i++)
             {
-                memset(extraBuffer,'\0',65536);
-                nbytes = ::read(_confd,extraBuffer,65536); 
-                if(nbytes < 0)
-                {
-                    if(errno==EAGAIN || errno==EWOULDBLOCK)
-                        break;
-                }
-                else if(nbytes > 0)
-                    appendInBuffer(extraBuffer,nbytes);
-                else
-                {};
+                u_readList.push_back(alloc::allocUsrBuffer());
+                u_writeList.push_back(alloc::allocUsrBuffer());
+                u_readSize += USR_BUF_SIZE;
+                u_writeSize += USR_BUF_SIZE;
             }
-            
-            return nbytes;
         }
 
-        int StringBuffer::blockReadInSocket()
+        Buffer::Buffer(Buffer&& buf) :
+            u_fd(buf.u_fd),
+            u_readSize(buf.u_readSize),
+            u_writeSize(buf.u_writeSize),
+            u_readList(),
+            u_writeList()
         {
-            char extraBuffer[65536];
-            int nbytes = readn(_confd,extraBuffer,14);
-            if(nbytes > 0)
-                appendInBuffer(extraBuffer);
-            return nbytes;
-        }
+            if(!buf.u_readList.empty())
+                u_readList.splice(u_readList.begin(),buf.u_readList,buf.u_readList.begin(),buf.u_readList.end());
+            if(!u_writeList.empty())
+                u_writeList.splice(u_writeList.begin(),buf.u_writeList,buf.u_writeList.begin(),buf.u_writeList.end());
+        };
 
-        int StringBuffer::writeInSocket() 
+        Buffer& Buffer::operator=(Buffer&& buf)
         {
-            int n = ::write(_confd,_buffer.c_str(),_buffer.size());
-            if(n > 0)
-                _buffer.erase(0,n);
-            else if(n < 0)
-                handleError(errno);
-            else
-            {};
-            
-            return n;
-        }
-                
-        void StringBuffer::appendInBuffer(const char* message,size_t nbytes) 
-        {
-            _buffer.append(message,nbytes);
-            _buffer.append("\r\n");
-        }
-
-        void StringBuffer::appendInBuffer(const std::string& message)
-        {
-            _buffer.append(message);
-            _buffer.append("\r\n");
-        }
-
-        void StringBuffer::getInBuffer(std::string& message)
-        {
-            size_t index = _buffer.find_first_of("\r\n");
-            if(index != std::string::npos)
+            while(!u_readList.empty())
             {
-                message.append(_buffer,0,index);
-                _buffer.erase(0,index+2);
+                alloc::deallocUsrBuffer(u_readList.front());
+                u_readList.pop_front();
+            }
+
+            while(!u_writeList.empty())
+            {
+                alloc::deallocUsrBuffer(u_writeList.front());
+                u_writeList.pop_front();
+            }
+
+            u_fd = buf.u_fd;
+            u_readSize = buf.u_readSize;
+            u_writeSize = buf.u_writeSize;
+            if(!buf.u_readList.empty())
+                u_readList.splice(u_readList.begin(),buf.u_readList,buf.u_readList.begin(),buf.u_readList.end());
+            if(!u_writeList.empty())
+                u_writeList.splice(u_writeList.begin(),buf.u_writeList,buf.u_writeList.begin(),buf.u_writeList.end());
+        }
+
+        Buffer::~Buffer()
+        {
+            while(!u_readList.empty())
+            {
+                alloc::deallocUsrBuffer(u_readList.front());
+                u_readList.pop_front();
+            }
+
+            while(!u_writeList.empty())
+            {
+                alloc::deallocUsrBuffer(u_writeList.front());
+                u_writeList.pop_front();
             }
         }
     }

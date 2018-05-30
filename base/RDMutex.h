@@ -11,11 +11,12 @@
 #include<pthread.h>
 #include"Global.h"
 
+/*2018.05.29 测试完成*/
 namespace unet
 {
     namespace base
     {
-        /*RDLock存在三种状态，无法使用Guard进行保护*/
+        /*RDLock存在三种状态*/
         class RDMutexLock final
         {
             friend bool operator==(const RDMutexLock&,const RDMutexLock&);
@@ -35,10 +36,26 @@ namespace unet
 
                 void rdLock();
                 void wrLock();
-                void unlock();
+                void unLock();
             private:
                 pthread_t u_tid;
-                pthread_rwlock_t* u_mutex;
+                pthread_rwlock_t u_mutex;
+        };
+        
+        enum LockType{RDLOCK,WRLOCK};
+
+        class RDMutexLockGuard final
+        {
+            public:
+                RDMutexLockGuard(RDMutexLock&,enum LockType);
+                RDMutexLockGuard(RDMutexLockGuard&&) = delete;
+                RDMutexLockGuard(const RDMutexLockGuard&) = delete;
+                RDMutexLockGuard& operator=(const RDMutexLockGuard&) = delete;
+                RDMutexLockGuard& operator=(RDMutexLockGuard&&) = delete;
+                ~RDMutexLockGuard();
+
+            private:
+                RDMutexLock& u_lock;
         };
     }
 }

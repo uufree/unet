@@ -10,6 +10,7 @@
 
 #include"Mutex.h"
 
+/*2018.05.28 测试完成*/
 namespace unet
 {
     namespace base
@@ -23,16 +24,21 @@ namespace unet
                 explicit Condition(MutexLock& mutex);
             
                 Condition(const Condition& lhs) = delete;
-                Condition(Condition&& lhs);
+                Condition(Condition&& lhs) = delete;
                 Condition& operator=(const Condition& lhs) = delete;
-                Condition& operator=(Condition&& lhs);
+                Condition& operator=(Condition&& lhs) = delete;
                 ~Condition();
                 
                 void notify();
                 void notifyAll();
                 void wait();
-    
+            
             private:
+                MutexLock& getMutexRef()
+                {return u_mutex;};
+
+            private:
+                /*一旦引用，无法修改，故删除资源移动函数*/
                 MutexLock& u_mutex;
                 pthread_cond_t u_cond;
         };

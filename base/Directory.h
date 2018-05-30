@@ -5,12 +5,6 @@
 	> Created Time: 2017年05月19日 星期五 16时32分27秒
  ************************************************************************/
 
-/*设计理念：封装本地的目录对象
- * 
- * 1.二重构造来设计整个对象的构造过程
- * 2.使用STL保证数据安全性
- */
-
 #ifndef _DIRECTORY_H
 #define _DIRECTORY_H
 
@@ -18,37 +12,34 @@
 #include<list>
 #include<string>
 
+/*2018.05.28 测试完成*/
+
 namespace unet
 {
     namespace base
     {
+        /*封装本地目录对象*/
         class Directory final
         {
             public:
-                explicit Directory(const std::string& path) noexcept :
-                    _directoryPath(path)
-                {update(_directoryPath);};
-            
-                Directory(const Directory& lhs) = delete;
-                Directory(Directory&& lhs) : 
-                    _directoryPath(std::move(lhs._directoryPath))
-                {update(_directoryPath);};
-
+                explicit Directory(const std::string&) noexcept;
+                Directory(const Directory&) = delete;
+                Directory(Directory&&); 
                 Directory& operator=(const Directory& lhs) = delete;
                 Directory& operator=(Directory&& lhs);
-                ~Directory() noexcept {_directoryList.clear();};
+                ~Directory() noexcept {u_directoryList.clear();};
                 
-                bool operator==(const Directory& dir) {return _directoryPath == dir._directoryPath;};
-                const std::string& getDirBuffer() const {return _directoryBuffer;};
+                bool operator==(const Directory& dir) {return u_directoryPath == dir.u_directoryPath;};
+                const std::string& getDirBuffer() const {return u_directoryBuffer;};
                 void addInDirectoryList(const std::string& filename);
 
             private:
                 void update(const std::string& lhs);
 
             private:
-                std::string _directoryPath;
-                std::list<std::string> _directoryList;
-                std::string _directoryBuffer;
+                std::string u_directoryPath;
+                std::list<std::string> u_directoryList;
+                std::string u_directoryBuffer;
         };
     }
 }

@@ -10,6 +10,8 @@
 
 #include<functional>
 
+/*2018.05.29 测试完成*/
+
 namespace unet
 {
     namespace base
@@ -46,6 +48,7 @@ namespace unet
                 const ThreadFunc& getThreadFunc() const{return u_threadFunc;};
 
             private:
+                /*pthread_t = unsigned long*/
                 pthread_t u_threadId;
                 bool u_start;
                 ThreadFunc u_threadFunc;

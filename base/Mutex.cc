@@ -11,66 +11,54 @@ namespace unet
 {
     namespace base
     {
+        //MutexLock
         MutexLock::MutexLock() : 
-            u_tid(-1)
+            u_tid(0)
         {
-            u_mutex = (pthread_mutex_t*)::malloc(sizeof(pthread_mutex_t));
-            if(u_mutex == NULL)
-                unet::handleError(errno);
-            if(pthread_mutex_init(u_mutex,NULL) < 0)
+            if(pthread_mutex_init(&u_mutex,NULL) < 0)
                 unet::handleError(errno);
         }
 
         MutexLock::~MutexLock()
         {
             /*防止因为出现对象移动语义时，对对象的多次销毁*/
-            if(u_mutex != NULL && u_tid == (unsigned long)-1)
-            {
-                if(pthread_mutex_destroy(u_mutex) < 0)
-                    unet::handleError(errno);
-                ::free(u_mutex);
-            }
+            if(pthread_mutex_destroy(&u_mutex) < 0)
+                unet::handleError(errno);
         }
         
         MutexLock::MutexLock(MutexLock&& lhs) : 
             u_tid(lhs.u_tid),
             u_mutex(std::move(lhs.u_mutex))
         {
-            lhs.u_mutex = NULL;
+            lhs.u_tid = 0;
         }
 
         MutexLock& MutexLock::operator=(MutexLock&& lhs)
         {
             if(*this == lhs)
                 return *this;
-            
+             
             u_tid = lhs.u_tid;
             u_mutex = std::move(lhs.u_mutex);
-            lhs.u_mutex = NULL;
+            lhs.u_tid = 0;
             return *this;
         }
 
         void MutexLock::lock()
         {  
-            if(u_mutex)
-            {
-                if(pthread_mutex_lock(u_mutex) < 0)
-                    handleError(errno);
-                u_tid = tid();
-            }
-            u_tid = -1;
+            if(pthread_mutex_lock(&u_mutex) < 0)
+                handleError(errno);
+            u_tid = tid();
         }
 
         void MutexLock::unlock()
         {
-            if(u_mutex)
-            {
-                if(pthread_mutex_unlock(u_mutex) < 0)
-                    handleError(errno);
-                u_tid = -1;
-            }
+            if(pthread_mutex_unlock(&u_mutex) < 0)
+                handleError(errno);
+            u_tid = 0;
         }
-
+        
+        //MutexLockGuard
         MutexLockGuard::MutexLockGuard(MutexLock& mutex_) :
             mutex(mutex_)
         {

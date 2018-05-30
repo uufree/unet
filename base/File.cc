@@ -70,12 +70,14 @@ namespace unet
             u_type(lhs.u_type),
             u_fileSize(lhs.u_fileSize)
         {
-            u_fd = dup(lhs.u_fd);
+            if(lhs.u_open)
+                u_fd = dup(lhs.u_fd);
+            else
+                u_fd = switchOperatorType(u_type);
             u_open = true;
-            
-            if(::close(lhs.u_fd) < 0)
-                unet::handleError(errno);
-            lhs.u_open = false;
+        
+            if(u_open)
+                lhs.close();
         }
         
         File& File::operator=(File&& lhs)
@@ -88,11 +90,14 @@ namespace unet
             u_fileSize = lhs.u_fileSize;
             u_type = lhs.u_type;
             if(u_open)
-                ::close(u_open);
-            
+                close();
+
             lhs.u_open ? u_fd=dup(lhs.u_open) : u_fd=switchOperatorType(u_type);  
             u_open = true;
             
+            if(lhs.u_open)
+                lhs.close();
+
             return *this;
         }
         
@@ -101,12 +106,37 @@ namespace unet
             if(u_open)
                 if(::close(u_fd) < 0)
                     unet::handleError(errno);
+            u_open = false;
             return 1; 
         }
 
         File::~File() noexcept
         {
             close();
+        }
+
+        unsigned long File::getFileSize()
+        {
+            struct stat statBuf;
+            if(fstat(u_fd,&statBuf) < 0)
+                unet::handleError(errno);
+
+            u_fileSize = statBuf.st_size;
+            return u_fileSize;
+        }
+        
+        /*fcntl无法对操作打开的文件的使用标志，只能使用这种方式*/
+        void File::switchType(int type)
+        {
+            if(u_open)
+            {
+                close();
+                u_fd = -1;
+            }
+            
+            u_fd = switchOperatorType(type);
+            u_type = type;
+            u_open = true;
         }
     }
 }

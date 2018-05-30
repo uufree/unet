@@ -21,12 +21,18 @@ namespace unet
         };
 
         Thread::Thread() : 
-            u_threadId(-1),
+            u_threadId(0),
             u_start(false)
+        {};
+
+        Thread::Thread(const ThreadFunc& func) :
+            u_threadId(0),
+            u_start(false),
+            u_threadFunc(func)
         {};
         
         Thread::Thread(Thread&& lhs) : 
-            u_threadId(-1),
+            u_threadId(0),
             u_start(false),
             u_threadFunc(std::move(lhs.u_threadFunc))
         {};
@@ -36,7 +42,7 @@ namespace unet
             if(*this == lhs)
                 return *this;
 
-            u_threadId = -1;
+            u_threadId = 0;
             u_start = false;
             u_threadFunc = std::move(lhs.u_threadFunc);
             return *this;
@@ -63,7 +69,7 @@ namespace unet
             {
                 ::pthread_cancel(u_threadId);
                 u_start = false;
-                u_threadId = -1;
+                u_threadId = 0;
             }
         }
     }

@@ -14,13 +14,11 @@ namespace unet
         bool operator==(const RDMutexLock& lhs,const RDMutexLock& rhs)
         {return lhs.u_tid == rhs.u_tid;};
         
+        //RDMutexLock
         RDMutexLock::RDMutexLock() :
-            u_tid(-1)
+            u_tid(0)
         {
-            u_mutex = (pthread_rwlock_t*)::malloc(sizeof(pthread_rwlock_t));
-            if(u_mutex == NULL)
-                unet::handleError(errno);
-            if(::pthread_rwlock_init(u_mutex,NULL) < 0)
+            if(::pthread_rwlock_init(&u_mutex,NULL) < 0)
                 unet::handleError(errno);
         }
 
@@ -28,7 +26,7 @@ namespace unet
             u_tid(lock.u_tid),
             u_mutex(std::move(lock.u_mutex))
         {
-            lock.u_mutex = NULL;
+            lock.u_tid = 0;
         };
 
         RDMutexLock& RDMutexLock::operator=(RDMutexLock&& lock)
@@ -37,52 +35,48 @@ namespace unet
                 return *this;
             u_tid = lock.u_tid;
             u_mutex = std::move(lock.u_mutex);
-            lock.u_mutex = NULL;
-
+            lock.u_tid = 0;
             return *this;
         }
 
         RDMutexLock::~RDMutexLock()
         {
-            if(u_mutex != NULL && u_tid == (unsigned long)-1)
-            {
-                if(::pthread_rwlock_destroy(u_mutex) < 0)
-                    unet::handleError(errno);
-                ::free(u_mutex);
-            }
+            if(::pthread_rwlock_destroy(&u_mutex) < 0)
+                unet::handleError(errno);
+            u_tid = 0;
         }
         
         void RDMutexLock::rdLock()
         {
-            if(u_mutex)
-            {
-                if(::pthread_rwlock_rdlock(u_mutex) < 0)
-                    unet::handleError(errno);
-                u_tid = unet::tid();
-            }
-            u_tid = -1;
+            if(::pthread_rwlock_rdlock(&u_mutex) < 0)
+                unet::handleError(errno);
+            u_tid = unet::tid();
         }
         
         void RDMutexLock::wrLock()
         {
-            if(u_mutex)
-            {
-                if(::pthread_rwlock_wrlock(u_mutex) < 0)
-                    unet::handleError(errno);
-                u_tid = unet::tid();
-            }
-            u_tid = -1;
+            if(::pthread_rwlock_wrlock(&u_mutex) < 0)
+                unet::handleError(errno);
+            u_tid = unet::tid();
         }
 
-        void RDMutexLock::unlock()
+        void RDMutexLock::unLock()
         {
-            if(u_mutex)
-            {
-                if(::pthread_rwlock_unlock(u_mutex) < 0)
-                    unet::handleError(errno);
-                u_tid = -1;
-            }
+            if(::pthread_rwlock_unlock(&u_mutex) < 0)
+                unet::handleError(errno);
         }
+
+        RDMutexLockGuard::RDMutexLockGuard(RDMutexLock& lock,enum LockType type) :
+            u_lock(lock)
+        {
+            if(type == RDLOCK)
+                u_lock.rdLock();
+            else if(type == WRLOCK)
+                u_lock.wrLock();
+        }
+
+        RDMutexLockGuard::~RDMutexLockGuard()
+        {u_lock.unLock();};
     }
 }
 

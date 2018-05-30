@@ -18,22 +18,6 @@ namespace unet
                 unet::handleError(errno);
         }
 
-        Condition::Condition(Condition&& lhs) :
-            u_mutex(lhs.u_mutex),
-            u_cond(std::move(lhs.u_cond))
-        {};
-        
-        Condition& Condition::operator=(Condition&& lhs)
-        {
-            if(lhs == *this)
-                return *this;
-
-            u_mutex = std::move(lhs.u_mutex);
-            u_cond = std::move(lhs.u_cond);
-            
-            return *this;
-        }
-        
         Condition::~Condition()
         {
             if(pthread_cond_destroy(&u_cond) < 0)

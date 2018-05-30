@@ -17,17 +17,20 @@
 #ifndef _FILE_H
 #define _FILE_H
 
-#include"global.h"
+#include"Global.h"
 #include<sys/stat.h>
+
+/*2018.05.28 测试完成*/
 
 namespace unet
 {
     namespace base
     {
-        static const int WRITE = O_WRONLY|O_APPEND|O_EXCL;
-        static const int C_WRITE = O_WRONLY|O_TRUNC|O_APPEND|O_CREAT;
-        static const int READ = O_RDONLY|O_EXCL;
-        static const int N_WRITE = O_RDWR|O_CREAT|O_APPEND; 
+        /*只保存两种类型，需要的时候对状态进行转换即可*/
+        static const int WRITE = O_RDWR|O_APPEND|O_CREAT;
+        static const int READ = O_RDWR;
+//        static const int CLEAR_WRITE = O_RDWR|O_TRUNC|O_APPEND|O_CREAT;
+//        static const int NEW_WRITE = O_RDWR|O_CREAT|O_APPEND; 
 
         static const mode_t USER_RW = S_IRUSR | S_IWUSR;
         static const mode_t USER_RWX = USER_RW | S_IXUSR;
@@ -54,12 +57,11 @@ namespace unet
                 const std::string& getGlobalFilename() const {return u_gfilename;};
                 int getFd() const {return u_fd;};
                 bool isOpened() const {return u_open;};    
-                int getFileSize() const {return u_fileSize;};
+                unsigned long getFileSize();
                 int blockRead(char* buf,size_t buflen) {return readn(u_fd,buf,buflen);};
-                int blockRead(std::string& buf,size_t buflen) {return readn(u_fd,buf,buflen);}
                 int blockWrite(const char* buf,size_t buflen) {return writen(u_fd,buf,buflen);};
-                int blockWrite(const std::string& buf) {return writen(u_fd,buf);}
                 int close();
+                void switchType(int);
 
             private:
                 void init() noexcept;
