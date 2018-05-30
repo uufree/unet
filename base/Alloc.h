@@ -38,7 +38,7 @@ namespace unet
     {
         struct UsrBuffer
         {
-            void* u_data;
+            char* u_data;
             size_t u_length;
             int u_flag;
             char u_buf[USR_BUF_SIZE];
