@@ -34,7 +34,10 @@ namespace unet
                 size_t writeFreeSize() const{return u_writeFreeSize;};
                 bool readEmpty() const{return u_readFreeSize == 0;};
                 bool writeEmpty() const{return u_writeFreeSize == 0;};
-
+                int readListFreeLength() const{return u_readListFreeLength;};
+                int readListUsedLength() const{return u_readListUsedLength;};
+                int writeListFreeLength() const{return u_writeListFreeLength;};
+                int writeListUsedLength() const{return u_writeListUsedLength;};
                 /*Functionality:
                  *      从Socket中读取数据，存在阻塞与非阻塞两个版本
                  *Parameters:
@@ -46,9 +49,9 @@ namespace unet
                 int writeInSocket();
                 int readInBuffer(char* buf,size_t size);
                 int writeInBuffer(const char* str,size_t size);
-
-                void sendFile(const char* filename,size_t namelen);
-                void recvFile(const char* filename,size_t namelen);
+                
+//                void sendFile(const char* filename,size_t namelen);
+//                void recvFile(const char* filename,size_t namelen);
 
             private:
                 bool u_block;
