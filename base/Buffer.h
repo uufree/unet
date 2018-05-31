@@ -38,6 +38,8 @@ namespace unet
                 int readListUsedLength() const{return u_readListUsedLength;};
                 int writeListFreeLength() const{return u_writeListFreeLength;};
                 int writeListUsedLength() const{return u_writeListUsedLength;};
+                void setBlock(){u_block = true;};
+                void setNonBlock(){u_block = false;};
                 /*Functionality:
                  *      从Socket中读取数据，存在阻塞与非阻塞两个版本
                  *Parameters:
@@ -95,6 +97,33 @@ namespace unet
                 int u_writeListFreeLength;/*用户向buffer中写数据*/
                 char* u_writeStart;
                 int u_writeListUsedLength;/*buffer向socket中写数据*/
+
+                /*需要着重讨论一下上述的UesdLegth和FreeLength的语义：
+                 * 1.ReadUsed
+                 *  a.初始化时为0，因为此时没有从socket中读取任何数据
+                 *  b.使用中时，ReadUsed可能会在1,2,3,4中徘徊。若为i，意味着index=
+                 *  i-1的buffer中可能还有空间可以使用，起始位置是u_data。
+                 *  c.使用结束时，也就是socket中的数据被完全读取，重新置0
+                 *
+                 * 2.ReadFree
+                 *  a.初始化时为4，表征一种全为空的状态
+                 *  b.使用中时，ReadFree会随着用户从Buffer中读取数据而改变。具体的
+                 *  数值在4,3,2,1中徘徊，使用时可以使用INIT-i进行索引，起始位置是
+                 *  u_readStart
+                 *  c.使用结束时，也就是buffer中没有任何数据可以提供给用户，置0
+                 *
+                 * 3.WriteUesd
+                 *  a.初始化时为0，因为此时用户没有向Buffer中写入任何数据
+                 *  b.使用中时，WriteUsed可能会在1,2,3,4中徘徊。若为i，意味着index
+                 *  =i-1的buffer中可能还有空间可以使用，起始位置是u_data
+                 *  c.使用结束时，也就是buffer中的数据全部被发送，置0
+                 *
+                 * 4.WriteFree
+                 *  a.初始化时为4，表征一种全为空的状态
+                 *  b.使用中时，ReadFree回随着数据被发送而改变，若数据完全发送，会
+                 *  将writeFree置0，其余的时间，在4,3,2,1中徘徊，使用时使用
+                 *  u_writeStart进行索引
+                 */
         };
     }
 }

@@ -19,24 +19,35 @@ int main(int argc,char** argv)
     Socket confd(CONNECT);
     confd.connect(serverAddr);
     std::cout << "Client ConnectFD: " << confd.getFd() << std::endl;
-    
+   
     Buffer buffer(confd.getFd());
-    char buf[16];
-    bzero(buf,16);
+//    confd.setNonBlockAndCloseOnExec();
+    
+    buffer.setBlock();
+//    buffer.setNonBlock();
+
+    char buf[4000];
+    bzero(buf,4000);
+    
+    char sendBuf[4000];
+    memset(sendBuf,'c',4000);
 
     while(1)
     {
-        int j = buffer.readInSocket();
+//        int j = buffer.readInSocket();
+        int j = confd.read(buf,4000);
         std::cout << "Client Read: " << j << std::endl;
-        buffer.readInBuffer(buf,13);
+//        buffer.readInBuffer(buf,4096);
         std::cout << buf << std::endl;
-
-        buffer.writeInBuffer("Hello,Server!",13);
-        int i = buffer.writeInSocket();
+        
+        
+//        int i = buffer.writeInBuffer(sendBuf,4096);
+        int i = confd.write(sendBuf,4000);
         std::cout << "Client Write: " << i << std::endl;
+//        buffer.writeInSocket();
         
         sleep(1);
-        bzero(buf,16);
+        bzero(buf,4000);
     }
 
     return 0;
