@@ -13,6 +13,9 @@
 
 using namespace unet::base;
 
+/*阻塞版本正常*/
+/*非阻塞版本未发现问题*/
+
 int main(int argc,char** argv)
 {
     InetAddress serverAddr(7777);
@@ -25,21 +28,18 @@ int main(int argc,char** argv)
     std::cout << "Server ConnectFD: " << confd << std::endl;
     
     Socket confds(confd);
-//    confds.setNonBlockAndCloseOnExec();
+    confds.setNonBlockAndCloseOnExec();
     Buffer buffer(confd);
     
     buffer.setBlock();
-//    buffer.setNonBlock();
+    buffer.setNonBlock();
 
-    char buf[4000];
-    memset(buf,'\0',4000);
-    
-    char sendBuf[4000];
-    memset(sendBuf,'u',4000);
+    char* buf = new char[4096];
+    memset(buf,'s',4096);
 
     while(1)
     {
-        buffer.writeInBuffer(sendBuf,4000);
+        buffer.writeInBuffer(buf,4096);
         std::cout << "========================" << std::endl;
         std::cout << "Read Free Size: " << buffer.readFreeSize() << std::endl;
         std::cout << "Write Free Size: " << buffer.writeFreeSize() << std::endl;
@@ -51,23 +51,24 @@ int main(int argc,char** argv)
         std::cout << "========================" << std::endl;
         std::cout << "Server Write: " << i << std::endl;
     
+        memset(buf,'0',4096);
         int j = buffer.readInSocket();
         std::cout << "========================" << std::endl;
         std::cout << "Read Free Size: " << buffer.readFreeSize() << std::endl;
         std::cout << "Write Free Size: " << buffer.writeFreeSize() << std::endl;
         std::cout << "========================" << std::endl;
         std::cout << "Server Read: " << j << std::endl;
-        buffer.readInBuffer(buf,4000);
+        buffer.readInBuffer(buf,4096);
         std::cout << "========================" << std::endl;
         std::cout << "Read Free Size: " << buffer.readFreeSize() << std::endl;
         std::cout << "Write Free Size: " << buffer.writeFreeSize() << std::endl;
         std::cout << "========================" << std::endl;
-
-        std::cout << buf << std::endl;
         
+        std::cout << buf << std::endl;
+        std::cout << "buflen: " << strlen(buf) << std::endl; 
 
         sleep(1);
-        bzero(buf,4000);
+        memset(buf,'s',4096);
     }
     
     return 0;

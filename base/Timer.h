@@ -37,12 +37,8 @@ namespace unet
             private:
                 uint64_t u_microseconds;
         };
-
-        bool operator==(const Time& a,const Time& b)
-        {return a.u_microseconds == b.u_microseconds;};
-
-        bool operator<(const Time& a,const Time& b)
-        {return a.u_microseconds < b.u_microseconds;};
+        bool operator==(const Time& a,const Time& b);
+        bool operator<(const Time& a,const Time& b);
     }
         
     class TimerEvent;

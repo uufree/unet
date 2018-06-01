@@ -63,14 +63,23 @@ namespace unet
         */
 
 #define BUFFER_CLEAR_FLAG(buf) (buf->u_flag=0)
+
 #define BUFFER_SET_INUSE(buf) (buf->u_flag|=U_BUFFER_INUSE)
 #define BUFFER_TEST_INUSE(buf) (buf->u_flag & U_BUFFER_INUSE)
+#define BUFFER_DEL_INUSE(buf) (buf->u_flag &= ~U_BUFFER_INUSE)        
+
 #define BUFFER_SET_FREE(buf) (buf->u_flag|=U_BUFFER_FREE)
 #define BUFFER_TEST_FREE(buf) (buf->u_flag & U_BUFFER_FREE)
+#define BUFFER_DEL_FREE(buf) (buf->u_flag &= ~U_BUFFER_FREE)
+
 #define BUFFER_SET_DIRTY(buf) (buf->u_flag|=U_BUFFER_DIRTY)
 #define BUFFER_TEST_DIRTY(buf) (buf->u_flag & U_BUFFER_DIRTY)
+#define BUFFER_DEL_DIRTY(buf) (buf->u_flag &= ~U_BUFFER_DIRTY)
+
 #define BUFFER_SET_FULL(buf) (buf->u_flag |= U_BUFFER_FULL)
 #define BUFFER_TEST_FULL(buf) (buf->u_flag & U_BUFFER_FULL)
+#define BUFFER_DEL_FULL(buf) (buf->u_flag &= ~U_BUFFER_FULL)
+
 #define BUFFER_LENGTH(buf) (buf->u_length)
 #define BUFFER_SET_LENGTH(buf,len) (buf->u_length=len)
 #define BUFFER_CLEAR_DATA(buf) (buf->u_data=buf->u_buf)

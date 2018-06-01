@@ -144,6 +144,7 @@ namespace unet
         /*在分配内存时设置标志位*/
         BUFFER_CLEAR_FLAG(res);
         BUFFER_SET_INUSE(res);
+        BUFFER_SET_FREE(res);
         BUFFER_SET_LENGTH(res,LOG_BUF_SIZE);
         BUFFER_CLEAR_DATA(res);
 
@@ -152,6 +153,7 @@ namespace unet
 
     void Allocator::deallocLogBuffer(LogBuffer* buf)
     {
+        BUFFER_DEL_INUSE(buf);
         base::MutexLockGuard guard(u_logMutex);
         u_logBufferList.push_back(buf);
         ++u_logListSize;
@@ -173,6 +175,7 @@ namespace unet
         
         BUFFER_CLEAR_FLAG(res);
         BUFFER_SET_INUSE(res);
+        BUFFER_SET_FREE(res);
         BUFFER_SET_LENGTH(res,USR_BUF_SIZE);
         BUFFER_CLEAR_DATA(res);
 
@@ -181,6 +184,7 @@ namespace unet
     
     void Allocator::deallocUsrBuffer(UsrBuffer* buf)
     {
+        BUFFER_DEL_INUSE(buf);
         base::MutexLockGuard guard(u_usrMutex);
         u_usrBufferList.push_back(buf);
         ++u_usrListSize;

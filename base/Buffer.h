@@ -11,12 +11,14 @@
 #include<list>
 #include"Alloc.h"
 
+/*2018.05.31 测试完成*/
+
 namespace unet
 {
     namespace base
-    {   
+    {
         static const int USR_BUFFER_INIT_LENGTH = 4;
-        static const int USR_BUFFER_FULL = USR_BUFFER_INIT_LENGTH*USR_BUF_SIZE; 
+        static const int USR_BUFFER_FULL = USR_BUFFER_INIT_LENGTH*USR_BUF_SIZE;
 
         class Buffer final
         {
@@ -28,20 +30,17 @@ namespace unet
                 Buffer& operator=(Buffer&&);
                 ~Buffer();
                 
-                bool operator==(const Buffer& buf){return buf.u_fd == u_fd;};
+                bool operator==(const Buffer& buf){return u_fd == buf.u_fd;};
 
                 size_t readFreeSize() const{return u_readFreeSize;};
                 size_t writeFreeSize() const{return u_writeFreeSize;};
                 bool readEmpty() const{return u_readFreeSize == 0;};
                 bool writeEmpty() const{return u_writeFreeSize == 0;};
-                int readListFreeLength() const{return u_readListFreeLength;};
-                int readListUsedLength() const{return u_readListUsedLength;};
-                int writeListFreeLength() const{return u_writeListFreeLength;};
-                int writeListUsedLength() const{return u_writeListUsedLength;};
                 void setBlock(){u_block = true;};
                 void setNonBlock(){u_block = false;};
+                
                 /*Functionality:
-                 *      从Socket中读取数据，存在阻塞与非阻塞两个版本
+                 *      从Socket/Buffer中读取/发送数据
                  *Parameters:
                  *      None
                  *Returned Value：
@@ -61,69 +60,22 @@ namespace unet
                 size_t u_readFreeSize;  
                 size_t u_writeFreeSize; 
                 
-                /*ReadList有两个任务：
-                 * 1.从socket中读取数据
-                 * 2.向用户提供数据
-                 *为了处理数据时避免重复的计算，我们提供了必要的缓存：
-                 * 从socket读取数据：
-                 *  a.读取数据时，在list中可以直接开始的index
-                 *  b.读取数据时，需要知道的free node数量
-                 * 向用户提供数据：
-                 *  a.提供数据必然从begin()开始，但是UsrBuffer设计的有问题。所以
-                 *  需要一个可以起始读取数据的char*。考虑到了可以一次性没有读完
-                 *  一个完整的Buffer
-                 *  b.提供数据时，需要一个已存在数据的used node
+                /*这个版本的Buffer使用标志对Buffer进行区分
+                 *ReadList有两个任务：
+                 * 1.从Socket中读取数据：选取一个Not Full的Buffer，将Socket中的
+                 * 数据写入，如果Buffer数量不足，立刻分配
+                 * 2.向用户提供数据：从首部的Buffer中开始读取数据，必须判断首部的
+                 *   Buffer时Dirty的
+                 *WriteList有两个任务：
+                 * 1.往Socket中写数据：从首部的Buffer开始写数据，要求首部的Buffer
+                 *   必须是Dirty的
+                 * 2.用户向Buffer中写数据：选取一个Not Full的Buffer，写数据  
                  */
                 std::list<UsrBuffer*> u_readList;
-                std::list<UsrBuffer*>::iterator u_readListIndex;
-                int u_readListFreeLength;/*从socket读*/
                 char* u_readStart;
-                int u_readListUsedLength;/*用户读*/
-                
-                /*WriteList有两个任务：
-                 * 1.buffer向socket中写数据
-                 * 2.用户向buffer中写数据
-                 *为了避免重复的计算，我们需要以下功能性缓存：
-                 * 向buffer中写数据：
-                 *  a.可以直接开始写的list index
-                 *  b.能写的node的数量
-                 * 向socket中写数据时：
-                 *  a.首个可写buffer中的起始位置，char*，考虑一次没法写完一整个
-                 *  buffer的情况
-                 *  b.可以写的node数量
-                 */ 
-                std::list<UsrBuffer*> u_writeList;
-                std::list<UsrBuffer*>::iterator u_writeListIndex;
-                int u_writeListFreeLength;/*用户向buffer中写数据*/
-                char* u_writeStart;
-                int u_writeListUsedLength;/*buffer向socket中写数据*/
 
-                /*需要着重讨论一下上述的UesdLegth和FreeLength的语义：
-                 * 1.ReadUsed
-                 *  a.初始化时为0，因为此时没有从socket中读取任何数据
-                 *  b.使用中时，ReadUsed可能会在1,2,3,4中徘徊。若为i，意味着index=
-                 *  i-1的buffer中可能还有空间可以使用，起始位置是u_data。
-                 *  c.使用结束时，也就是socket中的数据被完全读取，重新置0
-                 *
-                 * 2.ReadFree
-                 *  a.初始化时为4，表征一种全为空的状态
-                 *  b.使用中时，ReadFree会随着用户从Buffer中读取数据而改变。具体的
-                 *  数值在4,3,2,1中徘徊，使用时可以使用INIT-i进行索引，起始位置是
-                 *  u_readStart
-                 *  c.使用结束时，也就是buffer中没有任何数据可以提供给用户，置0
-                 *
-                 * 3.WriteUesd
-                 *  a.初始化时为0，因为此时用户没有向Buffer中写入任何数据
-                 *  b.使用中时，WriteUsed可能会在1,2,3,4中徘徊。若为i，意味着index
-                 *  =i-1的buffer中可能还有空间可以使用，起始位置是u_data
-                 *  c.使用结束时，也就是buffer中的数据全部被发送，置0
-                 *
-                 * 4.WriteFree
-                 *  a.初始化时为4，表征一种全为空的状态
-                 *  b.使用中时，ReadFree回随着数据被发送而改变，若数据完全发送，会
-                 *  将writeFree置0，其余的时间，在4,3,2,1中徘徊，使用时使用
-                 *  u_writeStart进行索引
-                 */
+                std::list<UsrBuffer*> u_writeList;
+                char* u_writeStart;
         };
     }
 }

@@ -13,6 +13,9 @@
 
 using namespace unet::base;
 
+/*阻塞版本正常*/
+/*非阻塞版本未发现问题*/
+
 int main(int argc,char** argv)
 {
     InetAddress serverAddr(7777,"127.0.0.1");
@@ -21,33 +24,29 @@ int main(int argc,char** argv)
     std::cout << "Client ConnectFD: " << confd.getFd() << std::endl;
    
     Buffer buffer(confd.getFd());
-//    confd.setNonBlockAndCloseOnExec();
+    confd.setNonBlockAndCloseOnExec();
     
     buffer.setBlock();
-//    buffer.setNonBlock();
+    buffer.setNonBlock();
 
-    char buf[4000];
-    bzero(buf,4000);
-    
-    char sendBuf[4000];
-    memset(sendBuf,'c',4000);
+    char* buf = new char[4096];
+    memset(buf,'u',4096);
 
     while(1)
     {
-//        int j = buffer.readInSocket();
-        int j = confd.read(buf,4000);
+        int j = buffer.readInSocket();
         std::cout << "Client Read: " << j << std::endl;
-//        buffer.readInBuffer(buf,4096);
-        std::cout << buf << std::endl;
+        buffer.readInBuffer(buf,4096);
+//        std::cout << buf << std::endl;
+        std::cout << "buflen: " << strlen(buf) << std::endl;
         
-        
-//        int i = buffer.writeInBuffer(sendBuf,4096);
-        int i = confd.write(sendBuf,4000);
+        memset(buf,'c',4096);
+        int i = buffer.writeInBuffer(buf,4096);
         std::cout << "Client Write: " << i << std::endl;
-//        buffer.writeInSocket();
+        buffer.writeInSocket();
         
         sleep(1);
-        bzero(buf,4000);
+        bzero(buf,4096);
     }
 
     return 0;

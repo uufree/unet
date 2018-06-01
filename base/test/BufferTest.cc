@@ -6,7 +6,7 @@
  ************************************************************************/
 
 #include<iostream>
-#include"../Buffer.h"
+#include"../UsrBuffer.h"
 
 using namespace unet::base;
 
@@ -15,27 +15,20 @@ using namespace unet::base;
 int main(int argc,char** argv)
 {
     Buffer buffer(10);
+    std::cout << "=======================================" << std::endl;
     std::cout << "Init: " << std::endl;
     std::cout << "Buffer Read Free Size: " << buffer.readFreeSize() << std::endl;
     std::cout << "Buffer Write Free Size: " << buffer.writeFreeSize() << std::endl;
     std::cout << "=======================================" << std::endl;
-    
-    std::cout << "Write: " << std::endl;
-    buffer.writeInBuffer("uuchen",6);
-    buffer.writeInBuffer("uuchen",6);
-    std::cout << "Buffer Read Free Size: " << buffer.readFreeSize() << std::endl;
-    std::cout << "Buffer Write Free Size: " << buffer.writeFreeSize() << std::endl;
-    std::cout << "========================================" << std::endl;
-    
-    std::cout << "Read: " << std::endl;
-    char buf[6];
-    memset(buf,'\0',6);
-    buffer.readInBuffer(buf,6);
-    std::cout << "Read List Used Length: " << buffer.readListUsedLength() << std::endl;
-    std::cout << "Buffer Read Free Size: " << buffer.readFreeSize() << std::endl;
-    std::cout << "Buffer Write Free Size: " << buffer.writeFreeSize() << std::endl;
-    std::cout << buf << std::endl;
-    std::cout << "=======================================" << std::endl;
-    
+   
+    for(int i=0;i<10;i++)
+    {
+        std::cout << "========================================" << std::endl;
+        std::cout << "Write: " << std::endl;
+        buffer.writeInBuffer("uuchen",6);
+        std::cout << "Buffer Read Free Size: " << buffer.readFreeSize() << std::endl;
+        std::cout << "Buffer Write Free Size: " << buffer.writeFreeSize() << std::endl;
+        std::cout << "========================================" << std::endl;
+    }
     return 0;
 }

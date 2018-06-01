@@ -22,6 +22,12 @@ namespace unet
             ::gettimeofday(&tv,NULL);
             u_microseconds = tv.tv_sec * Time::KMicroseconds + tv.tv_usec;
         }
+        
+        bool operator==(const Time& a,const Time& b)
+        {return a.u_microseconds == b.u_microseconds;};
+
+        bool operator<(const Time& a,const Time& b)
+        {return a.u_microseconds < b.u_microseconds;};
     }
 
     Timer::Timer(base::Time time,bool repeat,double repeatTime) :
@@ -94,8 +100,8 @@ namespace unet
             return;
 
         std::shared_ptr<TimerEvent> ptr = u_timers.lock();
-        if(ptr)
-            ptr->addTimerWithLock(shared_from_this());    
+//        if(ptr)
+//            ptr->addTimerWithLock(shared_from_this());    
     }
     
     /*为什么不通过调整repeat属性来关闭Timer？
