@@ -20,13 +20,13 @@
 #define U_UDP 0x01
 #define U_TCP 0x02
 #define U_LISTEN 0x04
-#define U_COMMON 0x08
+#define U_CONNECT 0x08
 #define U_SOCKET 0x10
 
 //use type
 #define U_TIMER 0x20
 #define U_SIGNAL 0x40
-#define U_COMMON_SOCKET U_TCP|U_COMMON|U_SOCKET
+#define U_CONNECT_SOCKET U_TCP|U_CONNECT|U_SOCKET
 #define U_LISTEN_SOCKET U_TCP|U_LISTEN|U_SOCKET
 
 //event demultiplexer

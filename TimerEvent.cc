@@ -35,23 +35,44 @@ namespace unet
         u_start(false),
         u_timerHeap(),
         u_mutex()
-    {};
+    {
+        if(u_timerfd < 0)
+            unet::handleError(errno);
+    };
 
     TimerEvent::TimerEvent(TimerEvent&& event) :
-        u_timerfd(::dup(event.u_timerfd)),
+        u_timerfd(event.u_timerfd),
         u_start(false),
-        u_timerHeap(std::move(event.u_timerHeap)),
+        u_timerHeap(),
         u_mutex()
-    {};
+    {
+        {
+            base::MutexLockGuard guard(event.u_mutex);
+            event.u_start = false;
+            event.u_timerfd = -1;
+            u_timerHeap = std::move(event.u_timerHeap);
+        }
+    };
 
     TimerEvent& TimerEvent::operator=(TimerEvent&& event)
     {
         if(*this == event)
             return *this;
-        if(::close(u_timerfd) < 0)
-            unet::handleError(errno);
-        u_timerHeap.swap(event.u_timerHeap);
-        u_start = false;
+
+        base::MutexLockGuard guard(event.u_mutex);
+        {
+            base::MutexLockGuard guard(u_mutex);
+            {
+                if(::close(u_timerfd) < 0)
+                    unet::handleError(errno);
+                u_timerfd = event.u_timerfd;
+                u_timerHeap.swap(event.u_timerHeap);
+                u_start = false;
+            }
+            
+            event.u_start = false;
+            event.u_timerfd = -1;
+        }
 
         return *this;
     }
@@ -61,6 +82,7 @@ namespace unet
         if(::close(u_timerfd) < 0)
             unet::handleError(errno);
         u_start = false;
+        u_timerfd = -1;
     }
     
     void TimerEvent::addTimerWithLock(TimerPtr timer)
@@ -69,6 +91,7 @@ namespace unet
             return;
         
         /*not-thread safety*/
+        /*判断Timer是否已经加入queue*/
         if(timer->isStart())
             return;
 
@@ -100,7 +123,9 @@ namespace unet
     {
         if(u_start == false)
             return;
-
+        if(timer->isStart())
+            return;
+        
         base::Time now;
         now.addTime(timer->getRepeatTime());
         
@@ -126,6 +151,8 @@ namespace unet
     {
         if(u_start == false)
             return;
+        if(u_timerHeap.size() <= 0)
+            return;
 
         ::read(u_timerfd,NULL,0);
         base::Time time;
@@ -134,16 +161,18 @@ namespace unet
 
         base::MutexLockGuard guard(u_mutex);
         {
+            TimerPtr tempPtr;
             while(u_timerHeap.top().first < now)
             {
-                handleList.push_back(u_timerHeap.top().second); 
-                if(u_timerHeap.top().second->repeat())
-                    addTimer(u_timerHeap.top().second);
+                tempPtr = u_timerHeap.top().second;
+                handleList.push_back(tempPtr); 
                 
                 /*not-thread safety*/
-                u_timerHeap.top().second->setStop();
-                
+                tempPtr->setStop();
                 u_timerHeap.pop();
+                
+                if(tempPtr->repeat())
+                    addTimer(tempPtr);
             }
         }
             

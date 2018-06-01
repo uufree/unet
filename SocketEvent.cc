@@ -78,23 +78,23 @@ namespace unet
         }
     }
     
-    //CommonSocketEvent
-    CommonSocketEvent::CommonSocketEvent(int fd,int type) :
+    //ConnectSocketEvent
+    ConnectSocketEvent::ConnectSocketEvent(int fd,int type) :
         SocketEvent(fd,type),
         u_conWPtr()
     {};
     
-    CommonSocketEvent::CommonSocketEvent(int fd,int type,const TcpConnectionPtr& ptr) :
+    ConnectSocketEvent::ConnectSocketEvent(int fd,int type,const TcpConnectionPtr& ptr) :
         SocketEvent(fd,type),
         u_conWPtr(ptr)
     {};
     
-    CommonSocketEvent::CommonSocketEvent(CommonSocketEvent&& event) :
+    ConnectSocketEvent::ConnectSocketEvent(ConnectSocketEvent&& event) :
         SocketEvent(event.u_fd,event.u_type),
         u_conWPtr(event.u_conWPtr.lock())
     {};
     
-    CommonSocketEvent& CommonSocketEvent::operator=(CommonSocketEvent&& event)
+    ConnectSocketEvent& ConnectSocketEvent::operator=(ConnectSocketEvent&& event)
     {
         if(*this == event)
             return *this;
@@ -105,9 +105,9 @@ namespace unet
         return *this;
     }
 
-    void CommonSocketEvent::handleEvent(int event)
+    void ConnectSocketEvent::handleEvent(int event)
     {
-        if(u_type & U_COMMON_SOCKET)
+        if(u_type & U_CONNECT_SOCKET)
         {
             TcpConnectionPtr ptr = u_conWPtr.lock();
             if(!ptr)

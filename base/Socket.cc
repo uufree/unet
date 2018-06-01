@@ -38,14 +38,15 @@ namespace unet
             u_type(socket.u_type),
             u_bit(socket.u_bit)
         {
+            /*dup只能用来操作FILE* */
             if(socket.u_open)
-                u_socketfd = ::dup(socket.u_socketfd);
+                u_socketfd = socket.u_socketfd;
             if(u_socketfd < 0)
                 unet::handleError(errno);
             u_open = true;
 
-            socket.close();
             socket.u_open = false;
+            socket.u_socketfd = -1;
         };
                 
         Socket& Socket::operator=(Socket&& socket)
@@ -59,14 +60,14 @@ namespace unet
                 u_open = false;
                 
                 u_type = socket.u_type;
-                u_socketfd = ::dup(socket.u_socketfd);
+                u_socketfd = socket.u_socketfd;
                 if(u_socketfd < 0)
                     unet::handleError(errno);
                 u_bit = socket.u_bit;
                 u_open = true;
 
-                socket.close();
                 socket.u_open = false;
+                socket.u_socketfd = -1;
             }
 
             return *this;

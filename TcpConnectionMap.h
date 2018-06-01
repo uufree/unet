@@ -16,13 +16,16 @@
 #include<map>
 #include<memory>
 
+/*2018.06.01 测试完成*/
+
 namespace unet
 {
-        
+    /*由TcpServer统一管理TcpConnect资源，为删除，添加，查找创建遍历*/
     class TcpConnectionMap final
     {
         typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
-        
+        friend bool operator==(const TcpConnectionMap& lhs,const TcpConnectionMap& rhs);
+
         public:
             TcpConnectionMap(){};
             TcpConnectionMap(const TcpConnectionMap&) = delete;
@@ -30,18 +33,20 @@ namespace unet
             TcpConnectionMap& operator=(const TcpConnectionMap&) = delete;
             TcpConnectionMap& operator=(TcpConnectionMap&& lhs);
             ~TcpConnectionMap(){};
-
-            int size() const {return _tcpConnectionMap.size();};
-            bool empty() const {return _tcpConnectionMap.empty();};
+            
+            int size() const {return u_tcpConnectionMap.size();};
+            bool empty() const {return u_tcpConnectionMap.empty();};
             void insert(int fd);
             void insert(const TcpConnectionPtr& lhs);
             void erase(int fd);
-            TcpConnectionPtr& find(int fd){return _tcpConnectionMap[fd];};
+            TcpConnectionPtr& find(int fd);
 
         private:
-            base::MutexLock _mutex;
-            std::map<int,TcpConnectionPtr> _tcpConnectionMap;
+            base::MutexLock u_mutex;
+            std::map<int,TcpConnectionPtr> u_tcpConnectionMap;
     };
+    
+    bool operator==(const TcpConnectionMap& lhs,const TcpConnectionMap& rhs);
 }
 
 

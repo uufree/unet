@@ -13,6 +13,8 @@
 #include"base/Buffer.h"
 #include"base/Socket.h"
 
+/*2018.06.01 测试完成*/
+
 namespace unet
 {
     /*关于TcpConnection状态的讨论：
@@ -26,10 +28,11 @@ namespace unet
      */
     class TcpConnection final
     {
-        typedef std::shared_ptr<base::Buffer> BufferPtr;
-        typedef std::function<void (BufferPtr&)> ReadCallBack;
-        typedef std::function<void (BufferPtr&)> WriteCallBack;
-        typedef std::function<void(int)> CloseCallBack;
+        public:
+            typedef std::shared_ptr<base::Buffer> BufferPtr;
+            typedef std::function<void (BufferPtr&)> ReadCallBack;
+            typedef std::function<void (BufferPtr&)> WriteCallBack;
+            typedef std::function<void(int)> CloseCallBack;
         
         public:        
             explicit TcpConnection(int);
@@ -38,7 +41,7 @@ namespace unet
             TcpConnection(TcpConnection&& lhs);
             TcpConnection& operator=(const TcpConnection& lhs) = delete;
             TcpConnection& operator=(TcpConnection&& lhs);
-            ~TcpConnection();
+            ~TcpConnection(){};
             
             bool operator==(const TcpConnection& con){return u_confd==con.u_confd;};
             void setReadCallBack(const ReadCallBack& cb){u_readCallBack = cb;};
@@ -68,8 +71,14 @@ namespace unet
             int setCloseNormal() {return u_confd.setCloseNormal();};
             int setKeepAlive() {return u_confd.setKeepAlive();};
             int setNodelay() {return u_confd.setNodelay();};
-            int setNonBlockAndCloseOnExec() {return u_confd.setNonBlockAndCloseOnExec();};
-            int delNonBlockAndCloseOnExec() {return u_confd.delNonBlockAndCloseOnExec();}; 
+            int setNonBlockAndCloseOnExec() 
+            {u_buffer->setNonBlock();return u_confd.setNonBlockAndCloseOnExec();};
+            int delNonBlockAndCloseOnExec() 
+            {u_buffer->setNonBlock();return u_confd.delNonBlockAndCloseOnExec();}; 
+            int readFreeSize() const{return u_buffer->readFreeSize();};
+            int readUsedSize() const{return u_buffer->readUsedSize();};
+            int writeFreeSize() const{return u_buffer->writeFreeSize();};
+            int writeUsedSize() const{return u_buffer->writeUsedSize();};
 
             void handleRead();//用于处理描述符上发生的事件
             void handleWrite();

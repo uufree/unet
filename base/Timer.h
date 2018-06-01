@@ -19,6 +19,8 @@
  * 可以判断，出现状态不一致的情况非常少，故不使用锁来维护标志的状态
  */
 
+/*2018.06.01 测试完成*/
+
 namespace unet
 {
     namespace base
@@ -45,14 +47,17 @@ namespace unet
 
     class Timer final : public std::enable_shared_from_this<Timer> 
     {
-        typedef std::function<void()> TimeCallBack;
-        typedef std::weak_ptr<TimerEvent> TimerEventWPtr;
-        typedef std::shared_ptr<TimerEvent> TimerEventPtr;
+        public:
+            typedef std::function<void()> TimeCallBack;
+            typedef std::weak_ptr<TimerEvent> TimerEventWPtr;
+            typedef std::shared_ptr<TimerEvent> TimerEventPtr;
+            typedef std::shared_ptr<Timer> TimerPtr;
+            typedef std::weak_ptr<Timer> TimerWPtr;
 
         public:
-            explicit Timer(base::Time time,bool repeat,double repeatTime);
-            explicit Timer(bool repeat,double repeatTime);
-            explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback);
+            explicit Timer(base::Time time,bool repeat,double repeatTime,const TimerEventPtr&);
+            explicit Timer(bool repeat,double repeatTime,const TimerEventPtr&);
+            explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback,const TimerEventPtr&);
             Timer(const Timer& lhs) = delete;
             Timer(Timer&& lhs);
             Timer& operator=(const Timer& lhs) = delete;
@@ -64,7 +69,6 @@ namespace unet
             void run() const {u_timeCallBack();};
             bool repeat() const {return u_repeat;};
             void setTimeCallBack(const TimeCallBack& callback){u_timeCallBack = callback;};
-            void setTimesPtr(const TimerEventPtr& ptr){u_timers=ptr;};
             bool hasCallBack()const{return u_timeCallBack?true:false;};
             bool hasTimers() const{return u_timers.lock()?true:false;}
             double getRepeatTime()const{return u_repeatTime;};

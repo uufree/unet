@@ -30,31 +30,31 @@ namespace unet
         {return a.u_microseconds < b.u_microseconds;};
     }
 
-    Timer::Timer(base::Time time,bool repeat,double repeatTime) :
+    Timer::Timer(base::Time time,bool repeat,double repeatTime,const TimerEventPtr& ptr) :
         u_start(false),
         u_time(time),
         u_repeat(repeat),
         u_repeatTime(repeatTime),
         u_timeCallBack(),
-        u_timers()
+        u_timers(ptr)
     {};
 
-    Timer::Timer(bool repeat,double repeatTime) :
+    Timer::Timer(bool repeat,double repeatTime,const TimerEventPtr& ptr) :
         u_start(false),
         u_time(base::Time()),
         u_repeat(repeat),
         u_repeatTime(repeatTime),
         u_timeCallBack(),
-        u_timers()
+        u_timers(ptr)
     {};
         
-    Timer::Timer(bool repeat,double repeatTime,const TimeCallBack& callback) :
+    Timer::Timer(bool repeat,double repeatTime,const TimeCallBack& callback,const TimerEventPtr& ptr) :
         u_start(false),
         u_time(base::Time()),
         u_repeat(repeat),
         u_repeatTime(repeatTime),
         u_timeCallBack(callback),
-        u_timers()
+        u_timers(ptr)
     {};
 
     Timer::Timer(Timer&& lhs) :
@@ -95,13 +95,9 @@ namespace unet
 
     void Timer::start()
     {
-        /*not-thread safety*/
-        if(u_start)
-            return;
-
-        std::shared_ptr<TimerEvent> ptr = u_timers.lock();
+        std::shared_ptr<unet::TimerEvent> ptr = u_timers.lock();
         if(ptr)
-            ptr->addTimerWithLock(shared_from_this());    
+            ptr->addTimerWithLock(shared_from_this());        
     }
     
     /*为什么不通过调整repeat属性来关闭Timer？

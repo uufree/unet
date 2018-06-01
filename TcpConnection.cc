@@ -6,6 +6,7 @@
  ************************************************************************/
 
 #include"TcpConnection.h"
+#include<iostream>
 
 namespace unet
 {
@@ -48,6 +49,7 @@ namespace unet
     { 
         /*读到0，就意味着连接被关闭*/
         int size = u_buffer->readInSocket();
+        std::cout << "read size: " << size << std::endl;
         if(size == 0)
         {
             handleClose();
@@ -71,7 +73,8 @@ namespace unet
             u_writeCallBack(u_buffer);
         else
             perror("没有注册writecallback");
-        u_buffer->writeInSocket();
+        int size = u_buffer->writeInSocket();
+        std::cout << "write size: " << size << std::endl;
     }
     
     /*出现异常的时候，会调用这个函数*/

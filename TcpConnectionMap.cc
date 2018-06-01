@@ -9,34 +9,44 @@
 
 namespace unet
 {
+    bool operator==(const TcpConnectionMap& lhs,const TcpConnectionMap& rhs)
+    {return lhs.size() == rhs.size();};
 
     TcpConnectionMap::TcpConnectionMap(TcpConnectionMap&& lhs) :
-        _tcpConnectionMap(std::move(lhs._tcpConnectionMap))
+        u_tcpConnectionMap(std::move(lhs.u_tcpConnectionMap))
     {};
 
     TcpConnectionMap& TcpConnectionMap::operator=(TcpConnectionMap&& lhs)
     {
-        _tcpConnectionMap = std::move(lhs._tcpConnectionMap);
+        if(lhs == *this)
+            return *this;
+        u_tcpConnectionMap = std::move(lhs.u_tcpConnectionMap);
         return *this;
     }
 
     void TcpConnectionMap::insert(int fd)
     {
-        base::MutexLockGuard guard(_mutex);
+        base::MutexLockGuard guard(u_mutex);
         TcpConnectionPtr tcp(new TcpConnection(fd));
-        _tcpConnectionMap.insert({fd,tcp});
+        u_tcpConnectionMap.insert({fd,tcp});
     }
 
     void TcpConnectionMap::insert(const TcpConnectionPtr& lhs)
     {
-        base::MutexLockGuard guard(_mutex);
-        _tcpConnectionMap.insert({lhs->getFd(),lhs});
+        base::MutexLockGuard guard(u_mutex);
+        u_tcpConnectionMap.insert({lhs->getFd(),lhs});
     }
 
     void TcpConnectionMap::erase(int fd) 
     {
-        base::MutexLockGuard guard(_mutex);
-        _tcpConnectionMap.erase(fd);
+        base::MutexLockGuard guard(u_mutex);
+        u_tcpConnectionMap.erase(fd);
+    }
+
+    TcpConnectionMap::TcpConnectionPtr& TcpConnectionMap::find(int fd)
+    {
+        base::MutexLockGuard guard(u_mutex);
+        return u_tcpConnectionMap[fd];
     }
 }
 

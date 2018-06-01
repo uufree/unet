@@ -14,6 +14,10 @@
 namespace unet
 {
     class TcpConnection;
+
+    /*unet关注的三种事件中一种：Socket Event*/
+    /*以为Connect Socket与Listen Socket不完全相同，所以使用继承的方式抽象部分资
+     * 源*/
     class SocketEvent 
     {
         protected:
@@ -23,6 +27,14 @@ namespace unet
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
 
         public:
+            /*Functionality：
+             *      创建根据不同的Socket类型创建一个事件，不维护任何系统资源
+             *Parameters：
+             *      1)[in]：事件所依赖的Socket，不管理生命周期
+             *      2)[in]：所关注的事件类型：
+             *          U_CONNECT_SOCKET：Connect Socket
+             *          U_LISTEN_SOCKET：Listen Socket
+             */
             explicit SocketEvent(int _fd,int _type);
             SocketEvent(const SocketEvent&) = delete;
             SocketEvent& operator=(const SocketEvent&) = delete;
@@ -49,12 +61,21 @@ namespace unet
             ListenSocketEvent& operator=(const ListenSocketEvent&) = delete;
             ListenSocketEvent(ListenSocketEvent&&);
             ListenSocketEvent& operator=(ListenSocketEvent&&);
-            ~ListenSocketEvent() override {SocketEvent::~SocketEvent();};
+            ~ListenSocketEvent() override{};
             
             bool operator==(const ListenSocketEvent& event) {return u_fd == event.u_fd && u_type == event.u_type;};
 
             void setReadCallBack(const ReadCallBack& callBack){u_readCallBack = callBack;};
             void setCloseCallBack(const CloseCallBack& callBack){u_closeCallBack = callBack;};
+
+            /*Functionality:
+             *      处理事件的核心步骤
+             *Parameters：
+             *      1)[in]:
+             *          U_READ：可读事件
+             *          U_WRITE：可写事件
+             *          U_EXCEPTION：异常事件
+             */
             void handleEvent(int) override;
 
         private:
@@ -62,18 +83,18 @@ namespace unet
             CloseCallBack u_closeCallBack;
     };
 
-    class CommonSocketEvent final : public SocketEvent
+    class ConnectSocketEvent final : public SocketEvent
     {
         public:
-            explicit CommonSocketEvent(int fd,int type);
-            CommonSocketEvent(int fd,int type,const TcpConnectionPtr& ptr);
-            CommonSocketEvent(const CommonSocketEvent&) = delete;
-            CommonSocketEvent& operator=(const CommonSocketEvent&) = delete;
-            CommonSocketEvent(CommonSocketEvent&&);
-            CommonSocketEvent& operator=(CommonSocketEvent&&);
-            ~CommonSocketEvent() override {SocketEvent::~SocketEvent();};
+            explicit ConnectSocketEvent(int fd,int type);
+            ConnectSocketEvent(int fd,int type,const TcpConnectionPtr& ptr);
+            ConnectSocketEvent(const ConnectSocketEvent&) = delete;
+            ConnectSocketEvent& operator=(const ConnectSocketEvent&) = delete;
+            ConnectSocketEvent(ConnectSocketEvent&&);
+            ConnectSocketEvent& operator=(ConnectSocketEvent&&);
+            ~ConnectSocketEvent() override {};
             
-            bool operator==(const CommonSocketEvent& event){return event.u_fd==u_fd && event.u_type==u_type;};
+            bool operator==(const ConnectSocketEvent& event){return event.u_fd==u_fd && event.u_type==u_type;};
 
             void handleEvent(int) override;
             void setTcpConnectionPtr(const TcpConnectionPtr& ptr){u_conWPtr = ptr;};

@@ -17,18 +17,21 @@
 #include"base/Mutex.h"
 #include"base/Timer.h"
 
+/*2018.06.01 测试完成*/
+
 namespace unet
 {
+    /*处理Timer Event，全局只出现一个，与普通的事件一样被处理*/
     class TimerEvent final
     {
         private:
             typedef std::shared_ptr<Timer> TimerPtr;
             typedef std::pair<uint64_t,TimerPtr> TimerPair;
-
+        
             struct op
             {
                 bool operator()(const TimerPair& lhs,const TimerPair& rhs)
-                {return lhs.first < rhs.first;};
+                {return lhs.first > rhs.first;};
             };
         
         public:
@@ -45,6 +48,7 @@ namespace unet
             void stop();
             bool isStart(){return u_start;};
             int getTimerfd() const{return u_timerfd;};
+            int timerSize() const{return u_timerHeap.size();};
 
             void handleEvent();
         
