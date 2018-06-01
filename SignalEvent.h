@@ -9,7 +9,7 @@
 #define _SIGNALEVENT_H
 
 #include<functional>
-
+#include<iostream>
 
 /*signal event分成两部分：一是系统原生类型，需要在主线程进行处理；
  * 二是自定义类型，子线程向主线程发送字节类型的数据。
@@ -21,7 +21,7 @@
 #define U_SIGCHLD 0x08  //sys->主线程，父进程捕捉已经终止的子进程，调用wait()函数
 #define U_SIGTERM 0x10  //sys->主线程，安全终止进程（被动）
 #define U_SIGINT 0x20   //sys->主线程，安全终止进程（被动）
-#define U_SIGKILL 0x40  //sys->主线程，安全终止进程（被动）
+#define U_SIGKILL 0x40  //sys->主线程，安全终止进程（被动）(SIGKILL不能被用户处理)
 
 #define U_USRINT 0x00010000     //子线程->主线程，安全结束任务（主动）
 #define U_USRSTOP 0x00020000    //子线程->主线程，停止任务
@@ -35,6 +35,8 @@
  *锁，并且需要在对象创建时就向SignalEvent对象注册好需要处理的信号。
  *
 */
+
+/*2018.06.01 测试完成*/
 
 namespace unet
 {
@@ -59,9 +61,6 @@ namespace unet
             void addSignal(int);
             void eraseSignal(int);
             bool hasSingal(int sig) const{return sig & u_wsignal;};
-            bool isStart() const {return u_start;};
-            void start(){u_start = true;};
-            void stop(){u_start = false;};
         
             void handleSignal();
             static void sendSignal(int sig);
@@ -80,13 +79,14 @@ namespace unet
             int u_rsignal;   //happened event
             static int u_readSignalfd;     //pipe[0]
             static int u_writeSignalfd;    //pipe[1]
-            static bool u_start;
         
             QuitCallBack u_quitCallBack;
             StopCallBack u_stopCallBack;
             RestartCallBack u_restartCallBack;
             ReadConfigCallBack u_readConfigCallBack;
     };
+    
+    void sendSignal(int sig);
 }
 
 #endif

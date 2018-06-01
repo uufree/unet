@@ -149,7 +149,7 @@ namespace unet
             int u_threadSize;
             int u_startSize;
 
-            /*线程对象是有上限的，默认为128*/
+            /*线程对象是有上限的，默认为64*/
             /*这个对象全局无锁，只有主线程可以操作*/
             std::array<ThreadPtr,MAX_THREADS> u_thread;
             

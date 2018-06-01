@@ -19,7 +19,6 @@ namespace unet
 {
     int SignalEvent::u_readSignalfd = -1;
     int SignalEvent::u_writeSignalfd = -1;
-    bool SignalEvent::u_start = false;
 
     SignalEvent::SignalEvent() :
         u_wsignal(0),
@@ -33,8 +32,6 @@ namespace unet
 
     SignalEvent::~SignalEvent()
     {
-        if(u_start)
-            u_start = false;
         if(u_readSignalfd)
             ::close(u_readSignalfd);
         if(u_writeSignalfd)
@@ -51,20 +48,8 @@ namespace unet
             unet::handleError(errno);
         }
         
-        if((u_readSignalfd=::dup(pipefd[0])) < 0)
-        {
-            perror("pipe dup error!\n");
-            unet::handleError(errno);
-        }
-
-        if((u_writeSignalfd=::dup(pipefd[1])) < 0)
-        {
-            perror("pipe dup error!\n");
-            unet::handleError(errno);
-        }
-        
-        ::close(pipefd[0]);
-        ::close(pipefd[1]);
+        u_readSignalfd = pipefd[0];
+        u_writeSignalfd = pipefd[1];
         
         //add sys singal
         addSignal(U_SIGHUP);
@@ -73,7 +58,6 @@ namespace unet
         addSignal(U_SIGCHLD);
         addSignal(U_SIGTERM);
         addSignal(U_SIGINT);
-        addSignal(U_SIGKILL);
         
         //add usr signal
         addSignal(U_USRINT);
@@ -83,8 +67,6 @@ namespace unet
 
     void SignalEvent::sendSignal(int sig)
     {
-        if(!u_start)
-            return;
         if(::send(u_writeSignalfd,&sig,4,0) < 0)
         {
             perror("send sig error!\n");
@@ -95,30 +77,19 @@ namespace unet
     int SignalEvent::switchTo(int usig)
     {
         int sig = 0;
-        switch(usig)
-        {
-            case U_SIGHUP:
-                sig = SIGHUP;
-                break;
-            case U_SIGPIPE:
-                sig = SIGPIPE;
-                break;
-            case U_SIGURG:
-                sig = SIGURG;
-                break;
-            case U_SIGCHLD:
-                sig = SIGCHLD;
-                break;
-            case U_SIGTERM:
-                sig = SIGTERM;
-                break;
-            case U_SIGINT:
-                sig = SIGINT;
-                break;
-            case U_SIGKILL:
-                sig = SIGKILL;
-                break;
-        }
+        if(usig & U_SIGHUP)
+            sig = SIGHUP;
+        else if(usig & U_SIGPIPE)
+            sig = SIGPIPE;
+        else if(usig & U_SIGURG)
+            sig = SIGURG;
+        else if(usig & U_SIGCHLD)
+            sig = SIGCHLD;
+        else if(usig & U_SIGTERM)
+            sig = SIGTERM;
+        else if(usig & U_SIGINT)
+            sig = SIGINT;
+
         return sig;
     }
     
@@ -129,18 +100,14 @@ namespace unet
 
     void SignalEvent::addSignal(int usig)
     {
-        if(u_start)
-            return;
-
         int ssig = usig < 0x00010000 ? switchTo(usig) : usig;
-        if(ssig < 0x00010000)
+        if(!(usig & U_USRINT) && !(usig & U_USRSTOP) && !(usig & U_USRRESTART))
         {
             struct sigaction sa;
             memset(&sa,'\0',sizeof(sa));
             sa.sa_handler = sendSignal;
             sa.sa_flags |= SA_RESTART;
             sigfillset(&sa.sa_mask);
-        
             if(sigaction(ssig,&sa,NULL) < 0)
             {
                 perror("signal resgistre error!\n");
@@ -148,14 +115,11 @@ namespace unet
             }
         }
 
-        u_wsignal &= usig;
+        u_wsignal |= usig;
     }
     
     void SignalEvent::eraseSignal(int usig)
     {
-        if(u_start)
-            return;
-
         int ssig = usig < 0x00010000 ? switchTo(usig) : usig;
         if(ssig < 0x00010000)
         {
@@ -170,54 +134,55 @@ namespace unet
             }
         }
 
-        u_wsignal &= usig;
+        u_wsignal &= ~usig;
     }
-    
+   
     void SignalEvent::handleSignal()
     {
-        if(!u_start)
-            return;
-        int usig;
-        if(::recv(u_readSignalfd,(char*)&usig,sizeof(int),0) <= 0)
-            return;
+        while(1)
+        {
+            int usig = 0;
+            if(::recv(u_readSignalfd,(char*)&usig,sizeof(int),0) < 0)
+                return;
         
-        if(!hasSingal(usig))
-            return;
+            if(!hasSingal(usig))
+                continue;
         
-        u_rsignal |= usig;
-        switch(usig)
-        {   
-            case U_SIGTERM:
-            case U_SIGINT:
-            case U_SIGKILL:
-            case U_USRINT:
+            u_rsignal |= usig;
+            
+            if((usig & U_SIGTERM) || (usig & U_SIGINT) || (usig & U_USRINT))
             {
                 if(u_quitCallBack)
                     u_quitCallBack();
                 break;
             }
-            case U_SIGHUP:
+            
+            if(usig & U_SIGHUP)
             {
                 if(u_readConfigCallBack)
                     u_readConfigCallBack();
-                break;
+                continue;
             }
-            case U_USRSTOP:
+            
+            if(usig & U_USRSTOP)
             {
                 if(u_stopCallBack)
                     u_stopCallBack();
-                break;
+                continue;
             }
-            case U_USRRESTART:
+            
+            if(usig & U_USRRESTART)
             {
                 if(u_restartCallBack)
                     u_restartCallBack();
-                break;
+                continue;
             }
-            case U_SIGPIPE:
-            case U_SIGURG:
-                break;
-                
+            
+            if((usig & U_SIGPIPE) || (usig & U_SIGURG))
+            {
+                /*如何处理往socket中写入数据的错误与带外数据到达的问题?*/
+                continue;
+            }
         }
     }
 }
