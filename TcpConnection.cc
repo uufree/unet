@@ -6,68 +6,79 @@
  ************************************************************************/
 
 #include"TcpConnection.h"
-#include<iostream>
 
 namespace unet
 {
     TcpConnection::TcpConnection(int fd) : 
-        _confd(fd),
-        _outputBuffer(new base::StringBuffer(fd)),
-        _inputBuffer(new base::StringBuffer(fd))
+        u_confd(fd),
+        u_buffer(std::make_shared<base::Buffer>(fd))
+    {};
+    
+    TcpConnection::TcpConnection(base::Socket&& socket) :
+        u_confd(std::move(socket)),
+        u_buffer(std::make_shared<base::Buffer>(socket.getFd()))
     {};
 
     TcpConnection::TcpConnection(TcpConnection&& lhs):
-        _confd(std::move(lhs._confd)),
-        _outputBuffer(std::move(lhs._outputBuffer)),
-        _inputBuffer(std::move(lhs._inputBuffer)),
-        _readCallBack(std::move(lhs._readCallBack)),
-        _writeCallBack(std::move(lhs._writeCallBack)),
-        _closeCallBack(std::move(lhs._closeCallBack))
+        u_confd(std::move(lhs.u_confd)),
+        u_buffer(std::move(lhs.u_buffer)),
+        u_readCallBack(std::move(lhs.u_readCallBack)),
+        u_writeCallBack(std::move(lhs.u_writeCallBack)),
+        u_closeCallBack(std::move(lhs.u_closeCallBack))
     {};
 
     TcpConnection& TcpConnection::operator=(TcpConnection&& lhs)
     {
         if(*this == lhs)
             return *this;
-        _confd = std::move(lhs._confd);
-        _outputBuffer = std::move(lhs._outputBuffer);
-        _inputBuffer = std::move(lhs._inputBuffer);
-        _readCallBack = std::move(lhs._readCallBack);
-        _writeCallBack = std::move(lhs._writeCallBack);
-        _closeCallBack = std::move(lhs._closeCallBack);
+        u_confd = std::move(lhs.u_confd);
+        u_buffer = std::move(lhs.u_buffer);
+        u_readCallBack = std::move(lhs.u_readCallBack);
+        u_writeCallBack = std::move(lhs.u_writeCallBack);
+        u_closeCallBack = std::move(lhs.u_closeCallBack);
 
         return *this;
     }
 
-    int TcpConnection::read()
-    {
-        int n = _inputBuffer->readInSocket();
-        if(n <= 0)
-            _closeCallBack(_confd.getFd());
-            
-        return n;
-    }
-
+    /*步骤：将数据逻辑处理与IO在同一个线程中进行处理
+     * 1.先从Socket中读取数据
+     * 2.调用用户的逻辑处理函数
+     */
     void TcpConnection::handleRead()
-    {//处理读事件   
-        if(_readCallBack)
-            _readCallBack(_inputBuffer,_outputBuffer);
+    { 
+        /*读到0，就意味着连接被关闭*/
+        int size = u_buffer->readInSocket();
+        if(size == 0)
+        {
+            handleClose();
+            return;
+        }
+
+        if(u_readCallBack)
+            u_readCallBack(u_buffer);
         else
             perror("没有注册readcallback\n");
     }
 
+    /*向Buffer中添加数据可能发生在两个地方；
+     * 1.处理读请求时，直接向buffer中添加数据
+     * 2.特意调用写回调函数
+     * 3.最后向socket中写数据
+     */
     void TcpConnection::handleWrite()
-    {//处理写事件
-        if(_writeCallBack)
-            _writeCallBack(_inputBuffer,_outputBuffer);
+    {
+        if(u_writeCallBack)
+            u_writeCallBack(u_buffer);
         else
             perror("没有注册writecallback");
+        u_buffer->writeInSocket();
     }
-
+    
+    /*出现异常的时候，会调用这个函数*/
     void TcpConnection::handleClose()
     {   
-        if(_closeCallBack)
-            _closeCallBack(_confd.getFd());
+        if(u_closeCallBack)
+            u_closeCallBack(u_confd.getFd());
         else
             perror("没有注册handlediedtcpconnection\n");
     }

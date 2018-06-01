@@ -39,6 +39,12 @@ namespace unet
                 void setBlock(){u_block = true;};
                 void setNonBlock(){u_block = false;};
                 
+                size_t readUsedSize() const 
+                {return u_readList.size() == USR_BUFFER_INIT_LENGTH ? USR_BUFFER_FULL-u_readFreeSize : u_readList.size()*USR_BUF_SIZE-u_readFreeSize;};
+                
+                size_t writeUsedSize() const 
+                {return u_writeList.size() == USR_BUFFER_INIT_LENGTH ? USR_BUFFER_FULL-u_writeFreeSize : u_writeList.size()*USR_BUF_SIZE-u_writeFreeSize;};
+
                 /*Functionality:
                  *      从Socket/Buffer中读取/发送数据
                  *Parameters:

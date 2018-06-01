@@ -10,7 +10,6 @@
 #include"Event.h"
 #include"EventMap.h"
 #include"Selecter.h"
-#include"EventMap.h"
 #include"type.h"
 
 namespace unet

@@ -59,7 +59,7 @@ namespace unet
             int u_fd;  //socketfd or timerfd   
             int u_type;      //Socket or Timer 
             int u_wevent;    //watch event
-            int u_revent;    //happeded
+            int u_revent;    //happeded event
             
             union
             {

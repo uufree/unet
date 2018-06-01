@@ -100,8 +100,8 @@ namespace unet
             return;
 
         std::shared_ptr<TimerEvent> ptr = u_timers.lock();
-//        if(ptr)
-//            ptr->addTimerWithLock(shared_from_this());    
+        if(ptr)
+            ptr->addTimerWithLock(shared_from_this());    
     }
     
     /*为什么不通过调整repeat属性来关闭Timer？

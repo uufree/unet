@@ -72,20 +72,22 @@ namespace unet
                  *Returned Value:
                  *       None
                  */
+
                 int setSendBuf(int);    
                 int setRecvBuf(int);
-                int getSendBuf();
-                int getRecvBuf();
+                int getSendBuf() const;
+                int getRecvBuf() const;
                 
-                int getRecvLowAt();
-                int getSendLowAt();
+                int getRecvLowAt() const;
+                int getSendLowAt() const;
                 int setCloseRST();
-                int setCloseDelay(int);
+                int setCloseDelay(int); 
                 int setCloseNormal();
                 int setKeepAlive();
                 int setNodelay();
                 int setNonBlockAndCloseOnExec();
-                
+                int delNonBlockAndCloseOnExec();
+
                 int getFd() const {return u_socketfd;}
                 SocketType getType() const {return u_type;}
 

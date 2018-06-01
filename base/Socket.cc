@@ -113,7 +113,7 @@ namespace unet
             return 0;
         }
 
-        int Socket::getRecvBuf()
+        int Socket::getRecvBuf() const
         {
             int recvbuf = 0;
             int len = sizeof(recvbuf);
@@ -123,7 +123,7 @@ namespace unet
             return recvbuf;
         }
 
-        int Socket::getSendBuf()
+        int Socket::getSendBuf() const
         {
             int sendbuf = 0;
             int len = sizeof(sendbuf);
@@ -136,7 +136,7 @@ namespace unet
         /*对低水位标记的设置需要在listen/connect之前*/
         /*在当前版本中，lowat = 1*/
         /*低水位标记不可调整*/
-        int Socket::getRecvLowAt()
+        int Socket::getRecvLowAt() const
         {
             int recv = 0;
             int len = sizeof(recv);
@@ -146,7 +146,7 @@ namespace unet
             return recv;
         }
         
-        int Socket::getSendLowAt()
+        int Socket::getSendLowAt() const
         {
             int send = 0;
             int len = sizeof(send);
@@ -229,7 +229,19 @@ namespace unet
             setNonBlockAndCloseOnExecBit();
             return 0;
         }
-            
+        
+        int Socket::delNonBlockAndCloseOnExec()
+        {
+            int flag = ::fcntl(u_socketfd,F_GETFL,0);
+            flag &= ~O_NONBLOCK;
+            int n = ::fcntl(u_socketfd,F_SETFL,flag);
+
+            if(n == -1)
+                unet::handleError(errno);
+            delNonBlockAndCloseOnExecBit();
+            return 0;
+        }
+
         int Socket::socket(int family,int type,int protocol)
         {
             int n = ::socket(family,type,protocol);
