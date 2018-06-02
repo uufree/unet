@@ -7,7 +7,7 @@
 
 #include"EPoller.h"
 #include"base/Global.h"
-#include"type.h"
+#include"Type.h"
 #include"EventMap.h"
 #include"Event.h"
 
@@ -41,7 +41,6 @@ namespace unet
     {
         if(*this == epoller)
             return *this;
-        u_start = false;
         u_wfds = epoller.u_wfds;
         u_rfds = 0;
         u_openET = epoller.u_openET;
@@ -84,9 +83,6 @@ namespace unet
 
     void EPoller::addEvent(int fd,int wevent)
     {
-        if(!u_start)
-            return;
-        
         struct epoll_event* event = NULL;
         auto iter = u_eventMap.find(fd);
         if((iter != u_eventMap.end()))
@@ -111,9 +107,6 @@ namespace unet
 
     void EPoller::delEvent(int fd)
     {
-        if(!u_start)
-            return;
-        
         auto iter = u_eventMap.find(fd);
         if(iter == u_eventMap.end())
             return;
@@ -130,9 +123,6 @@ namespace unet
     
     void EPoller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
-        if(!u_start)
-            return;
-
         u_activeList.clear();
         u_rfds = ::epoll_wait(u_epollfd,&*u_activeList.begin(),65536,-1);
         if(u_rfds < 0)

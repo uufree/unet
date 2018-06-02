@@ -9,7 +9,7 @@
 #include"SignalEvent.h"
 #include"TimerEvent.h"
 #include"Event.h"
-#include"type.h"
+#include"Type.h"
 
 namespace unet
 {
@@ -65,5 +65,23 @@ namespace unet
             u_event.u_signal->handleEvent();
         
         u_revent = 0;
+    }
+
+    void Event::setListenReadCallBack(const ListenReadCallBack& cb)
+    {
+        if(u_type & U_LISTEN_SOCKET)
+            u_event.u_socket->setReadCallBack(cb);
+    }
+
+    void Event::setListenCloseCallBack(const ListenCloseCallBack& cb)
+    {
+        if(u_type & U_LISTEN_SOCKET)
+            u_event.u_socket->setCloseCallBack(cb);
+    }
+
+    void Event::setTcpConnectionPtr(const std::shared_ptr<TcpConnection>& ptr)
+    {
+        if(u_type & U_CONNECT_SOCKET)
+            u_event.u_socket->setTcpConnectionPtr(ptr);
     }
 }

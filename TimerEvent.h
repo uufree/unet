@@ -13,7 +13,7 @@
 #include<vector>
 #include<memory>
 
-#include"type.h"
+#include"Type.h"
 #include"base/Mutex.h"
 #include"base/Timer.h"
 

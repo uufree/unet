@@ -8,7 +8,7 @@
 #include<poll.h>
 #include<algorithm>
 
-#include"type.h"
+#include"Type.h"
 #include"base/Global.h"
 #include"Event.h"
 #include"EventMap.h"
@@ -58,9 +58,6 @@ namespace unet
 
     void Poller::addEvent(int fd,int wevent)
     {
-        if(!u_start)
-            return;
-        
         if(u_set.find(fd) == u_set.end())
         {
             ++u_wfds;
@@ -88,8 +85,6 @@ namespace unet
 
     void Poller::delEvent(int fd)
     {
-        if(!u_start)
-            return;
         if(u_set.find(fd) == u_set.end())
             return;
         u_set.erase(fd);
@@ -106,8 +101,6 @@ namespace unet
     
     void Poller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
-        if(!u_start)
-            return;
         
         u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),-1);
         if(u_rfds < 0)

@@ -6,7 +6,7 @@
  ************************************************************************/
 
 #include"SocketEvent.h"
-#include"type.h"
+#include"Type.h"
 #include"TcpConnection.h"
 
 namespace unet
@@ -71,7 +71,7 @@ namespace unet
             if(event & U_READ)
             {
                 if(u_readCallBack)
-                    u_readCallBack(u_fd);
+                    u_readCallBack();
                 else
                     perror("This is no registration ReadCallBack!\n");
             }

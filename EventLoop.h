@@ -34,7 +34,7 @@ namespace unet
             void stop(){if(u_start) u_thread.stop();u_start=false;};
             bool isStart() const{return u_start;};
 
-            void setGetActiveChannelsCallBack(const SeparationEventCallBack& cb)
+            void setSeparationEventCallBack(const SeparationEventCallBack& cb)
             {u_callBack = cb;};
         
         private:

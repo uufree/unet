@@ -21,7 +21,7 @@ namespace unet
     class SocketEvent 
     {
         protected:
-            typedef std::function<void(int)> ReadCallBack;
+            typedef std::function<void()> ReadCallBack;
             typedef std::function<void(int)> CloseCallBack;
             typedef std::weak_ptr<TcpConnection> TcpConnectionWPtr;
             typedef std::shared_ptr<TcpConnection> TcpConnectionPtr;
@@ -47,6 +47,9 @@ namespace unet
             virtual void handleEvent(int){};
             int getType() const {return u_type;};
             int getFd() const{return u_fd;};
+            virtual void setReadCallBack(const ReadCallBack&){};
+            virtual void setCloseCallBack(const CloseCallBack&){};
+            virtual void setTcpConnectionPtr(const TcpConnectionPtr&){};
 
         protected:
             int u_fd;
@@ -65,8 +68,8 @@ namespace unet
             
             bool operator==(const ListenSocketEvent& event) {return u_fd == event.u_fd && u_type == event.u_type;};
 
-            void setReadCallBack(const ReadCallBack& callBack){u_readCallBack = callBack;};
-            void setCloseCallBack(const CloseCallBack& callBack){u_closeCallBack = callBack;};
+            void setReadCallBack(const ReadCallBack& callBack)override {u_readCallBack = callBack;};
+            void setCloseCallBack(const CloseCallBack& callBack) override {u_closeCallBack = callBack;};
 
             /*Functionality:
              *      处理事件的核心步骤
@@ -97,7 +100,7 @@ namespace unet
             bool operator==(const ConnectSocketEvent& event){return event.u_fd==u_fd && event.u_type==u_type;};
 
             void handleEvent(int) override;
-            void setTcpConnectionPtr(const TcpConnectionPtr& ptr){u_conWPtr = ptr;};
+            void setTcpConnectionPtr(const TcpConnectionPtr& ptr) override {u_conWPtr = ptr;};
             
         private:
             TcpConnectionWPtr u_conWPtr;

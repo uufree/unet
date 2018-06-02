@@ -44,6 +44,17 @@ namespace unet
         }
     }
     
+    void EventMap::insert(std::shared_ptr<Event>& ptr)
+    {
+        auto iter = u_eventMap.find(ptr->getFd());
+        if(iter != u_eventMap.end())
+            return;
+        {
+            base::MutexLockGuard guard(u_mutex);
+            u_eventMap.insert(std::make_pair(ptr->getFd(),ptr));
+        }
+    }
+
     void EventMap::erase(int fd)
     {
         auto iter = u_eventMap.find(fd);

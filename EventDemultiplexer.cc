@@ -10,13 +10,11 @@
 namespace unet
 {
     EventDemultiplexer::EventDemultiplexer() :
-        u_start(false),
         u_wfds(0),
         u_rfds(0)
     {};
 
     EventDemultiplexer::EventDemultiplexer(EventDemultiplexer&& event) :
-        u_start(false),
         u_wfds(event.u_rfds),
         u_rfds(0)
     {};
@@ -25,7 +23,6 @@ namespace unet
     {
         if(event == *this)
             return *this;
-        u_start = false;
         u_wfds = event.u_wfds;
         u_rfds = event.u_rfds;
 

@@ -10,7 +10,7 @@
 #include"Event.h"
 #include"EventMap.h"
 #include"Selecter.h"
-#include"type.h"
+#include"Type.h"
 
 namespace unet
 {
@@ -60,9 +60,6 @@ namespace unet
     
     void Selecter::addEvent(int fd,int wevent)
     {
-        if(!u_start)
-            return;
-        
         auto iter = u_set.find(fd);
         if(iter == u_set.end())
         {
@@ -100,8 +97,6 @@ namespace unet
 
     void Selecter::delEvent(int fd)
     {
-        if(!u_start)
-            return;
         auto iter = u_set.find(fd);
         if(iter == u_set.end())
             return;
@@ -125,9 +120,6 @@ namespace unet
 
     void Selecter::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
-        if(!u_start)
-            return;
-
         u_rfds = ::select(maxfd+1,&u_readSet,&u_writeSet,&u_exceptionSet,NULL);
         if(u_rfds < 0)
         {

@@ -32,6 +32,6 @@
 //event demultiplexer
 #define U_SELECT 0x01
 #define U_POLL 0x02
-#define E_EPOLL 0x04
+#define U_EPOLL 0x04
 
 #endif

@@ -11,6 +11,8 @@
 #include<cstdint>
 #include<memory>
 
+#include"TcpConnection.h"
+
 /*
  * 再三思索，还是决定暂时不把SignalEvent加入事件处理框架，原因如下：
  *   Singal是一个全局事件，决定着整个库当前工作的平稳性，在事件线程进行处理的话，
@@ -39,6 +41,9 @@ namespace unet
 
     class Event final
     {
+        typedef std::function<void()> ListenReadCallBack;
+        typedef std::function<void(int)> ListenCloseCallBack;
+
         public:
             /*Functionality：
              *      创建一个Event
@@ -70,6 +75,10 @@ namespace unet
             void setREvent(int event) {u_revent = event;}; 
             
             void handleEvent();
+            
+            void setListenCloseCallBack(const ListenCloseCallBack& cb);
+            void setListenReadCallBack(const ListenReadCallBack& cb);
+            void setTcpConnectionPtr(const std::shared_ptr<TcpConnection>&);
 
         private:
             int u_fd;  //socketfd or timerfd   

@@ -24,13 +24,10 @@ namespace unet
             EventDemultiplexer& operator=(const EventDemultiplexer&) = delete;
             EventDemultiplexer(EventDemultiplexer&&);
             EventDemultiplexer& operator=(EventDemultiplexer&&);
-            virtual ~EventDemultiplexer(){u_start = false;};
+            virtual ~EventDemultiplexer(){};
             
             bool operator==(const EventDemultiplexer& event)const {return u_wfds==event.u_wfds && u_rfds==event.u_rfds;};
 
-            bool start() const{return u_start;};
-            void start(){u_start = true;};
-            void stop(){u_start = false;};
             int watchFds() const{return u_wfds;};
             int activeFds() const{return u_rfds;};
 
@@ -39,7 +36,6 @@ namespace unet
             virtual void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&){};
     
         protected:
-            bool u_start;
             int u_wfds;     //watch fds
             int u_rfds;     //active fds
     };
