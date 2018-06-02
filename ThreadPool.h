@@ -16,6 +16,9 @@
 #include<vector>
 #include<tuple>
 
+/*2018.06.02 测试完成*/
+/*注意调整线程timer*/
+
 namespace unet
 {
     /*
@@ -25,7 +28,7 @@ namespace unet
      * 3.实现动态的资源迁移
      */
     
-    static const int MAX_THREADS = 64;
+    static const int MAX_THREADS = 128;
     static const int INIT_THREADS = 8;
     
     class Timer;
@@ -55,9 +58,9 @@ namespace unet
              *      2）[in]：添加的线程数量
              *      3）[in]：对添加的线程的描述
              * Returned Value：
-             *      None
+             *      成功返回0，失败返回-1
              */
-            const TidList& addThread(const ThreadFunc& func,int size = 1,const char* des = "NULL");
+            int addThread(const ThreadFunc& func,int size = 1,const char* des = "NULL");
             
             /* Functionality:
              *      在不重新创建线程的情况下，向线程池中添加新的成员
@@ -65,18 +68,19 @@ namespace unet
              *      1）[in]：即将移动的Thread
              *      2）[in]：对Thread的描述
              * Returned Value：
-             *      对整个线程池的描述
+             *      成功返回0，失败返回-1
              */
-            const TidList& addThread(std::shared_ptr<base::Thread>& thread,const char* des = "NULL"); 
+            int addThread(std::shared_ptr<base::Thread>& thread,const char* des = "NULL"); 
             
             /* Functionality:
              *      从线程池中移除一个线程，包括线程对象的析构操作
              * Parameters:
              *      1)：移除的线程ID
              * Returned Value：
-             *      对整个线程池的描述
+             *      成功返回0，失败返回-1
              */
-            const TidList& deleteThread(pthread_t tid);
+            int deleteThread(pthread_t tid);
+            int deleteThread(const std::string&);
 
 
             /* Functionality:
@@ -84,20 +88,28 @@ namespace unet
              * Parameters：
              *      1）[in]：合并的线程池
              * Returned Value：
-             *      对整个线程池的描述
+             *      成功返回0，失败返回-1
              */
-            const TidList& addThreadPool(ThreadPool& pool);
-
-            void startAll();
-            void stopAll();
-            void start(pthread_t);
-            void stop(pthread_t);
+            int addThreadPool(ThreadPool& pool);
+            
+            void startAllThread();/*启动所有线程*/
+            void stopAllThread();/*停止所有线程*/
+            void startThread(pthread_t);/*启动某一个tid匹配的线程*/
+            void startThread(const std::string&);/*启动与tidStr匹配的所有线程*/
+            void stopThread(pthread_t);/*停止某一个线程*/
+            void stopThread(const std::string&);/*停止与tidstr匹配的所有线程*/
             int threadSize() const{return u_threadSize;};
-            int startThreadSize() const{return u_startSize;};
+            int startThreadSize() const{return u_startThreadSize;};
             const TidList& description() const{return u_description;};
-            void setThreadDes(pthread_t,const char*);
-            bool inPool(pthread_t) const;
-            void setThreadFunc(pthread_t,const ThreadFunc&);
+            void setThreadDes(pthread_t,const char*);/*为某一个线程设置名称*/
+            bool threadInPool(pthread_t) const;
+            bool threadInPool(const std::string&) const;
+
+            /*在不改变线程状态的情况下，重启线程*/
+            int setThreadFunc(pthread_t,const ThreadFunc&);
+            int setThreadFunc(const std::string&,const ThreadFunc&);
+            void printThreadPoolMessage();
+            int threadSize(const std::string&) const;
 
         private:
             
@@ -144,10 +156,11 @@ namespace unet
             /*只用于内部的线程资源转移*/
             ThreadPtr getThread(int index);
             ThreadDesPtr getThreadDes(int index); 
+            int deleteThreadNotStop(pthread_t);
 
         private:
-            int u_threadSize;
-            int u_startSize;
+            int u_threadSize;/*描述添加，但是没有启动的线程*/
+            int u_startThreadSize;/*已经启动的线程数量*/
 
             /*线程对象是有上限的，默认为64*/
             /*这个对象全局无锁，只有主线程可以操作*/

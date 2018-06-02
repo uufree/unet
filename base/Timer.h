@@ -69,6 +69,7 @@ namespace unet
             void run() const {u_timeCallBack();};
             bool repeat() const {return u_repeat;};
             void setTimeCallBack(const TimeCallBack& callback){u_timeCallBack = callback;};
+            void setTimerEvents(const TimerEventPtr& ptr){u_timers=ptr;};
             bool hasCallBack()const{return u_timeCallBack?true:false;};
             bool hasTimers() const{return u_timers.lock()?true:false;}
             double getRepeatTime()const{return u_repeatTime;};

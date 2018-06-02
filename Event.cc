@@ -19,8 +19,8 @@ namespace unet
         u_wevent(wevent),
         u_revent(0)
     {
-        if(u_type & U_COMMON_SOCKET)
-            u_event.u_socket = new CommonSocketEvent(fd,type);
+        if(u_type & U_CONNECT_SOCKET)
+            u_event.u_socket = new ConnectSocketEvent(fd,type);
         else if(u_type & U_LISTEN_SOCKET)
             u_event.u_socket = new ListenSocketEvent(fd,type);
         else if(u_type & U_TIMER)
@@ -31,7 +31,7 @@ namespace unet
 
     Event::~Event()
     {
-        if(u_type & U_COMMON_SOCKET)
+        if(u_type & U_CONNECT_SOCKET)
             delete u_event.u_socket;
         else if(u_type & U_LISTEN_SOCKET)
             delete u_event.u_socket;
@@ -45,7 +45,7 @@ namespace unet
     {
         switch(u_type)
         {
-            case U_COMMON_SOCKET:
+            case U_CONNECT_SOCKET:
             {
                 u_event.u_socket->handleEvent(u_revent & u_wevent);
                 break;
