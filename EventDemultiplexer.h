@@ -34,7 +34,8 @@ namespace unet
             virtual void addEvent(int,int){};
             virtual void delEvent(int){};
             virtual void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&){};
-    
+            virtual void resetEvent(int){};
+
         protected:
             int u_wfds;     //watch fds
             int u_rfds;     //active fds

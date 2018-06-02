@@ -43,6 +43,7 @@ namespace unet
     {
         typedef std::function<void()> ListenReadCallBack;
         typedef std::function<void(int)> ListenCloseCallBack;
+        typedef std::function<void(int)> ResetEventCallBack;
 
         public:
             /*Functionality：
@@ -79,6 +80,10 @@ namespace unet
             void setListenCloseCallBack(const ListenCloseCallBack& cb);
             void setListenReadCallBack(const ListenReadCallBack& cb);
             void setTcpConnectionPtr(const std::shared_ptr<TcpConnection>&);
+            
+            /*用于处理ONE SHOT选项的副作用*/
+            void setResetEventCallBack(const ResetEventCallBack& cb)
+            {u_resetCallBack = cb;};
 
         private:
             int u_fd;  //socketfd or timerfd   
@@ -92,6 +97,8 @@ namespace unet
                 SignalEvent* u_signal;
                 TimerEvent* u_timer;
             } u_event;
+
+            ResetEventCallBack u_resetCallBack;
     };
 };
 

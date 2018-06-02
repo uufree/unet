@@ -123,6 +123,13 @@ namespace unet
             u_taskPool.addInTaskEvent(u_eventPtrList);
     }
     
+    /*重置ONE SHOT*/
+    void TcpServer::ResetEvent(int fd)
+    {
+        if(u_eventDemuType & U_EPOLL)
+            u_eventDemu->resetEvent(fd);
+    }
+    
     void TcpServer::start()
     {
         if(u_start)

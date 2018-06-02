@@ -34,6 +34,7 @@ namespace unet
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
+            void resetEvent(int) override;
             void openET(){u_openET = true;};
             void closeET(){u_openET = false;};
 

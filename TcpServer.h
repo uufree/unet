@@ -53,6 +53,7 @@ namespace unet
             void SaveConnect(int);
             void EraseConnect(int);
             void SeparationEvent();
+            void ResetEvent(int);
 
         private:
             bool u_start;

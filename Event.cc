@@ -64,6 +64,7 @@ namespace unet
         else if(u_type & U_SIGNAL)
             u_event.u_signal->handleEvent();
         
+        u_resetCallBack(u_fd);
         u_revent = 0;
     }
 

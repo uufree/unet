@@ -104,6 +104,17 @@ namespace unet
             unet::handleError(errno);
         }
     }
+    
+    void EPoller::resetEvent(int fd)
+    {
+        struct epoll_event* event = u_eventMap[fd];
+        
+        if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
+        {
+            perror("epoll add error!\n");
+            unet::handleError(errno);
+        }
+    }
 
     void EPoller::delEvent(int fd)
     {
