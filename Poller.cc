@@ -9,14 +9,13 @@
 #include<algorithm>
 
 #include"type.h"
-#include"base/global.h"
+#include"base/Global.h"
 #include"Event.h"
 #include"EventMap.h"
 #include"Poller.h"
 
 namespace unet
 {
-
     Poller::Poller() : 
         EventDemultiplexer(),
         u_eventList(),
@@ -41,10 +40,21 @@ namespace unet
 
     Poller::~Poller()
     {
-        EventDemultiplexer::~EventDemultiplexer();
         u_eventList.clear();
         u_set.clear();
     };
+    
+    int Poller::switchEvent(int usrEvent)
+    {
+        int sysEvent = 0;
+        if(usrEvent & U_READ)
+            sysEvent |= POLLIN;
+        if(usrEvent & U_WRITE)
+            sysEvent |= POLLOUT;
+        if(usrEvent & U_EXCEPTION)
+            sysEvent |= POLLERR|POLLHUP|POLLNVAL|POLLRDHUP;
+        return sysEvent;
+    }
 
     void Poller::addEvent(int fd,int wevent)
     {
@@ -57,17 +67,21 @@ namespace unet
             u_set.insert(fd);
             struct pollfd pfd;
             pfd.fd = fd;
-            pfd.events = wevent;
-            pfd.events = 0;
+            pfd.events = switchEvent(wevent);
+            pfd.revents = 0;
             u_eventList.push_back(pfd);
         }
         else
         {
-            auto iter = std::find(u_eventList.begin(),u_eventList.end(),[fd](const struct pollfd& pfd){return pfd.fd==fd;});
+            auto iter = u_eventList.begin();
+            for(;iter!=u_eventList.end();++iter)
+                if(iter->fd == fd)
+                    break;
+
             if(iter != u_eventList.end())
             {
-                (*iter).events = wevent;
-                (*iter).events = 0;
+                (*iter).events = switchEvent(wevent);
+                (*iter).revents = 0;
             }
         }
     }
@@ -81,7 +95,11 @@ namespace unet
         u_set.erase(fd);
         --u_wfds;
 
-        auto iter = std::find(u_eventList.begin(),u_eventList.end(),[fd](const struct pollfd& pfd){return fd == pfd.fd;});
+        auto iter = u_eventList.begin();
+        for(;iter!=u_eventList.end();++iter)
+            if(iter->fd == fd)
+                break;
+
         if(iter != u_eventList.end())
             u_eventList.erase(iter);
     }

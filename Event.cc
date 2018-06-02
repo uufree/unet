@@ -20,13 +20,25 @@ namespace unet
         u_revent(0)
     {
         if(u_type & U_CONNECT_SOCKET)
+        {
             u_event.u_socket = new ConnectSocketEvent(fd,type);
+            u_wevent = U_READ | U_WRITE | U_EXCEPTION;
+        }
         else if(u_type & U_LISTEN_SOCKET)
+        {
             u_event.u_socket = new ListenSocketEvent(fd,type);
+            u_wevent = U_READ | U_EXCEPTION;
+        }
         else if(u_type & U_TIMER)
+        {
             u_event.u_timer = new TimerEvent();
+            u_wevent = U_TIMEOUT;
+        }
         else if(u_type & U_SIGNAL)
+        {
             u_event.u_signal = new SignalEvent(); 
+            u_wevent = U_READ;
+        }
     };
 
     Event::~Event()
@@ -43,26 +55,14 @@ namespace unet
     
     void Event::handleEvent()
     {
-        switch(u_type)
-        {
-            case U_CONNECT_SOCKET:
-            {
-                u_event.u_socket->handleEvent(u_revent & u_wevent);
-                break;
-            }
-            case U_TIMER:
-            {
-                u_event.u_timer->handleEvent();
-                break;
-            }
-            case U_LISTEN_SOCKET:
-            {
-                u_event.u_socket->handleEvent(u_revent & u_wevent);
-                break;
-            }
-            case U_SIGNAL:
-                break;
-        }
+        if(u_type & U_LISTEN_SOCKET)
+            u_event.u_socket->handleEvent(u_revent & u_wevent);
+        else if(u_type & U_CONNECT_SOCKET)
+            u_event.u_socket->handleEvent(u_revent & u_wevent);
+        else if(u_type & U_TIMEOUT)
+            u_event.u_timer->handleEvent();
+        else if(u_type & U_SIGNAL)
+            u_event.u_signal->handleEvent();
         
         u_revent = 0;
     }

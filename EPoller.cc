@@ -5,8 +5,8 @@
 	> Created Time: 2017年03月09日 星期四 00时01分25秒
  ************************************************************************/
 
-#include"Epoller.h"
-#include"base/global.h"
+#include"EPoller.h"
+#include"base/Global.h"
 #include"type.h"
 #include"EventMap.h"
 #include"Event.h"
@@ -30,11 +30,8 @@ namespace unet
 
     EPoller::EPoller(EPoller&& epoller) : EventDemultiplexer()
     {
-        if((u_epollfd = ::dup(epoller.u_epollfd)) < 0)
-        {
-            perror("epollfd dup error!\n");
-            unet::handleError(errno);
-        }
+        u_epollfd = epoller.u_epollfd;
+        epoller.u_epollfd = -1;
         u_eventMap.swap(epoller.u_eventMap);
         u_activeList.clear();
         u_openET = false; 
@@ -49,11 +46,8 @@ namespace unet
         u_rfds = 0;
         u_openET = epoller.u_openET;
         
-        if((u_epollfd = ::dup(epoller.u_epollfd)) < 0)
-        {
-            perror("epollfd dup error!\n");
-            unet::handleError(errno);
-        }
+        u_epollfd = epoller.u_epollfd;
+        epoller.u_epollfd = -1;
         u_eventMap.swap(epoller.u_eventMap);
         u_activeList.clear();
 
@@ -62,7 +56,6 @@ namespace unet
 
     EPoller::~EPoller()
     {
-        EventDemultiplexer::~EventDemultiplexer();
         if(::close(u_epollfd) < 0)
         {
             perror("close epollfd error!\n");
@@ -74,10 +67,10 @@ namespace unet
     
     uint32_t EPoller::switchTo(int event)
     {
-        uint32_t sysEvent;
+        uint32_t sysEvent = 0;
 
         if(event & U_EXCEPTION)
-            sysEvent |= EPOLLPRI;   //检测带外数据
+            sysEvent |= EPOLLPRI|EPOLLERR|EPOLLRDHUP;   //检测带外数据
         if(event & EPOLLOUT)
             sysEvent |= EPOLLOUT;
         if(event & EPOLLIN)
@@ -106,6 +99,7 @@ namespace unet
             event->events = switchTo(wevent); 
             event->data.fd = fd;
             ++u_wfds;
+            u_eventMap.insert({fd,event});
         }
 
         if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
@@ -148,7 +142,7 @@ namespace unet
             return;
         }
         
-        int revent;
+        int revent = 0;
         for(int i=0;i<u_rfds;++i)
         {
             revent = 0;
@@ -163,8 +157,11 @@ namespace unet
             if(revent)
             {
                 std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
-                ptr->setREvent(revent);
-                eventList.push_back(ptr);
+                if(ptr)
+                {
+                    ptr->setREvent(revent);
+                    eventList.push_back(ptr);
+                }
             }
         }
     }

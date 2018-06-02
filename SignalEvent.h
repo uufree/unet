@@ -62,7 +62,7 @@ namespace unet
             void eraseSignal(int);
             bool hasSingal(int sig) const{return sig & u_wsignal;};
         
-            void handleSignal();
+            void handleEvent();
             static void sendSignal(int sig);
             
             void setQuitCallBack(const QuitCallBack& quit){u_quitCallBack=quit;};

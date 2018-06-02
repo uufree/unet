@@ -9,49 +9,47 @@
 
 namespace unet
 {
-    namespace net
+    EventLoop::EventLoop() :
+        u_start(false),
+        u_thread(),
+        u_callBack()
     {
-        EventLoop::EventLoop() : 
-            looping(false),
-            quit(false),
-            eventHandling(false)
-        {};
+        u_thread.setThreadCallBack(std::bind(&EventLoop::ThreadFunction,this));
+    };
 
-        EventLoop::EventLoop(EventLoop&& lhs) : 
-            looping(lhs.looping),
-            quit(lhs.quit),
-            eventHandling(lhs.eventHandling),
-            getActiveChannelsCallBack(std::move(lhs.getActiveChannelsCallBack))
-        {};
+    EventLoop::EventLoop(EventLoop&& loop) :
+        u_start(loop.u_start),
+        u_thread(std::move(loop.u_thread)),
+        u_callBack(std::move(loop.u_callBack))
+    {};
 
-        EventLoop& EventLoop::operator=(EventLoop&& lhs)
-        {
-            looping = lhs.looping;
-            quit = lhs.quit;
-            eventHandling = lhs.eventHandling;
-
-            getActiveChannelsCallBack = std::move(lhs.getActiveChannelsCallBack);
-
+    EventLoop& EventLoop::operator=(EventLoop&& loop)
+    {
+        if(loop == *this)
             return *this;
-        }
-        
-        EventLoop::~EventLoop()
-        {};
+        u_start = loop.u_start;
+        u_thread = std::move(loop.u_thread);
+        u_callBack = std::move(loop.u_callBack);
 
-        void EventLoop::loop()
+        return *this;
+    }
+    
+    EventLoop::~EventLoop()
+    {
+        if(u_start)
+            u_thread.stop();
+    }
+    
+    void EventLoop::ThreadFunction()
+    {
+        if(!u_callBack)
         {
-            looping = true;
-            quit = false;
-            
-            if(!getActiveChannelsCallBack)
-            {
-                perror("没有注册getActiveEventsCallBack!\n");
-                exit(1);
-            }
-
-            while(!quit)
-                getActiveChannelsCallBack();
+            perror("There is no registered u_callBack!\n");
+            return;
         }
+
+        while(u_start)
+            u_callBack();
     }
 }
 

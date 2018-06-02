@@ -8,94 +8,51 @@
 #ifndef _TASKPOOL_H
 #define _TASKPOOL_H
 
-/* 设计理念：以线程为基本对象的不可更改的任务池，为Servre服务
- *
- * 1.基于细粒度的的线程实现
- * 2.不具有可更改性
- * 3.左值引用与右值引用不是万能的，必要的数据依旧需要用指针来操作
- */
-
-#include"base/Thread.h"
+#include"ThreadPool.h"
 #include"base/Mutex.h"
 #include"base/Condition.h"
-#include"Channel.h"
+#include"Event.h"
 
-#include<deque>
 #include<memory>
 #include<vector>
 
 namespace unet
 {
-    namespace thread
+    class TaskPool final
     {
-        class TaskPool final
-        {
-            typedef std::function<void()> ThreadFunc;
-            typedef std::shared_ptr<net::Channel> ChannelPtr;
-            typedef std::vector<ChannelPtr> ChannelList;
+        typedef std::function<void()> ThreadFunc;
+        typedef std::shared_ptr<Event> EventPtr;
+        typedef std::vector<EventPtr> EventPtrList;
 
-            public:
-                explicit TaskPool(int size = 2);
-                explicit TaskPool(int size,const ThreadFunc& cb);
-                TaskPool(const TaskPool& lhs) = delete;
-                TaskPool(TaskPool&& lhs);
-                TaskPool& operator=(const TaskPool& lhs) = delete;
-                TaskPool& operator=(TaskPool&& lhs);
-                ~TaskPool();
+        public:
+            explicit TaskPool(int);
+            TaskPool(const TaskPool&) = delete;
+            TaskPool(TaskPool&&);
+            TaskPool& operator=(const TaskPool&) = delete;
+            TaskPool& operator=(TaskPool&&);
+            ~TaskPool();
+            
+            bool operator==(const TaskPool& pool){return u_threadPool==pool.u_threadPool;};
 
-                void setThreadCallBack(const ThreadFunc& cb)
-                {
-                    if(!started)
-                        threadFunc = cb;
-                }
+            void start(){if(!u_start) u_threadPool.startAllThread();u_start=true;};
+            void stop(){if(u_start) u_threadPool.stopAllThread();u_start=false;};
+            void addInTaskEvent(EventPtrList& lhs);
+            bool isStart() const{return u_start;};
+            int taskSize() const{return u_eventList.size();};
+            int threadSize() const{return u_threadSize;};
 
-                void setThreadCallBack(ThreadFunc&& cb)
-                {
-                    if(!started)
-                        threadFunc = std::move(cb);
-                }
+        private:
+            void ThreadFunction();
 
-                void start();
-                void joinAll();
-                void addInTaskQueue(ChannelList& lhs);
-
-            private:
-                void ThreadFunction()
-                {
-                    ChannelList channels;
-                    
-                    while(1)
-                    {
-                        MutexLockGuard guard(mutex);
-                        while((channelList.size()) == 0)   
-                            cond.wait();
-                        guard.~MutexLockGuard();
-                        
-                        channels.clear();
-                        
-                        {
-                            MutexLockGuard guard(mutex);
-                            std::swap(channels,channelList);
-                        }
-                        
-                        for(auto iter=channels.begin();iter!=channels.end();++iter)
-                        {
-                           (*iter)->handleEvent(); 
-                        }
-                    }
-                }
-
-            private:
-                bool started;
-                const int threadSize;
-                Thread* threadListPtr;
-                ThreadFunc threadFunc;
-                ChannelList channelList;
+        private:
+            bool u_start;
+            int u_threadSize;
+            ThreadPool u_threadPool;    
+            EventPtrList u_eventList;
                 
-                MutexLock mutex;
-                Condition cond;
-        };
-    }
+            base::MutexLock u_mutex;
+            base::Condition u_cond;
+    };
 }
 
 #endif

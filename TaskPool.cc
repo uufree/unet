@@ -5,87 +5,76 @@
 	> Created Time: 2017年07月12日 星期三 20时55分39秒
  ************************************************************************/
 
-
 #include"TaskPool.h"
 
 namespace unet
 {
-    namespace thread
+    TaskPool::TaskPool(int size) :
+        u_start(false),
+        u_threadSize(size),
+        u_threadPool(),
+        u_eventList(),
+        u_mutex(),
+        u_cond(u_mutex)
     {
-        TaskPool::TaskPool(int size) :
-            started(false),
-            threadSize(size),
-            threadListPtr(new Thread[size]),
-            mutex(),
-            cond(mutex)
-        {
-            setThreadCallBack(std::bind(&TaskPool::ThreadFunction,this));
-        };
-        
-        TaskPool::TaskPool(int size,const ThreadFunc& cb) :
-            started(false),
-            threadSize(size),
-            threadListPtr(new Thread[size]),
-            threadFunc(cb),
-            mutex(),
-            cond(mutex)
-        {};
-
-        TaskPool::TaskPool(TaskPool&& lhs) : 
-            started(false),
-            threadSize(lhs.threadSize),
-            threadListPtr(new Thread[threadSize]),
-            threadFunc(std::move(lhs.threadFunc)),
-            mutex(),
-            cond(mutex)
-        {};
-        
-        TaskPool& TaskPool::operator=(TaskPool&& lhs)
-        {
-            joinAll();
-            delete [] threadListPtr;
-
-            started = false;
-            threadListPtr = new Thread[threadSize];
-            threadFunc = std::move(lhs.threadFunc);
-            return *this;
-        }
-
-        TaskPool::~TaskPool()
-        {
-            started = false;
-            for(int i=0;i<threadSize;++i)
-                ::pthread_detach(threadListPtr[i].getThreadId());
-
-            delete [] threadListPtr;
-            
-        }
+        u_threadPool.addThread(std::bind(&TaskPool::ThreadFunction,this),u_threadSize,"TASK THREAD");
+    };
     
-        void TaskPool::start()
+    TaskPool::TaskPool(TaskPool&& pool) :
+       u_start(pool.u_start), 
+       u_threadSize(pool.u_threadSize),
+       u_threadPool(),
+       u_eventList(),
+       u_mutex(),
+       u_cond(u_mutex)
+    {
         {
-            if(!started)
+            base::MutexLockGuard guard(u_mutex);
+            std::swap(u_threadPool,pool.u_threadPool);
+            std::swap(u_eventList,pool.u_eventList);
+        }
+    }
+    
+    TaskPool& TaskPool::operator=(TaskPool&& pool)
+    {
+        if(*this == pool)
+            return *this;
+        u_start = pool.u_start;
+        u_threadSize = pool.u_threadSize;
+
+        {
+            base::MutexLockGuard guard(pool.u_mutex);
             {
-                for(int i=0;i<threadSize;++i)
-                {
-                    threadListPtr[i].setThreadCallBack(threadFunc);
-                    threadListPtr[i].start();
-                }
-                started = true;
+                base::MutexLockGuard guard(u_mutex);
+                std::swap(u_eventList,pool.u_eventList);
             }
         }
+        
+        return *this;
+    }
+    
+    TaskPool::~TaskPool()
+    {
+        if(u_start)
+            u_threadPool.stopAllThread();
+    }
 
-        void TaskPool::joinAll()
+    void TaskPool::ThreadFunction()
+    {
+        EventPtrList eventList;
+        while(1)
         {
-            assert(started);
-            for(int i=0;i<threadSize;++i)
-                threadListPtr[i].join();
-        }
+            if(!u_start)
+                continue;
 
-        void TaskPool::addInTaskQueue(ChannelList& tasks)
-        {
-            MutexLockGuard guard(mutex);   
-            std::swap(tasks,channelList);
-            cond.notifyAll(); 
+            base::MutexLockGuard guard(u_mutex);
+            while(u_eventList.empty())
+                u_cond.wait();
+            
+            std::swap(eventList,u_eventList);
+            for(auto iter=eventList.begin();iter!=eventList.end();++iter)
+                (*iter)->handleEvent();
+            eventList.clear();
         }
     }
 }

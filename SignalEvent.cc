@@ -137,7 +137,7 @@ namespace unet
         u_wsignal &= ~usig;
     }
    
-    void SignalEvent::handleSignal()
+    void SignalEvent::handleEvent()
     {
         while(1)
         {

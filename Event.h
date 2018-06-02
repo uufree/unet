@@ -29,6 +29,8 @@
  * 故，去掉Copy与Move操作
  */ 
 
+/*2018.06.02 测试完成*/
+
 namespace unet
 {
     class SocketEvent;
@@ -38,7 +40,22 @@ namespace unet
     class Event final
     {
         public:
-            explicit Event(int fd,int type,int wevent);
+            /*Functionality：
+             *      创建一个Event
+             *Parameters：
+             *      1)[in]：Socket或者timerfd，SignalEvent为0
+             *      2)[in]：type
+             *          U_TIMER：定时器
+             *          U_SIGNAL：信号
+             *          U_LISTEN_SOCKET：Listen Socket
+             *          U_CONNECT_SOCKET：Connect Socket
+             *      3)[in]：wevent
+             *          U_READ：
+             *          U_WRITE
+             *          U_EXCEPTION
+             *          U_TIMEOUT
+             */
+            explicit Event(int type,int fd = 0,int wevent = 0);
             Event(const Event&) = delete;
             Event& operator=(const Event&) = delete;
             Event(Event&&) = delete;
@@ -51,7 +68,6 @@ namespace unet
             int getWEvent() const{return u_wevent;};
             void setWEvent(int event) {u_wevent = event;};
             void setREvent(int event) {u_revent = event;}; 
-            bool eventHappened(){return u_wevent & u_revent;};
             
             void handleEvent();
 

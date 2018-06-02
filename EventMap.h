@@ -13,10 +13,11 @@
 
 #include"base/Mutex.h"
 
+/*2018.06.02 测试完成*/
+
 namespace unet
 {
     class Event;
-    class Mutex;
     
     class EventMap final
     {

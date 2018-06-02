@@ -23,11 +23,13 @@ namespace unet
             Poller& operator=(Poller&&);
             ~Poller() override;
             
-            bool operator==(const Poller& poll) const{return u_eventList.size() == poll.u_eventList.size();};
+            bool operator==(const Poller& poll){return u_eventList.begin() == poll.u_eventList.begin();};
 
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
+        private:
+            int switchEvent(int usrEvent);
     
         private:
             std::vector<struct pollfd> u_eventList;

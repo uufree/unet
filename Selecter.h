@@ -13,7 +13,6 @@
 
 namespace unet
 {
-
     class Selecter final : public EventDemultiplexer
     {
         public:

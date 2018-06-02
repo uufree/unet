@@ -56,9 +56,7 @@ namespace unet
     }
     
     Selecter::~Selecter()
-    {
-        EventDemultiplexer::~EventDemultiplexer();
-    }
+    {}
     
     void Selecter::addEvent(int fd,int wevent)
     {
