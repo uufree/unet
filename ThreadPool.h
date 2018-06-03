@@ -121,20 +121,7 @@ namespace unet
              *      None
              */
             void init();
-
-            /* Functionality:
-             *      在线程池中使用了这样一种策略：如果线程启动，des->id = thread
-             *      id des->start = true，此后，如果线程使用被停止，des->id不变，
-             *      des->start=false,持续30s，表示该线程在后续可能再次被启动，依然
-             *      维持start的假象，应对频繁启动的情况。若在30s后依旧无动静，删除
-             *      在线程池中占用的资源，依靠定时器来进行。
-             * Parameters:
-             *      None
-             * Returned Value:
-             *      None
-             */
-            void handleStopList();
-
+            
             /* Functionality:
              *      返回在线程池中已经存在线程对象，但是线程无效的位置
              * Parameters:
@@ -144,15 +131,6 @@ namespace unet
              */     
             int findAvailablePos();
 
-            /* Functionality:
-             *      返回线程池中线程对象不存在的位置
-             * Parameters:
-             *      None
-             * Returned Value:
-             *      None
-             */
-            int findFreePos();
-            
             /*只用于内部的线程资源转移*/
             ThreadPtr getThread(int index);
             ThreadDesPtr getThreadDes(int index); 
@@ -163,14 +141,8 @@ namespace unet
             int u_startThreadSize;/*已经启动的线程数量*/
 
             /*线程对象是有上限的，默认为64*/
-            /*这个对象全局无锁，只有主线程可以操作*/
             std::array<ThreadPtr,MAX_THREADS> u_thread;
-            
-            /*以下数据会在多线程中出现，需要用锁进行保护*/
-            base::MutexLock u_mutex;
             TidList u_description;
-            std::shared_ptr<Timer> u_timer;
-            std::vector<int> u_stopList;
     };
 }
 #endif

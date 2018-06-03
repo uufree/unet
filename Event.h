@@ -84,6 +84,9 @@ namespace unet
             /*用于处理ONE SHOT选项的副作用*/
             void setResetEventCallBack(const ResetEventCallBack& cb)
             {u_resetCallBack = cb;};
+            
+            void startTimerEvent();
+            void stopTimerEvent();
 
         private:
             int u_fd;  //socketfd or timerfd   

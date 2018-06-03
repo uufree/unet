@@ -69,7 +69,7 @@ namespace unet
 
             /*Timer和Signal属于必须暴露的事件，不能由EventMap统一管理*/
             static std::shared_ptr<Event> u_timerEventPtr;
-            static std::shared_ptr<Event> u_signalEventPtr; 
+            static std::shared_ptr<SignalEvent> u_signalEventPtr; 
             std::vector<std::shared_ptr<Event>> u_eventPtrList;
 
             ReadCallBack u_readCallBack;

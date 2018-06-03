@@ -32,11 +32,13 @@ namespace unet
         else if(u_type & U_TIMER)
         {
             u_event.u_timer = new TimerEvent();
+            u_fd = u_event.u_timer->getTimerfd();
             u_wevent = U_TIMEOUT;
         }
         else if(u_type & U_SIGNAL)
         {
-            u_event.u_signal = new SignalEvent(); 
+            u_event.u_signal = new SignalEvent();
+            u_fd = 0;   /*信号事件的描述符默认为0*/
             u_wevent = U_READ;
         }
     };
@@ -84,5 +86,17 @@ namespace unet
     {
         if(u_type & U_CONNECT_SOCKET)
             u_event.u_socket->setTcpConnectionPtr(ptr);
+    }
+
+    void Event::startTimerEvent()
+    {
+        if(u_type & U_TIMER)
+            u_event.u_timer->start();
+    }
+
+    void Event::stopTimerEvent()
+    {
+        if(u_type & U_TIMER)
+            u_event.u_timer->stop();
     }
 }

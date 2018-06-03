@@ -44,7 +44,6 @@ namespace unet
     }
         
     class TimerEvent;
-
     class Timer final : public std::enable_shared_from_this<Timer> 
     {
         public:
@@ -55,7 +54,7 @@ namespace unet
             typedef std::weak_ptr<Timer> TimerWPtr;
 
         public:
-            explicit Timer(base::Time time,bool repeat,double repeatTime,const TimerEventPtr&);
+            explicit Timer(base::Time time,bool repeat,double repeatTime,const TimerEventPtr&  ptr);
             explicit Timer(bool repeat,double repeatTime,const TimerEventPtr&);
             explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback,const TimerEventPtr&);
             Timer(const Timer& lhs) = delete;

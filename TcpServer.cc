@@ -9,8 +9,10 @@
 
 namespace unet
 {
-    std::shared_ptr<Event> TcpServer::u_timerEventPtr(new TimerEvent());
-    std::shared_ptr<Event> TcpServer::u_signalEventPtr(new SignalEvent());
+    /*定时器事件依旧需要纳入事件处理事件处理*/
+    std::shared_ptr<Event> TcpServer::u_timerEventPtr(new Event(U_TIMER));
+    /*信号事件由主线程单独管理*/
+    std::shared_ptr<SignalEvent> TcpServer::u_signalEventPtr(new SignalEvent());
 
     TcpServer::TcpServer(base::InetAddress& server,int size) :
         u_start(false),
@@ -137,6 +139,7 @@ namespace unet
         u_accepter.startListen();
         u_taskPool.start();
         u_loop.start();
+        u_timerEventPtr->startTimerEvent();
         u_start = true;
 //        u_signalEventPtr->handleEvent();
     }
@@ -148,6 +151,8 @@ namespace unet
         u_accepter.stopListen();
         u_taskPool.stop();
         u_loop.stop();
+        u_timerEventPtr->stopTimerEvent();
+        u_start = false;
     }
 }
 

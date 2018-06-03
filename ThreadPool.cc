@@ -10,57 +10,37 @@
 
 namespace unet
 {
+    /*线程在线程池中有三种状态：
+     * 0：内存已分配可以直接启用
+     * 1：停止状态
+     * n：已经启动*/
     ThreadPool::ThreadPool() :
         u_threadSize(0),
         u_startThreadSize(0),
         u_thread(),
-        u_mutex(),
-        u_description(),
-        u_timer(std::make_shared<Timer>(true,30)),
-        u_stopList()
+        u_description()
     {   
         init();
     }
 
-    ThreadPool::ThreadPool(ThreadPool&& pool)
-    {
-        /*在两个线程池之间进行资源迁移时，停止定时器*/
-        /*定时器不能被迁移，因为有注册this指针*/
-        /*定时器的callback在startall时注册，避免提早暴露this指针*/
-        pool.u_timer->stop();
-
-        {
-            base::MutexLockGuard guard(pool.u_mutex);
-            u_description = std::move(pool.u_description);
-            u_stopList = std::move(pool.u_stopList);
-        }
-        
-        u_timer = std::make_shared<Timer>(true,30);
-        u_threadSize = pool.u_threadSize;
-        u_startThreadSize = pool.u_startThreadSize;
-        u_thread = std::move(pool.u_thread);
-        u_mutex = base::MutexLock();
-    };
+    ThreadPool::ThreadPool(ThreadPool&& pool) :
+        u_threadSize(pool.u_threadSize),
+        u_startThreadSize(pool.u_startThreadSize),
+        u_thread(std::move(pool.u_thread)),
+        u_description(std::move(pool.u_description))
+    {};
 
     ThreadPool& ThreadPool::operator=(ThreadPool&& pool)
     {
         if(pool == *this)
             return *this;
         
-        pool.u_timer->stop();
-        {
-            /*在unet中不成文的规矩：先拿到外部对象锁，再拿本地对象锁*/
-            base::MutexLockGuard guard(pool.u_mutex);
-            {
-                base::MutexLockGuard guard(u_mutex);
-                u_description = std::move(pool.u_description);
-                u_stopList = std::move(pool.u_stopList);
-            }
-        }
-        
+        stopAllThread();
+
         u_threadSize = pool.u_threadSize;
         u_startThreadSize = pool.u_startThreadSize;
         u_thread = std::move(pool.u_thread);
+        u_description = std::move(pool.u_description);
 
         return *this;
     }
@@ -87,31 +67,6 @@ namespace unet
         u_startThreadSize = 0;
     }
     
-    /*
-     * 完成两项工作：
-     * 1.首先检测与stopList中的编号是否依旧匹配，匹配删除，不匹配不变
-     * 2.重新填充stopList
-     */
-    void ThreadPool::handleStopList()
-    {
-        base::MutexLockGuard guard(u_mutex);
-        /*30s之前线程状态为false，30s之后如果依旧为false的话，可以复用*/
-        for(auto iter=u_stopList.begin();iter!=u_stopList.end();++iter)
-        {
-            if(std::get<2>(*u_description[*iter]) == false) 
-                std::get<0>(*u_description[*iter]) = 0; 
-        }
-        
-        u_stopList.clear();
-        /*之后将tid存在但是状态为false的标志添加到stopList*/
-        for(int i=0;i<MAX_THREADS;i++)
-        {
-            if(std::get<0>(*u_description[i]) && 
-                    std::get<2>(*u_description[i]) == false)
-                u_stopList.push_back(i);
-        }
-    }
-   
     /*因为线程池维护的是和内存相关的动态的资源，所以每块内存都需要合适的标记*/
     /*从当前的空闲内存块中寻找一块可以直接存放线程本体的位置*/
     /*成功的话，返回可以存放线程本体的编号；没有空闲位置的话返回-1*/
@@ -127,20 +82,6 @@ namespace unet
         return -1;
     }
     
-    /*
-     * 在添加线程之前首先需要说明一点：若一个线程的tid=-1，则可以直接使用
-     * 存在这样一种情况，一个线程启动之后，被停止了，之后不再运行。于是，tid
-     * 一直被占用，怎么办呢？
-     * 启动一个定时器，每30s检测一次已经停止，但是资源被占用的tid，重新初始化，
-     * 使之可以被复用
-     */
-
-    /*
-     *向线程池中添加一个线程的步骤：
-     * 1.首先搜索pthread_t为-1的线程,找到之后直接使用即可
-     * 2.如果不存在，重添加
-     */
-
     /*
      * u_description和u_thread同时存在，同时消失
      *从线程池中删除一个线程的步骤：
@@ -164,13 +105,11 @@ namespace unet
 
             u_thread[index]->setThreadCallBack(func);
             
-            {
-                base::MutexLockGuard guard(u_mutex);
                 /*添加线程但是未启动时：将pthread_t置为1*/
-                std::get<0>(*u_description[index]) = 1;
-                std::get<1>(*u_description[index]) = des;
-                std::get<2>(*u_description[index]) = false;
-            }
+            std::get<0>(*u_description[index]) = 1;
+            std::get<1>(*u_description[index]) = des;
+            std::get<2>(*u_description[index]) = false;
+            
             ++u_threadSize;
         }
         
@@ -191,12 +130,10 @@ namespace unet
             ++u_startThreadSize;
         ++u_threadSize;
         
-        {
-            base::MutexLockGuard guard(u_mutex);
-            std::get<0>(*u_description[index]) = thread->isStart() ? thread->getThreadId() : 1;
-            std::get<1>(*u_description[index]) = des;
-            std::get<2>(*u_description[index]) = thread->isStart();
-        }
+        std::get<0>(*u_description[index]) = thread->isStart() ? thread->getThreadId() : 1;
+        std::get<1>(*u_description[index]) = des;
+        std::get<2>(*u_description[index]) = thread->isStart();
+        
         return 0;
     }
     
@@ -208,7 +145,6 @@ namespace unet
 
         int index = 0;
         {
-            base::MutexLockGuard guard(u_mutex);
             for(;index < MAX_THREADS;index++)
             {
                 if(std::get<0>(*u_description[index]) == tid)
@@ -245,11 +181,9 @@ namespace unet
         {
             if(std::get<1>(*u_description[index]) == str)
             {
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[index]) = 0;
-                    std::get<2>(*u_description[index]) = false;
-                }
+                std::get<0>(*u_description[index]) = 0;
+                std::get<2>(*u_description[index]) = false;
+                
                 if(u_thread[index]->isStart())
                 {
                     u_thread[index]->stop();
@@ -270,7 +204,6 @@ namespace unet
 
         int index = 0;
         {
-            base::MutexLockGuard guard(u_mutex);
             for(;index < MAX_THREADS;index++)
             {
                 if(std::get<0>(*u_description[index]) == tid)
@@ -333,10 +266,7 @@ namespace unet
             if(u_thread[index]->isStart())
                 ++u_startThreadSize;
             
-            {
-                base::MutexLockGuard guard(u_mutex);
-                u_description[index] = pool.getThreadDes(i);
-            }
+            u_description[index] = pool.getThreadDes(i);
 
             pool.deleteThreadNotStop(u_thread[i]->getThreadId());
         }
@@ -354,18 +284,12 @@ namespace unet
             if(!std::get<2>(*u_description[i]) && std::get<0>(*u_description[i]) == 1)
             {
                 u_thread[i]->start();
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
-                    std::get<2>(*u_description[i]) = true;
-                }
+                std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
+                std::get<2>(*u_description[i]) = true;
+                
                 ++u_startThreadSize;
             }
         }
-
-        if(u_timer->hasCallBack())
-            u_timer->setTimeCallBack(std::bind(&ThreadPool::handleStopList,this));
-        u_timer->start();
     }
 
     void ThreadPool::stopAllThread()
@@ -373,17 +297,13 @@ namespace unet
         if(u_startThreadSize == 0 || u_threadSize == 0)
             return;
 
-        u_timer->stop();
         for(int i=0;i<MAX_THREADS;i++)
         {
             if(std::get<2>(*u_description[i]) && u_thread[i]->isStart())
             {
                 u_thread[i]->stop();
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[i]) = 1;
-                    std::get<2>(*u_description[i]) = false;
-                }
+                std::get<0>(*u_description[i]) = 1;
+                std::get<2>(*u_description[i]) = false;
                 --u_startThreadSize;
             }
         }
@@ -401,11 +321,8 @@ namespace unet
                     std::get<0>(*u_description[i]) == 1)
             {
                 u_thread[i]->start();
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
-                    std::get<2>(*u_description[i]) = true;
-                }
+                std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
+                std::get<2>(*u_description[i]) = true;
                 ++u_startThreadSize;
                 break;
             }
@@ -424,11 +341,8 @@ namespace unet
                     std::get<0>(*u_description[i]) == 1)
             {
                 u_thread[i]->start();
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
-                    std::get<2>(*u_description[i]) = true;
-                }
+                std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
+                std::get<2>(*u_description[i]) = true;
                 ++u_startThreadSize;
             }
         }
@@ -445,11 +359,8 @@ namespace unet
                     !std::get<2>(*u_description[i]))
             {
                 u_thread[i]->stop();
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[i]) = 1;
-                    std::get<2>(*u_description[i]) = false;
-                }
+                std::get<0>(*u_description[i]) = 1;
+                std::get<2>(*u_description[i]) = false;
                 --u_startThreadSize;
             }
         }
@@ -467,11 +378,8 @@ namespace unet
                     std::get<2>(*u_description[i]))
             {
                 u_thread[i]->stop();
-                {
-                    base::MutexLockGuard guard(u_mutex);
-                    std::get<0>(*u_description[i]) = 1;
-                    std::get<2>(*u_description[i]) = false;
-                }
+                std::get<0>(*u_description[i]) = 1;
+                std::get<2>(*u_description[i]) = false;
                 --u_startThreadSize;
             }
         }
@@ -486,7 +394,6 @@ namespace unet
         {
             if(std::get<0>(*u_description[i]) == tid)
             {
-                base::MutexLockGuard guard(u_mutex);
                 std::get<1>(*u_description[i]) = des;
                 return;
             }
@@ -530,10 +437,7 @@ namespace unet
                     u_thread[i]->setThreadCallBack(func);
                     u_thread[i]->start();
                     
-                    {
-                        base::MutexLockGuard guard(u_mutex);
-                        std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
-                    }
+                    std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
                     return 0;
                 }
             }
@@ -556,10 +460,7 @@ namespace unet
                     u_thread[i]->setThreadCallBack(func);
                     u_thread[i]->start();
                     
-                    {
-                        base::MutexLockGuard guard(u_mutex);
-                        std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
-                    }
+                    std::get<0>(*u_description[i]) = u_thread[i]->getThreadId();
                 }
             }
         }
@@ -568,7 +469,6 @@ namespace unet
     
     void ThreadPool::printThreadPoolMessage()
     {
-        base::MutexLockGuard guard(u_mutex);
         printf("=========================================\n");
         printf("Thread Pool Message: \n");
         printf("Thread Size: %d\n",u_threadSize);
