@@ -208,7 +208,7 @@ namespace unet
                 
                 {
                     base::MutexLockGuard guard(u_mutex);
-                    u_stopMap.insert(-(*iter),revent);
+                    u_stopMap.insert({-(*iter),revent});
                 }
 
                 if(revent & U_READ)
@@ -231,7 +231,7 @@ namespace unet
         auto iter = u_stopMap.find(-fd);
         if(iter == u_stopMap.end())
             return;
-        u_stopMap.insert(-iter->first,iter->second);
+        u_stopMap.insert({-(iter->first),iter->second});
         u_stopMap.erase(iter);
     }
 

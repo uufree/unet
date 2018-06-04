@@ -65,7 +65,13 @@ namespace unet
         else if(u_type == U_SIGNAL)
             u_event.u_signal->handleEvent();
         
-        u_resetCallBack(u_fd);
+        if(u_resetCallBack)
+            u_resetCallBack(u_fd);
+        else
+        {
+            perror("There is no register resetCallBack!\n");
+            unet::handleError(errno);
+        }
         u_revent = 0;
     }
 

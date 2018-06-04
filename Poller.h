@@ -17,6 +17,8 @@
 
 namespace unet
 {
+    static const int POLL_TIMEOUT = 200;    /*Poll的阻塞时间为200ms*/
+
     class Poller final : public EventDemultiplexer
     {
         public:
@@ -35,13 +37,19 @@ namespace unet
             void resetEvent(int) override; 
         private:
             int switchEvent(int usrEvent);
-    
+            void addEventCore();
+            void deleteEventCore();
+
         private:
             std::vector<struct pollfd> u_eventList;
             std::set<int> u_set;
             
             base::MutexLock u_mutex;
-            std::map<int,struct pollfd> u_stopMap;
+            std::map<int,int> u_stopMap;
+            
+            base::MutexLock u_admutex;
+            std::vector<struct pollfd> u_addEventList;
+            std::vector<int> u_deleteEventList;
     };
 }
 

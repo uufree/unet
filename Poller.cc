@@ -71,40 +71,53 @@ namespace unet
             sysEvent |= POLLERR|POLLHUP|POLLNVAL|POLLRDHUP;
         return sysEvent;
     }
-
+    
+    /*什么时候向Poller中添加事件？*/
+    /*在Acceptor中的事件被触发时，Accepter的事件被纳入时间处理线程进行处理，而
+     * Poller一直运行在Loop线程，需要用锁保护临界区,删除也是同样的道理*/
     void Poller::addEvent(int fd,int wevent)
     {
-        if(u_set.find(fd) == u_set.end())
+        struct pollfd pfd;
+        pfd.fd = fd;
+        pfd.events = switchEvent(wevent);
+        pfd.revents = 0;
+        
         {
-            ++u_wfds;
-            u_set.insert(fd);
-            struct pollfd pfd;
-            pfd.fd = fd;
-            pfd.events = switchEvent(wevent);
-            pfd.revents = 0;
-            u_eventList.push_back(pfd);
+            base::MutexLockGuard guard(u_admutex);
+            u_addEventList.push_back(pfd);
         }
-        else
-        {
-            auto iter = u_eventList.begin();
-            for(;iter!=u_eventList.end();++iter)
-                if(iter->fd == fd)
-                    break;
+    }
 
-            if(iter != u_eventList.end())
+    void Poller::addEventCore()
+    {
+        base::MutexLockGuard guard(u_admutex);
+        while(!u_addEventList.empty())
+        {
+            if(u_set.find(u_addEventList.back().fd) == u_set.end())
             {
-                (*iter).events = switchEvent(wevent);
-                (*iter).revents = 0;
+                ++u_wfds;
+                u_set.insert(u_addEventList.back().fd);
+                u_eventList.push_back(u_addEventList.back());
             }
+            else
+            {
+                auto iter = u_eventList.begin();
+                for(;iter!=u_eventList.end();++iter)
+                    if(iter->fd == u_addEventList.back().fd)
+                        break;
+                *iter = u_addEventList.back();
+            }
+            
+            u_addEventList.pop_back();
         }
     }
 
     void Poller::delEvent(int fd)
     {
-        if(u_set.find(fd) == u_set.end())
-            return;
-        u_set.erase(fd);
-        --u_wfds;
+        {
+            base::MutexLockGuard guard(u_admutex);
+            u_deleteEventList.push_back(fd);
+        }
         
         {
             base::MutexLockGuard guard(u_mutex);
@@ -117,17 +130,30 @@ namespace unet
                 u_stopMap.erase(miter);
         }
 
-        auto iter = u_eventList.begin();
-        for(;iter!=u_eventList.end();++iter)
+    }
+    
+    void Poller::deleteEventCore()
+    {
         {
-            if(iter->fd == fd)
+            base::MutexLockGuard guard(u_admutex);
+            int fd = -1;
+            while(!u_deleteEventList.empty())
             {
-                u_eventList.erase(iter);
-                break;
+                fd = u_deleteEventList.back();
+                u_deleteEventList.pop_back();
+            
+                auto iter = u_set.find(fd);
+                if(iter == u_set.end())
+                    continue;
+                for(auto iter=u_eventList.begin();iter!=u_eventList.end();++iter)
+                    if(iter->fd == fd)
+                        u_eventList.erase(iter);
+                u_set.erase(iter);
+                --u_wfds;
             }
         }
     }
-    
+
     void Poller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
         {
@@ -136,13 +162,25 @@ namespace unet
             {
                 if(iter->first > 0)
                 {
-                    u_eventList.push_back(iter->second);
+                    for(auto viter=u_eventList.begin();viter!=u_eventList.end();++viter)
+                    {
+                        if(viter->fd == iter->first)
+                        {
+                            viter->events = iter->second;
+                            break;
+                        }
+                    }
                     u_stopMap.erase(iter);
                 }
             }
         }
 
-        u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),-1);
+        deleteEventCore();
+        addEventCore();
+        std::cout << "Poll Size: " << u_eventList.size() << std::endl;
+        if(u_eventList.size() > 0)
+            u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),POLL_TIMEOUT);
+
         if(u_rfds < 0)
         {
             perror("poll error!\n");
@@ -160,6 +198,7 @@ namespace unet
             if(iter->revents & POLLOUT)
                 revent |= U_WRITE;
             
+            iter->revents = 0;
             if(revent)
             {
                 std::shared_ptr<Event> ptr = eventMap.find((*iter).fd);
@@ -173,9 +212,9 @@ namespace unet
                 时，将符号变正即可*/
                 {
                     base::MutexLockGuard guard(u_mutex);
-                    u_stopMap.insert({-iter->fd,*iter});
+                    u_stopMap.insert({-(iter->fd),iter->events});
                 }
-                u_eventList.erase(iter);
+                iter->events = 0;/*不关注任何事件*/
             }
         }
     }
@@ -184,7 +223,7 @@ namespace unet
     {
         base::MutexLockGuard guard(u_mutex);
         auto iter = u_stopMap.find(-fd);
-        if(u_set.find(fd) == u_set.end() ||  iter == u_stopMap.end())
+        if(iter == u_stopMap.end())
             return;
         u_stopMap.insert({fd,iter->second}); 
         u_stopMap.erase(iter);

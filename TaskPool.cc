@@ -75,6 +75,7 @@ namespace unet
 
             for(auto iter=eventList.begin();iter!=eventList.end();++iter)
                 (*iter)->handleEvent();
+
             eventList.clear();
         }
     }
@@ -83,5 +84,6 @@ namespace unet
     {
         base::MutexLockGuard guard(u_mutex);
         std::swap(list,u_eventList); 
+        u_cond.notify();
     }
 }

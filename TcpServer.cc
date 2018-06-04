@@ -91,6 +91,7 @@ namespace unet
         std::shared_ptr<Event> lptr(new Event(U_LISTEN_SOCKET,fd));
         lptr->setListenReadCallBack(std::bind(&TcpServer::AccepterHandleRead,this));
         lptr->setListenCloseCallBack(std::bind(&TcpServer::EraseListen,this,std::placeholders::_1));
+        lptr->setResetEventCallBack(std::bind(&TcpServer::ResetEvent,this,std::placeholders::_1));
         u_eventMap.insert(lptr);
         u_eventDemu->addEvent(fd,U_READ|U_EXCEPTION);
     }
@@ -110,6 +111,7 @@ namespace unet
         
         std::shared_ptr<Event> eptr(new Event(U_CONNECT_SOCKET,fd));
         eptr->setTcpConnectionPtr(ptr);  
+        eptr->setResetEventCallBack(std::bind(&TcpServer::ResetEvent,this,std::placeholders::_1));
 
         u_eventMap.insert(eptr);
         u_connectionMap.insert(ptr);
@@ -142,7 +144,7 @@ namespace unet
         if(u_start)
             return;
         u_accepter.startListen();
-//        u_taskPool.start();
+        u_taskPool.start();
         u_loop.start();
 //        u_timerEventPtr->startTimerEvent();
         u_start = true;

@@ -40,7 +40,7 @@ int main(int argc,char** argv)
 {
     InetAddress serverAddr(7777);
     TcpServer server(serverAddr);
-//    server.setReadCallBack(std::bind(&handleReadCallBack,std::placeholders::_1));
+    server.setReadCallBack(std::bind(&handleReadCallBack,std::placeholders::_1));
 //    server.setWriteCallBack(std::bind(&handleReadCallBack,std::placeholders::_1));
     server.start();
     

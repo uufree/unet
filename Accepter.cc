@@ -79,7 +79,6 @@ namespace unet
 
     void Accepter::handleRead()
     {
-        std::cout << "accepter handle read!" << std::endl;
         if(!u_listen)
             return;
 
