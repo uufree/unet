@@ -30,6 +30,8 @@
 #include<fcntl.h>
 #include<unistd.h>
 
+#include<iostream>
+
 #include"Global.h"
 #include"InetAddress.h"
 

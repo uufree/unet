@@ -37,7 +37,7 @@ namespace unet
         u_mutex()
     {
         u_timerfd = createTimefd();
-        std::cout << u_timerfd << std::endl;
+        std::cout << "Timerfd: " << u_timerfd << std::endl;
         if(u_timerfd < 0)
             unet::handleError(errno);
     };

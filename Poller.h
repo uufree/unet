@@ -9,7 +9,11 @@
 #define _POLLER_H
 
 #include"EventDemultiplexer.h"
+#include"base/Mutex.h"
 #include<set>
+#include<map>
+
+#include<iostream>
 
 namespace unet
 {
@@ -28,12 +32,16 @@ namespace unet
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
+            void resetEvent(int) override; 
         private:
             int switchEvent(int usrEvent);
     
         private:
             std::vector<struct pollfd> u_eventList;
             std::set<int> u_set;
+            
+            base::MutexLock u_mutex;
+            std::map<int,struct pollfd> u_stopMap;
     };
 }
 

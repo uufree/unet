@@ -16,6 +16,7 @@ namespace unet
         u_serverAddr(serverAddr),
         u_listenfd(base::Socket(base::LISTEN))
     {
+        std::cout << "Listenfd: " << u_listenfd.getFd() << std::endl;
         u_listenfd.bind(serverAddr);
         u_listenfd.listen();
     }
@@ -49,6 +50,7 @@ namespace unet
     
     int Accepter::startListen()
     {
+
         if(u_listen)
             return 0;
         if(!u_saveListenCallBack || !u_eraseListenCallBack || 
@@ -59,6 +61,7 @@ namespace unet
             u_saveListenCallBack(u_listenfd.getFd());
         u_listen = true;
         return 0;
+    
     }
     
     int Accepter::stopListen()
@@ -70,11 +73,16 @@ namespace unet
             return -1;
         
         u_eraseListenCallBack(u_listenfd.getFd());
+        u_listen = false;
         return 0;
     }
 
     void Accepter::handleRead()
     {
+        std::cout << "accepter handle read!" << std::endl;
+        if(!u_listen)
+            return;
+
         int confd = u_listenfd.accept();
         if(confd <= 0)
             return;

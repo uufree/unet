@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/uuchen/uProject/unet/test
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target edit_cache
-edit_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
-.PHONY : edit_cache
-
-# Special rule for the target edit_cache
-edit_cache/fast: edit_cache
-
-.PHONY : edit_cache/fast
-
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -77,6 +66,17 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 
 .PHONY : rebuild_cache/fast
+
+# Special rule for the target edit_cache
+edit_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
+	/usr/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+.PHONY : edit_cache
+
+# Special rule for the target edit_cache
+edit_cache/fast: edit_cache
+
+.PHONY : edit_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named client
+
+# Build rule for target.
+client: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 client
+.PHONY : client
+
+# fast build rule for target.
+client/fast:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/build
+.PHONY : client/fast
+
+#=============================================================================
 # Target rules for targets named server
 
 # Build rule for target.
@@ -122,6 +135,33 @@ server: cmake_check_build_system
 server/fast:
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/build
 .PHONY : server/fast
+
+TcpClientTest.o: TcpClientTest.cc.o
+
+.PHONY : TcpClientTest.o
+
+# target to build an object file
+TcpClientTest.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/TcpClientTest.cc.o
+.PHONY : TcpClientTest.cc.o
+
+TcpClientTest.i: TcpClientTest.cc.i
+
+.PHONY : TcpClientTest.i
+
+# target to preprocess a source file
+TcpClientTest.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/TcpClientTest.cc.i
+.PHONY : TcpClientTest.cc.i
+
+TcpClientTest.s: TcpClientTest.cc.s
+
+.PHONY : TcpClientTest.s
+
+# target to generate assembly for a file
+TcpClientTest.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/TcpClientTest.cc.s
+.PHONY : TcpClientTest.cc.s
 
 TcpServerTest.o: TcpServerTest.cc.o
 
@@ -453,6 +493,7 @@ home/uuchen/uProject/unet/TcpConnection.o: home/uuchen/uProject/unet/TcpConnecti
 
 # target to build an object file
 home/uuchen/uProject/unet/TcpConnection.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/TcpConnection.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/TcpConnection.cc.o
 .PHONY : home/uuchen/uProject/unet/TcpConnection.cc.o
 
@@ -462,6 +503,7 @@ home/uuchen/uProject/unet/TcpConnection.i: home/uuchen/uProject/unet/TcpConnecti
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/TcpConnection.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/TcpConnection.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/TcpConnection.cc.i
 .PHONY : home/uuchen/uProject/unet/TcpConnection.cc.i
 
@@ -471,6 +513,7 @@ home/uuchen/uProject/unet/TcpConnection.s: home/uuchen/uProject/unet/TcpConnecti
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/TcpConnection.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/TcpConnection.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/TcpConnection.cc.s
 .PHONY : home/uuchen/uProject/unet/TcpConnection.cc.s
 
@@ -588,6 +631,7 @@ home/uuchen/uProject/unet/base/Alloc.o: home/uuchen/uProject/unet/base/Alloc.cc.
 
 # target to build an object file
 home/uuchen/uProject/unet/base/Alloc.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Alloc.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Alloc.cc.o
 .PHONY : home/uuchen/uProject/unet/base/Alloc.cc.o
 
@@ -597,6 +641,7 @@ home/uuchen/uProject/unet/base/Alloc.i: home/uuchen/uProject/unet/base/Alloc.cc.
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/base/Alloc.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Alloc.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Alloc.cc.i
 .PHONY : home/uuchen/uProject/unet/base/Alloc.cc.i
 
@@ -606,6 +651,7 @@ home/uuchen/uProject/unet/base/Alloc.s: home/uuchen/uProject/unet/base/Alloc.cc.
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/base/Alloc.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Alloc.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Alloc.cc.s
 .PHONY : home/uuchen/uProject/unet/base/Alloc.cc.s
 
@@ -615,6 +661,7 @@ home/uuchen/uProject/unet/base/Buffer.o: home/uuchen/uProject/unet/base/Buffer.c
 
 # target to build an object file
 home/uuchen/uProject/unet/base/Buffer.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Buffer.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Buffer.cc.o
 .PHONY : home/uuchen/uProject/unet/base/Buffer.cc.o
 
@@ -624,6 +671,7 @@ home/uuchen/uProject/unet/base/Buffer.i: home/uuchen/uProject/unet/base/Buffer.c
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/base/Buffer.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Buffer.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Buffer.cc.i
 .PHONY : home/uuchen/uProject/unet/base/Buffer.cc.i
 
@@ -633,6 +681,7 @@ home/uuchen/uProject/unet/base/Buffer.s: home/uuchen/uProject/unet/base/Buffer.c
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/base/Buffer.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Buffer.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Buffer.cc.s
 .PHONY : home/uuchen/uProject/unet/base/Buffer.cc.s
 
@@ -669,6 +718,7 @@ home/uuchen/uProject/unet/base/Global.o: home/uuchen/uProject/unet/base/Global.c
 
 # target to build an object file
 home/uuchen/uProject/unet/base/Global.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Global.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Global.cc.o
 .PHONY : home/uuchen/uProject/unet/base/Global.cc.o
 
@@ -678,6 +728,7 @@ home/uuchen/uProject/unet/base/Global.i: home/uuchen/uProject/unet/base/Global.c
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/base/Global.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Global.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Global.cc.i
 .PHONY : home/uuchen/uProject/unet/base/Global.cc.i
 
@@ -687,6 +738,7 @@ home/uuchen/uProject/unet/base/Global.s: home/uuchen/uProject/unet/base/Global.c
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/base/Global.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Global.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Global.cc.s
 .PHONY : home/uuchen/uProject/unet/base/Global.cc.s
 
@@ -696,6 +748,7 @@ home/uuchen/uProject/unet/base/InetAddress.o: home/uuchen/uProject/unet/base/Ine
 
 # target to build an object file
 home/uuchen/uProject/unet/base/InetAddress.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/InetAddress.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/InetAddress.cc.o
 .PHONY : home/uuchen/uProject/unet/base/InetAddress.cc.o
 
@@ -705,6 +758,7 @@ home/uuchen/uProject/unet/base/InetAddress.i: home/uuchen/uProject/unet/base/Ine
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/base/InetAddress.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/InetAddress.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/InetAddress.cc.i
 .PHONY : home/uuchen/uProject/unet/base/InetAddress.cc.i
 
@@ -714,6 +768,7 @@ home/uuchen/uProject/unet/base/InetAddress.s: home/uuchen/uProject/unet/base/Ine
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/base/InetAddress.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/InetAddress.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/InetAddress.cc.s
 .PHONY : home/uuchen/uProject/unet/base/InetAddress.cc.s
 
@@ -723,6 +778,7 @@ home/uuchen/uProject/unet/base/Mutex.o: home/uuchen/uProject/unet/base/Mutex.cc.
 
 # target to build an object file
 home/uuchen/uProject/unet/base/Mutex.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Mutex.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Mutex.cc.o
 .PHONY : home/uuchen/uProject/unet/base/Mutex.cc.o
 
@@ -732,6 +788,7 @@ home/uuchen/uProject/unet/base/Mutex.i: home/uuchen/uProject/unet/base/Mutex.cc.
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/base/Mutex.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Mutex.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Mutex.cc.i
 .PHONY : home/uuchen/uProject/unet/base/Mutex.cc.i
 
@@ -741,6 +798,7 @@ home/uuchen/uProject/unet/base/Mutex.s: home/uuchen/uProject/unet/base/Mutex.cc.
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/base/Mutex.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Mutex.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Mutex.cc.s
 .PHONY : home/uuchen/uProject/unet/base/Mutex.cc.s
 
@@ -750,6 +808,7 @@ home/uuchen/uProject/unet/base/Socket.o: home/uuchen/uProject/unet/base/Socket.c
 
 # target to build an object file
 home/uuchen/uProject/unet/base/Socket.cc.o:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Socket.cc.o
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Socket.cc.o
 .PHONY : home/uuchen/uProject/unet/base/Socket.cc.o
 
@@ -759,6 +818,7 @@ home/uuchen/uProject/unet/base/Socket.i: home/uuchen/uProject/unet/base/Socket.c
 
 # target to preprocess a source file
 home/uuchen/uProject/unet/base/Socket.cc.i:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Socket.cc.i
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Socket.cc.i
 .PHONY : home/uuchen/uProject/unet/base/Socket.cc.i
 
@@ -768,6 +828,7 @@ home/uuchen/uProject/unet/base/Socket.s: home/uuchen/uProject/unet/base/Socket.c
 
 # target to generate assembly for a file
 home/uuchen/uProject/unet/base/Socket.cc.s:
+	$(MAKE) -f CMakeFiles/client.dir/build.make CMakeFiles/client.dir/home/uuchen/uProject/unet/base/Socket.cc.s
 	$(MAKE) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Socket.cc.s
 .PHONY : home/uuchen/uProject/unet/base/Socket.cc.s
 
@@ -858,9 +919,13 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... edit_cache"
+	@echo "... client"
 	@echo "... server"
+	@echo "... TcpClientTest.o"
+	@echo "... TcpClientTest.i"
+	@echo "... TcpClientTest.s"
 	@echo "... TcpServerTest.o"
 	@echo "... TcpServerTest.i"
 	@echo "... TcpServerTest.s"

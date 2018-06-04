@@ -46,7 +46,6 @@ namespace unet
             void setEraseListenCallBack(const EraseListenCallBack& cb)
             {u_eraseListenCallBack = cb;};
         
-        private:
             void handleRead();
 
         private:

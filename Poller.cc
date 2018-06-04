@@ -19,14 +19,21 @@ namespace unet
     Poller::Poller() : 
         EventDemultiplexer(),
         u_eventList(),
-        u_set()
+        u_set(),
+        u_mutex(),
+        u_stopMap()
     {};
 
     Poller::Poller(Poller&& poll) :
         EventDemultiplexer(),
         u_eventList(poll.u_eventList),
-        u_set()
-    {};
+        u_set(poll.u_set),
+        u_mutex(),
+        u_stopMap()
+    {
+        base::MutexLockGuard guard(poll.u_mutex);
+        std::swap(u_stopMap,poll.u_stopMap);
+    };
 
     Poller& Poller::operator=(Poller&& poll)
     {
@@ -34,6 +41,14 @@ namespace unet
             return *this;
         std::swap(poll.u_eventList,u_eventList);
         std::swap(u_set,poll.u_set);
+        
+        {
+            base::MutexLockGuard guard(poll.u_mutex);
+            {
+                base::MutexLockGuard guard(u_mutex);
+                std::swap(u_stopMap,poll.u_stopMap);
+            }
+        }
 
         return *this;
     }
@@ -41,6 +56,7 @@ namespace unet
     Poller::~Poller()
     {
         u_eventList.clear();
+        u_stopMap.clear();
         u_set.clear();
     };
     
@@ -89,19 +105,43 @@ namespace unet
             return;
         u_set.erase(fd);
         --u_wfds;
+        
+        {
+            base::MutexLockGuard guard(u_mutex);
+            auto miter = u_stopMap.find(fd);
+            if(miter != u_stopMap.end())
+                u_stopMap.erase(miter);
+            
+            miter = u_stopMap.find(-fd);
+            if(miter != u_stopMap.end())
+                u_stopMap.erase(miter);
+        }
 
         auto iter = u_eventList.begin();
         for(;iter!=u_eventList.end();++iter)
+        {
             if(iter->fd == fd)
+            {
+                u_eventList.erase(iter);
                 break;
-
-        if(iter != u_eventList.end())
-            u_eventList.erase(iter);
+            }
+        }
     }
     
     void Poller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
-        
+        {
+            base::MutexLockGuard guard(u_mutex);
+            for(auto iter=u_stopMap.begin();iter!=u_stopMap.end();++iter)
+            {
+                if(iter->first > 0)
+                {
+                    u_eventList.push_back(iter->second);
+                    u_stopMap.erase(iter);
+                }
+            }
+        }
+
         u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),-1);
         if(u_rfds < 0)
         {
@@ -119,7 +159,7 @@ namespace unet
                 revent |= U_READ;
             if(iter->revents & POLLOUT)
                 revent |= U_WRITE;
-
+            
             if(revent)
             {
                 std::shared_ptr<Event> ptr = eventMap.find((*iter).fd);
@@ -128,9 +168,26 @@ namespace unet
                     ptr->setREvent(revent);
                     eventList.push_back(ptr);
                 }
+                
+                /*使用了一个小技巧，将索引改变为-1的。在事件处理线程重置事件
+                时，将符号变正即可*/
+                {
+                    base::MutexLockGuard guard(u_mutex);
+                    u_stopMap.insert({-iter->fd,*iter});
+                }
+                u_eventList.erase(iter);
             }
         }
+    }
 
+    void Poller::resetEvent(int fd)
+    {
+        base::MutexLockGuard guard(u_mutex);
+        auto iter = u_stopMap.find(-fd);
+        if(u_set.find(fd) == u_set.end() ||  iter == u_stopMap.end())
+            return;
+        u_stopMap.insert({fd,iter->second}); 
+        u_stopMap.erase(iter);
     }
 }
 

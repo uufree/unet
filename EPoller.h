@@ -10,8 +10,12 @@
 
 #include<sys/epoll.h>
 #include<map>
+#include<set>
+
+#include<iostream>
 
 #include"EventDemultiplexer.h"
+#include"base/Mutex.h"
 
 /* 注意：EPoller
  * 为了保证在多线程中的安全性，设置了EPOLLONESHOT属性，注意在使用之后再次填充事件
@@ -47,6 +51,9 @@ namespace unet
             std::map<int,struct epoll_event*> u_eventMap; 
             std::vector<struct epoll_event> u_activeList;
             bool u_openET;
+
+            base::MutexLock u_mutex;
+            std::set<int> u_stopSet;
     };
 }
 

@@ -12,6 +12,8 @@
 #include<vector>
 #include<utility>
 
+#include<iostream>
+
 #include"base/Thread.h"
 
 namespace unet
@@ -30,7 +32,7 @@ namespace unet
             
             bool operator==(const EventLoop& loop){return u_thread==loop.u_thread;};
 
-            void start(){if(!u_start) u_thread.start();u_start=true;};
+            void start(){u_start = true;u_thread.start();};
             void stop(){if(u_start) u_thread.stop();u_start=false;};
             bool isStart() const{return u_start;};
 

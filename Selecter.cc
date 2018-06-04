@@ -17,7 +17,9 @@ namespace unet
     Selecter::Selecter() :
         EventDemultiplexer(),
         maxfd(0),
-        u_set()
+        u_set(),
+        u_mutex(),
+        u_stopMap()
     {
         FD_ZERO(&u_readSet);
         FD_ZERO(&u_readSetSave);
@@ -36,8 +38,13 @@ namespace unet
         u_writeSetSave(select.u_writeSetSave),
         u_exceptionSetSave(select.u_exceptionSetSave),
         maxfd(select.maxfd),
-        u_set(select.u_set)
-    {};
+        u_set(select.u_set),
+        u_mutex(),
+        u_stopMap()
+    {
+        base::MutexLockGuard guard(select.u_mutex);
+        std::swap(u_stopMap,select.u_stopMap);
+    };
 
     Selecter& Selecter::operator=(Selecter&& select)
     {
@@ -51,6 +58,14 @@ namespace unet
         u_exceptionSetSave = select.u_exceptionSetSave;
         maxfd = select.maxfd;
         u_set = select.u_set;
+        
+        {
+            base::MutexLockGuard guard(select.u_mutex);
+            {
+                base::MutexLockGuard guard(u_mutex);
+                std::swap(u_stopMap,select.u_stopMap);
+            }
+        }
 
         return *this;
     }
@@ -101,6 +116,17 @@ namespace unet
         if(iter == u_set.end())
             return;
         
+        {
+            base::MutexLockGuard guard(u_mutex);
+            auto miter = u_stopMap.find(fd);
+            if(miter != u_stopMap.end())
+                u_stopMap.erase(miter);
+            
+            miter = u_stopMap.find(-fd);
+            if(miter != u_stopMap.end())
+                u_stopMap.erase(miter);
+        }
+
         --u_wfds;
         u_set.erase(iter);
 
@@ -120,6 +146,38 @@ namespace unet
 
     void Selecter::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        {
+            base::MutexLockGuard guard(u_mutex);
+            int revent = 0;
+            for(auto iter=u_stopMap.begin();iter!=u_stopMap.end();++iter)
+            {
+                revent = 0;
+                if(iter->first > 0)
+                {
+                    revent = iter->second;
+                    if(revent & U_READ)
+                    {
+                        FD_SET(iter->first,&u_readSet);
+                        FD_SET(iter->first,&u_readSetSave);
+                    }
+                    
+                    if(revent & U_WRITE)
+                    {
+                        FD_SET(iter->first,&u_writeSet);
+                        FD_SET(iter->first,&u_writeSetSave);
+                    }
+
+                    if(revent & U_EXCEPTION)
+                    {
+                        FD_SET(iter->first,&u_exceptionSet);
+                        FD_SET(iter->first,&u_exceptionSetSave);
+                    }
+
+                    u_stopMap.erase(iter);
+                }
+            }
+        }
+
         u_rfds = ::select(maxfd+1,&u_readSet,&u_writeSet,&u_exceptionSet,NULL);
         if(u_rfds < 0)
         {
@@ -147,6 +205,18 @@ namespace unet
                     ptr->setREvent(revent);
                     eventList.push_back(ptr);
                 }
+                
+                {
+                    base::MutexLockGuard guard(u_mutex);
+                    u_stopMap.insert(-(*iter),revent);
+                }
+
+                if(revent & U_READ)
+                    FD_CLR(*iter,&u_readSetSave);
+                if(revent & U_WRITE)
+                    FD_CLR(*iter,&u_writeSetSave);
+                if(revent & U_EXCEPTION)
+                    FD_CLR(*iter,&u_exceptionSetSave);
             }
         }
 
@@ -154,5 +224,16 @@ namespace unet
         u_writeSet = u_writeSetSave;
         u_exceptionSet = u_exceptionSetSave;
     }
+    
+    void Selecter::resetEvent(int fd)
+    {
+        base::MutexLockGuard guard(u_mutex);
+        auto iter = u_stopMap.find(-fd);
+        if(iter == u_stopMap.end())
+            return;
+        u_stopMap.insert(-iter->first,iter->second);
+        u_stopMap.erase(iter);
+    }
+
 }
 

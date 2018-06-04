@@ -32,18 +32,6 @@ namespace unet
         return *this;
     }
     
-    void EventMap::insert(EventType type,int fd)
-    {
-        auto iter = u_eventMap.find(fd);
-        if(iter !=  u_eventMap.end())
-            return;
-        
-        {
-            base::MutexLockGuard guard(u_mutex);
-            u_eventMap.insert(std::make_pair(fd,std::make_shared<Event>(type,fd)));
-        }
-    }
-    
     void EventMap::insert(std::shared_ptr<Event>& ptr)
     {
         auto iter = u_eventMap.find(ptr->getFd());

@@ -15,15 +15,15 @@ namespace unet
     /*定时器事件依旧需要纳入事件处理事件处理*/
     std::shared_ptr<Event> TcpServer::u_timerEventPtr(new Event(U_TIMER));
     /*信号事件由主线程单独管理*/
-    std::shared_ptr<SignalEvent> TcpServer::u_signalEventPtr(new SignalEvent());
+//    std::shared_ptr<SignalEvent> TcpServer::u_signalEventPtr(new SignalEvent());
 
     TcpServer::TcpServer(base::InetAddress& server,int size) :
         u_start(false),
         u_serverAddr(server),
         u_connectionMap(),
         u_eventMap(),
-        u_eventDemuType(U_EPOLL),
-        u_eventDemu(new EPoller()),
+        u_eventDemuType(U_POLL),
+        u_eventDemu(new Poller()),
         u_loop(),
         u_accepter(server),
         u_taskPool(size),
@@ -88,8 +88,11 @@ namespace unet
 
     void TcpServer::SaveListen(int fd)
     {
+        std::shared_ptr<Event> lptr(new Event(U_LISTEN_SOCKET,fd));
+        lptr->setListenReadCallBack(std::bind(&TcpServer::AccepterHandleRead,this));
+        lptr->setListenCloseCallBack(std::bind(&TcpServer::EraseListen,this,std::placeholders::_1));
+        u_eventMap.insert(lptr);
         u_eventDemu->addEvent(fd,U_READ|U_EXCEPTION);
-        u_eventMap.insert(U_LISTEN_SOCKET,fd);
     }
 
     void TcpServer::EraseListen(int fd)
@@ -128,11 +131,10 @@ namespace unet
             u_taskPool.addInTaskEvent(u_eventPtrList);
     }
     
-    /*重置ONE SHOT*/
+    /*重置事件，由事件处理的线程重置事件，需要使用锁进行同步*/
     void TcpServer::ResetEvent(int fd)
     {
-        if(u_eventDemuType == U_EPOLL)
-            u_eventDemu->resetEvent(fd);
+        u_eventDemu->resetEvent(fd);
     }
     
     void TcpServer::start()
@@ -140,11 +142,10 @@ namespace unet
         if(u_start)
             return;
         u_accepter.startListen();
-        u_taskPool.start();
+//        u_taskPool.start();
         u_loop.start();
-        u_timerEventPtr->startTimerEvent();
+//        u_timerEventPtr->startTimerEvent();
         u_start = true;
-        std::cout << "Listen fd: " << u_accepter.getFd();
 //        u_signalEventPtr->handleEvent();
     }
     

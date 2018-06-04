@@ -34,7 +34,6 @@ namespace unet
 
             int size() const{return u_eventMap.size();};
             bool empty() const {return u_eventMap.empty();};
-            void insert(EventType type,int fd);
             void insert(std::shared_ptr<Event>&);
             void erase(int fd);
             std::shared_ptr<Event> find(int fd) const;

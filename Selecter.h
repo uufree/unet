@@ -9,7 +9,10 @@
 #define _SELECTER_H
 
 #include"EventDemultiplexer.h"
+#include"base/Mutex.h"
+
 #include<set>
+#include<map>
 
 namespace unet
 {
@@ -28,12 +31,16 @@ namespace unet
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
+            void resetEvent(int) override;
 
         private:
             fd_set u_readSet,u_writeSet,u_exceptionSet;
             fd_set u_readSetSave,u_writeSetSave,u_exceptionSetSave;
             int maxfd;
             std::set<int> u_set;
+
+            base::MutexLock u_mutex;
+            std::map<int,int> u_stopMap;/*fd,event*/
     };
 }
 

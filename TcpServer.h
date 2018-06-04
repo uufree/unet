@@ -23,8 +23,6 @@
 #include<functional>
 #include<memory>
 
-#include<iostream>
-
 /*event的ONT SHOT还没有处理*/
 
 namespace unet
@@ -48,7 +46,7 @@ namespace unet
             void start();
             void stop();
             bool isStart() const{return u_start;};
-        
+             
         private:
             void SaveListen(int);
             void EraseListen(int);
@@ -56,6 +54,7 @@ namespace unet
             void EraseConnect(int);
             void SeparationEvent();
             void ResetEvent(int);
+            void AccepterHandleRead(){u_accepter.handleRead();};
 
         private:
             bool u_start;
@@ -71,7 +70,7 @@ namespace unet
 
             /*Timer和Signal属于必须暴露的事件，不能由EventMap统一管理*/
             static std::shared_ptr<Event> u_timerEventPtr;
-            static std::shared_ptr<SignalEvent> u_signalEventPtr; 
+//            static std::shared_ptr<SignalEvent> u_signalEventPtr; 
             std::vector<std::shared_ptr<Event>> u_eventPtrList;
 
             ReadCallBack u_readCallBack;

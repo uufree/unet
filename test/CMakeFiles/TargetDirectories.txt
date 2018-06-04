@@ -1,3 +1,4 @@
-/home/uuchen/uProject/unet/test/CMakeFiles/edit_cache.dir
 /home/uuchen/uProject/unet/test/CMakeFiles/rebuild_cache.dir
+/home/uuchen/uProject/unet/test/CMakeFiles/edit_cache.dir
+/home/uuchen/uProject/unet/test/CMakeFiles/client.dir
 /home/uuchen/uProject/unet/test/CMakeFiles/server.dir

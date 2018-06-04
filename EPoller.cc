@@ -18,8 +18,11 @@ namespace unet
         u_epollfd(::epoll_create(65536)),
         u_eventMap(),
         u_activeList(),
-        u_openET(false)
+        u_openET(false),
+        u_mutex(),
+        u_stopSet()
     {
+        std::cout << "epollfd: " << u_epollfd << std::endl;
         if(u_epollfd < 0)
         {
             perror("epollfd create error!\n");
@@ -28,13 +31,18 @@ namespace unet
         u_activeList.reserve(65536);
     }
 
-    EPoller::EPoller(EPoller&& epoller) : EventDemultiplexer()
+    EPoller::EPoller(EPoller&& epoller) : 
+        EventDemultiplexer(),
+        u_epollfd(epoller.u_epollfd),
+        u_eventMap(std::move(epoller.u_eventMap)),
+        u_activeList(std::move(epoller.u_activeList)),
+        u_openET(epoller.u_openET),
+        u_mutex(),
+        u_stopSet()
     {
-        u_epollfd = epoller.u_epollfd;
         epoller.u_epollfd = -1;
-        u_eventMap.swap(epoller.u_eventMap);
-        u_activeList.clear();
-        u_openET = false; 
+        base::MutexLockGuard guard(epoller.u_mutex);
+        std::swap(u_stopSet,epoller.u_stopSet);
     };
     
     EPoller& EPoller::operator=(EPoller&& epoller)
@@ -49,6 +57,14 @@ namespace unet
         epoller.u_epollfd = -1;
         u_eventMap.swap(epoller.u_eventMap);
         u_activeList.clear();
+        
+        {
+            base::MutexLockGuard guard(epoller.u_mutex);
+            {
+                base::MutexLockGuard guard(u_mutex);
+                std::swap(u_stopSet,epoller.u_stopSet);
+            }
+        }
 
         return *this;
     }
@@ -98,6 +114,10 @@ namespace unet
             u_eventMap.insert({fd,event});
         }
         
+        std::cout << "===================" << std::endl;
+        std::cout << "watch fd: " << fd << std::endl;
+        std::cout << "epoll fd: " << u_epollfd << std::endl;
+        std::cout << "=================" << std::endl;
         if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
         {
             perror("epoll add error!\n");
@@ -105,16 +125,6 @@ namespace unet
         }
     }
     
-    void EPoller::resetEvent(int fd)
-    {
-        struct epoll_event* event = u_eventMap[fd];
-        
-        if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
-        {
-            perror("epoll add error!\n");
-            unet::handleError(errno);
-        }
-    }
 
     void EPoller::delEvent(int fd)
     {
@@ -126,6 +136,17 @@ namespace unet
             perror("epoll del error!\n");
             unet::handleError(errno);
         }
+        
+        {
+            base::MutexLockGuard guard(u_mutex);
+            auto iter = u_stopSet.find(-fd);
+            if(iter != u_stopSet.end())
+                u_stopSet.erase(iter);
+
+            iter = u_stopSet.find(fd);
+            if(iter != u_stopSet.find(fd))
+                u_stopSet.erase(iter);
+        }
 
         delete iter->second;
         u_eventMap.erase(iter);
@@ -134,6 +155,27 @@ namespace unet
     
     void EPoller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        {
+            base::MutexLockGuard guard(u_mutex);
+            for(auto iter=u_stopSet.begin();iter!=u_stopSet.end();++iter)
+            {
+                if(*iter > 0)
+                {
+                    struct epoll_event* event = u_eventMap[*iter];
+                    if(event == NULL)
+                        continue;
+                    
+                    if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,*iter,event) < 0)
+                    {
+                        perror("epoll add error!\n");
+                        unet::handleError(errno);
+                    }
+
+                    u_stopSet.erase(iter);
+                }
+            }
+        }
+
         u_activeList.clear();
         u_rfds = ::epoll_wait(u_epollfd,&*u_activeList.begin(),65536,-1);
         if(u_rfds < 0)
@@ -154,7 +196,14 @@ namespace unet
                 revent |= U_READ;
             if(u_activeList[i].events & EPOLLOUT)
                 revent |= U_WRITE;
+
+            u_activeList[i].events = 0;
             
+            {
+                base::MutexLockGuard guard(u_mutex);
+                u_stopSet.insert(-u_activeList[i].data.fd);
+            }
+
             if(revent)
             {
                 std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
@@ -165,6 +214,17 @@ namespace unet
                 }
             }
         }
+    }
+    
+    void EPoller::resetEvent(int fd)
+    {
+        base::MutexLockGuard guard(u_mutex);
+        auto iter = u_stopSet.find(-fd);
+        if(iter == u_stopSet.end())
+            return;
+        
+        u_stopSet.insert(fd);
+        u_stopSet.erase(iter);
     }
 }
 
