@@ -247,15 +247,15 @@ namespace unet
         int writeInLogBuffer(LogBuffer* buffer,const void* str,int length)
         {
             if(str == NULL || length <=0 || length >= 200)
-                return 3;
+                return -1;
             if(!BUFFER_TEST_INUSE(buffer))
-                return 2;
+                return -1;
             if(BUFFER_TEST_FULL(buffer))
-                return 1;
+                return -1;
             if(!LOG_BUFFER_HAS_ENOUTH_SPACE(buffer))
             {
                 BUFFER_SET_FULL(buffer);
-                return 1;
+                return -1;
             }
 
             memcpy(buffer->u_data,str,length);

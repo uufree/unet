@@ -100,9 +100,6 @@ namespace unet
         *      2）[in] length：日志消息长度
         * Returned Value:
         *      0：True
-        *      1：已满，无法写入，需要更换Buffer
-        *      2：Buffer的状态不正确，当前没有设置INUSE状态
-        *      3：参数不正确
         *      -1：memcpy错误，系统错误
         */ 
         int writeInLogBuffer(LogBuffer* buffer,const void* str,int length);

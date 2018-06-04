@@ -19,6 +19,8 @@
 
 /*2018.06.01 测试完成*/
 
+#include<iostream>
+
 namespace unet
 {
     /*处理Timer Event，全局只出现一个，与普通的事件一样被处理*/

@@ -6,73 +6,52 @@
  ************************************************************************/
 
 #include"LogFormat.h"
-#include"base/global.h"
+#include"base/Global.h"
 #include<sys/time.h>
 
 namespace unet
 {
     //LogFormat
     LogFormat::LogFormat() :
-        u_secTimer(true,1),
-        u_mutex(),
         u_data(),
         u_time(),
         u_utime()
     {
-        u_secTimer.setTimeCallBack(std::bind(&LogFormat::handleSecTimerEvent,this));
-        
         time_t now;
         if(::time(&now) < 0)
         {
             perror("::time error!\n");
             unet::handleError(errno);
         }
-        struct tm* timenow = localtime(&now);
-        u_data = std::to_string(timenow->tm_year+1900)+std::to_string(timenow->tm_mon+1)+std::to_string(timenow->tm_mday);
-        u_time = std::to_string(timenow->tm_hour) + ":" + std::to_string(timenow->tm_min) + ":" + std::to_string(timenow->tm_sec) + ".";
-
-        u_secTimer.start();
+        updateTime();
     };
 
     LogFormat::LogFormat(LogFormat&& format) :
-        u_secTimer(true,1),
-        u_mutex()
-    {
-        {
-            base::MutexLockGuard guard(format.u_mutex);
-            u_data = std::move(format.u_data);
-            u_time = std::move(format.u_time);
-            u_utime = std::move(format.u_utime);
-        }
-        u_secTimer.setTimeCallBack(std::bind(&LogFormat::handleSecTimerEvent,this));
-        u_secTimer.start();
-    }
+        u_data(std::move(format.u_data)),
+        u_time(std::move(format.u_time)),
+        u_utime(std::move(format.u_utime)),
+        u_formatLog(std::move(format.u_formatLog)),
+        u_formatLogFile(std::move(format.u_formatLogFile))
+    {}
     
     LogFormat& LogFormat::operator=(LogFormat&& format)
     {
-        format.u_secTimer.stop();
-        u_secTimer.stop();
+        if(format == *this)
+            return *this;
         
-        {
-            base::MutexLockGuard guard(format.u_mutex);
-            {
-                base::MutexLockGuard guard(u_mutex);
-                u_data = std::move(format.u_data);
-                u_time = std::move(format.u_time);
-                u_utime = std::move(format.u_utime);
-            }
-        }
-        u_secTimer.start();
+        u_data = std::move(format.u_data);
+        u_time = std::move(format.u_time);
+        u_utime = std::move(format.u_utime);
+        u_formatLog = std::move(format.u_formatLog);
+        u_formatLogFile = std::move(format.u_formatLogFile);
 
         return *this;
     }
     
     LogFormat::~LogFormat()
-    {
-        u_secTimer.stop(); 
-    }
+    {}
 
-    void LogFormat::handleSecTimerEvent()
+    void LogFormat::updateTime()
     {
         time_t now;
         if(::time(&now) < 0)
@@ -81,17 +60,36 @@ namespace unet
             unet::handleError(errno);
         }
         struct tm* timenow = localtime(&now);
-        std::string data = std::to_string(timenow->tm_year+1900)+std::to_string(timenow->tm_mon+1)+std::to_string(timenow->tm_mday);
-        std::string time = std::to_string(timenow->tm_hour) + ":" + std::to_string(timenow->tm_min) + ":" + std::to_string(timenow->tm_sec) + ".";
         
-        {
-            base::MutexLockGuard guard(u_mutex);
-            std::swap(data,u_data);
-            std::swap(time,u_time);
-        }
+        u_data = std::to_string(timenow->tm_year+1900);
+        if(timenow->tm_mon < 10)
+            u_data += "0" + std::to_string(timenow->tm_mon+1);
+        else
+            u_data += std::to_string(timenow->tm_mon);
+        
+        if(timenow->tm_mday < 10)
+            u_data += "0" + std::to_string(timenow->tm_mday);
+        else
+            u_data += std::to_string(timenow->tm_mday);
+        
+        u_time.clear();
+        if(timenow->tm_hour < 10)
+            u_time += "0" + std::to_string(timenow->tm_hour) + ":";
+        else
+            u_time += std::to_string(timenow->tm_hour) + ":";
+
+        if(timenow->tm_min < 10)
+            u_time += "0" + std::to_string(timenow->tm_min) + ":";
+        else
+            u_time += std::to_string(timenow->tm_min) + ":";
+
+        if(timenow->tm_sec < 10)
+            u_time += "0" + std::to_string(timenow->tm_sec) + ".";
+        else
+            u_time += std::to_string(timenow->tm_sec) + ".";
     }
 
-    const char* LogFormat::formatLog(pid_t pid,LogLevel level,const char* message,const char* filename,int line)
+    const char* LogFormat::formatLog(unsigned long tid,LogLevel level,const char* message,const char* filename,int line)
     {
         struct timeval val;
         ::gettimeofday(&val,NULL);
@@ -112,11 +110,9 @@ namespace unet
             logLevel = "FATAL";
         else
             logLevel = "NO LEVEL";
-
-        {
-            base::MutexLockGuard guard(u_mutex);
-            u_formatLog = u_data + " " + u_time + u_utime + " " + std::to_string(pid) + " " + logLevel + " " + message + " " + filename + ":" + std::to_string(line); 
-        }
+        
+        updateTime();
+        u_formatLog = u_data + " " + u_time + u_utime + " " + std::to_string(tid) + " " + logLevel + " " + message + " " + filename + ":" + std::to_string(line) + "\n"; 
 
         return u_formatLog.c_str();
     }
@@ -124,10 +120,8 @@ namespace unet
     const char* LogFormat::formatLogFile(const char* proname,const char* hostname,int pronum)
     {
         std::string str(proname);
-        {
-            base::MutexLockGuard guard(u_mutex);
-            u_formatLogFile = str + "." + u_data + "-" + u_time + "." + hostname + "." + std::to_string(pronum) + ".log";
-        }
+        updateTime();
+        u_formatLogFile = str + "." + u_data + "-" + u_time + hostname + "." + std::to_string(pronum) + ".log";
         
         return u_formatLogFile.c_str();
     }

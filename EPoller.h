@@ -37,6 +37,7 @@ namespace unet
             void resetEvent(int) override;
             void openET(){u_openET = true;};
             void closeET(){u_openET = false;};
+            int getFd() const{return u_epollfd;};
 
         private:
             uint32_t switchTo(int);

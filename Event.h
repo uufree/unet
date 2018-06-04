@@ -12,6 +12,7 @@
 #include<memory>
 
 #include"TcpConnection.h"
+#include"Type.h"
 
 /*
  * 再三思索，还是决定暂时不把SignalEvent加入事件处理框架，原因如下：
@@ -59,9 +60,8 @@ namespace unet
              *          U_READ：
              *          U_WRITE
              *          U_EXCEPTION
-             *          U_TIMEOUT
              */
-            explicit Event(int type,int fd = 0,int wevent = 0);
+            explicit Event(EventType,int fd = 0);
             Event(const Event&) = delete;
             Event& operator=(const Event&) = delete;
             Event(Event&&) = delete;
@@ -90,7 +90,7 @@ namespace unet
 
         private:
             int u_fd;  //socketfd or timerfd   
-            int u_type;      //Socket or Timer 
+            EventType u_type;      //Socket or Timer 
             int u_wevent;    //watch event
             int u_revent;    //happeded event
             

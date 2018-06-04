@@ -37,7 +37,8 @@ namespace unet
             int startListen();
             int stopListen();
             bool isListen() const{return u_listen;};
-            
+            int getFd() const{return u_listenfd.getFd();};
+
             void setSaveConnectCallBack(const SaveConnectCallBack& cb)
             {u_saveConnectCallBack = cb;};
             void setSaveListenCallBack(const SaveListenCallBack& cb)

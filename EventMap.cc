@@ -32,7 +32,7 @@ namespace unet
         return *this;
     }
     
-    void EventMap::insert(int fd,int type,int wevent)
+    void EventMap::insert(EventType type,int fd)
     {
         auto iter = u_eventMap.find(fd);
         if(iter !=  u_eventMap.end())
@@ -40,7 +40,7 @@ namespace unet
         
         {
             base::MutexLockGuard guard(u_mutex);
-            u_eventMap.insert(std::make_pair(fd,std::make_shared<Event>(fd,type,wevent)));
+            u_eventMap.insert(std::make_pair(fd,std::make_shared<Event>(type,fd)));
         }
     }
     

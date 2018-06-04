@@ -6,73 +6,39 @@
  ************************************************************************/
 
 #include"LogBuffer.h"
-#include"base/Timer.h"
-#include"Alloc.h"
-#include"LogFile.h"
 
 namespace unet
 {
-    bool LogBufferQueue::u_writeBackInit = false;
-    bool LogBufferQueue::u_writeBackStart = false;
-    std::list<LogBuffer*> LogBufferQueue::u_writeBackList;
-    std::shared_ptr<Timer> LogBufferQueue::u_writeBackTimer(std::make_shared<Timer>(true,3)); 
+    std::list<base::LogBuffer*> LogBufferQueue::u_writeBackList;
     base::MutexLock LogBufferQueue::u_writeBackMutex;
-    LogFile LogBufferQueue::u_logFile;
-    base::MutexLock LogBufferQueue::u_fileMutex;
-
+    base::Condition LogBufferQueue::u_writeBackCond(u_writeBackMutex);
+    LogFile LogBufferQueue::u_logFile;    
+    base::Thread LogBufferQueue::u_writeThread(std::bind(&LogBufferQueue::WriteBackThread));
+    
     LogBufferQueue::LogBufferQueue(int length) : 
-        u_start(false),
         u_length(length),
-        u_mutex(),
-        u_timer(std::make_shared<Timer>(true,1))
+        u_logNumbers(0),
+        u_bufferList()
     {
         for(int i=0;i<u_length;++i)
             u_bufferList.push_back(alloc::allocLogBuffer());
-        u_timer->setTimeCallBack(std::bind(&LogBufferQueue::handleSwapEvent,this));
-        if(!u_writeBackInit)
-            initWriteBack();
     }
 
     LogBufferQueue::LogBufferQueue(LogBufferQueue&& log) :
-        u_start(false),
         u_length(log.u_length),
-        u_mutex(),
-        u_timer(std::make_shared<Timer>(true,1))
-    {
-        if(log.u_start)
-            log.stop();
+        u_logNumbers(log.u_logNumbers),
+        u_bufferList(std::move(log.u_bufferList))
+    {}
 
-        {
-            base::MutexLockGuard guard(log.u_mutex);
-            std::swap(log.u_bufferList,u_bufferList);
-        }
-        
-        u_timer->setTimeCallBack(std::bind(&LogBufferQueue::handleSwapEvent,this));
-        if(!u_writeBackInit)
-        {
-            u_writeBackTimer->setTimeCallBack(std::bind(&LogBufferQueue::handleWriteBackEvent,this));
-            u_writeBackInit = true;
-        }
-    }
-    
     LogBufferQueue& LogBufferQueue::operator=(LogBufferQueue&& log)
     {   
         if(log == *this)
             return *this;
         
-        if(u_start)
-            stop();
-        if(log.u_start)
-            log.stop();
-
-        {
-            base::MutexLockGuard guard(log.u_mutex);
-            {
-                base::MutexLockGuard guard(u_mutex);
-                std::swap(u_bufferList,log.u_bufferList);
-                std::swap(u_length,log.u_length);
-            }
-        }
+        clear();
+        std::swap(u_bufferList,log.u_bufferList);
+        u_length = log.u_length;
+        u_logNumbers = log.u_logNumbers;
         
         return *this;
     }
@@ -81,32 +47,25 @@ namespace unet
     /*析构的时候不能用锁*/
     LogBufferQueue::~LogBufferQueue()
     {
-        if(u_start)
-            stop();
+        clear();
     }
     
-    void LogBufferQueue::start()
+    void LogBufferQueue::clear()
     {
-        if(u_start)
-            return;
-        
-        u_timer->start();
-        u_start = true;
-    }
-
-    void LogBufferQueue::stop()
-    {
-        if(!u_start)
-            return;
-
-        u_timer->stop();
-        u_start = false;
-
         //将start关闭之后，Timer与WorkThread不再向LogBuffer中增添数据
-        LogBuffer* current = u_bufferList.front();
+        base::LogBuffer* current = u_bufferList.front();
         {
-            base::MutexLockGuard guard(u_fileMutex);
-            u_logFile.writen(current);
+            base::MutexLockGuard guard(u_writeBackMutex);
+            u_writeBackList.push_back(current);
+            u_writeBackCond.notify();
+        }
+        u_bufferList.pop_front();   /*这个Buffer会在Log Thread中进行清理*/
+
+        while(!u_bufferList.empty())
+        {
+            current = u_bufferList.front();
+            alloc::deallocLogBuffer(current);
+            u_bufferList.pop_front();
         }
     }
     
@@ -114,93 +73,43 @@ namespace unet
      * 详细的分析*/
     void LogBufferQueue::append(const char* message)
     {
-        if(!u_start)
-            return;
-        LogBuffer* current = u_bufferList.front();
-        int returned = writeInLogBuffer(current,message,strlen(message));
+        base::LogBuffer* current = u_bufferList.front();
+        writeInLogBuffer(current,message,strlen(message));
+        ++u_logNumbers;
         
-        switch(returned)
+        if(u_logNumbers == MAX_LOG)
         {
-            case -1:
-            {
-                perror("memcpy error!\n");
-                unet::handleError(errno);
-                break;
-            }
-            case 2:
-            {
-                perror("buffer not in use!\n");
-                break;
-            }
-            case 1: /*这个Buffer已满，需要更换*/
-            {
-                handleSwapEvent();
-                break;
-            }
-            case 3:
-            case 0:
-                break;
-        }
-    }
-
-    void LogBufferQueue::startWriteBack()
-    {
-        if(u_writeBackStart)
-            return;
-        u_writeBackTimer->start();
-        u_writeBackStart = true;
-    }
-
-    void LogBufferQueue::stopWriteBack()
-    {
-        if(!u_writeBackStart)
-            return;
-        u_writeBackTimer->stop();
-        u_writeBackStart = false;
-    }
-    
-    void LogBufferQueue::LogBufferQueue::initWriteBack()
-    {
-        u_writeBackTimer->setTimeCallBack(std::bind(&LogBufferQueue::handleWriteBackEvent,this));
-        u_writeBackInit = true;
-    }
-
-    void LogBufferQueue::handleSwapEvent()
-    {
-        LogBuffer* buffer = alloc::allocLogBuffer();
-
-        {
-            base::MutexLockGuard guard(u_mutex);
-            u_bufferList.push_back(buffer); 
-            
             {
                 base::MutexLockGuard guard(u_writeBackMutex);
-                u_writeBackList.push_back(u_bufferList.front());
-                u_bufferList.pop_front();
+                u_writeBackList.push_back(current);
+                u_writeBackCond.notify();
             }
+            u_bufferList.pop_front();
+            u_bufferList.push_back(alloc::allocLogBuffer());
+            u_logNumbers = 0;
         }
     }
-
-    void LogBufferQueue::handleWriteBackEvent()
+    
+    void LogBufferQueue::WriteBackThread()
     {
-        std::list<LogBuffer*> handleList;
-        
+        std::list<base::LogBuffer*> logBufferList;
+        base::LogBuffer* buffer = NULL;
+        if(!u_logFile.isOpen())
+            u_logFile.open();
+        while(1)
         {
             base::MutexLockGuard guard(u_writeBackMutex);
-            handleList.splice(handleList.begin(),u_writeBackList,u_writeBackList.begin(),u_writeBackList.end());
-        }
-        
-        LogBuffer* buffer = NULL;
-        if(!handleList.empty())
-        {
-            buffer = handleList.front();
-            handleList.pop_front();
-            
+            while(u_writeBackList.empty())
+                u_writeBackCond.wait();
+            logBufferList.splice(logBufferList.begin(),u_writeBackList,u_writeBackList.begin(),u_writeBackList.end());
+
+            while(!logBufferList.empty())
             {
-                base::MutexLockGuard guard(u_fileMutex);
-                u_logFile.writen(buffer);;
+                buffer = logBufferList.front();
+                u_logFile.writen(buffer);  
+                logBufferList.pop_front();
+                alloc::deallocLogBuffer(buffer);
             }
-            alloc::deallocLogBuffer(buffer);
         }
     }
 }

@@ -70,9 +70,9 @@ namespace unet
 
         if(event & U_EXCEPTION)
             sysEvent |= EPOLLPRI|EPOLLERR|EPOLLRDHUP;   //检测带外数据
-        if(event & EPOLLOUT)
+        if(event & U_WRITE)
             sysEvent |= EPOLLOUT;
-        if(event & EPOLLIN)
+        if(event & U_READ)
             sysEvent |= EPOLLIN;
         sysEvent |= EPOLLONESHOT;   //默认开启ONTSHOT
 
@@ -97,7 +97,7 @@ namespace unet
             ++u_wfds;
             u_eventMap.insert({fd,event});
         }
-
+        
         if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,fd,event) < 0)
         {
             perror("epoll add error!\n");

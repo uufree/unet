@@ -6,6 +6,9 @@
  ************************************************************************/
 
 #include"TcpServer.h"
+#include"EPoller.h"
+#include"Poller.h"
+#include"Selecter.h"
 
 namespace unet
 {
@@ -20,7 +23,7 @@ namespace unet
         u_connectionMap(),
         u_eventMap(),
         u_eventDemuType(U_EPOLL),
-        u_eventDemu(std::make_shared<EventDemultiplexer>(u_eventDemuType)),
+        u_eventDemu(new EPoller()),
         u_loop(),
         u_accepter(server),
         u_taskPool(size),
@@ -34,7 +37,7 @@ namespace unet
         
         /*向loop注册TimerEvent*/
         u_eventMap.insert(u_timerEventPtr);
-        u_eventDemu->addEvent(u_timerEventPtr->getFd(),U_TIMEOUT);
+        u_eventDemu->addEvent(u_timerEventPtr->getFd(),u_timerEventPtr->getWEvent());
     };
     
     TcpServer::TcpServer(TcpServer&& tcp) :
@@ -86,7 +89,7 @@ namespace unet
     void TcpServer::SaveListen(int fd)
     {
         u_eventDemu->addEvent(fd,U_READ|U_EXCEPTION);
-        u_eventMap.insert(fd,U_LISTEN_SOCKET,U_READ|U_EXCEPTION);
+        u_eventMap.insert(U_LISTEN_SOCKET,fd);
     }
 
     void TcpServer::EraseListen(int fd)
@@ -102,7 +105,7 @@ namespace unet
         ptr->setWriteCallBack(u_writeCallBack);
         ptr->setCloseCallBack(std::bind(&TcpServer::EraseConnect,this,std::placeholders::_1));
         
-        std::shared_ptr<Event> eptr(new SocketEvent(fd,U_CONNECT_SOCKET));
+        std::shared_ptr<Event> eptr(new Event(U_CONNECT_SOCKET,fd));
         eptr->setTcpConnectionPtr(ptr);  
 
         u_eventMap.insert(eptr);
@@ -128,7 +131,7 @@ namespace unet
     /*重置ONE SHOT*/
     void TcpServer::ResetEvent(int fd)
     {
-        if(u_eventDemuType & U_EPOLL)
+        if(u_eventDemuType == U_EPOLL)
             u_eventDemu->resetEvent(fd);
     }
     
@@ -141,6 +144,7 @@ namespace unet
         u_loop.start();
         u_timerEventPtr->startTimerEvent();
         u_start = true;
+        std::cout << "Listen fd: " << u_accepter.getFd();
 //        u_signalEventPtr->handleEvent();
     }
     

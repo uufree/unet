@@ -9,17 +9,18 @@
 #define _LOG_H
 
 #include<memory>
-#include<unordered_map>
 #include<queue>
 #include<string>
 #include<list>
+#include<vector>
 
 #include"LogFormat.h"
+#include"LogBuffer.h"
 
+/*2018.06.04 测试完成*/
+/*这个Log不走寻常路，有利有弊吧*/
 namespace unet
 {
-    class LogBufferQueue;
-
     /*
      * 整个Log由以下几部分组成：
      *  LogFile：负责LogFile的滚动,以及将LogBuffer写入到具体的Log文件中
@@ -27,12 +28,12 @@ namespace unet
      *  LogBufferQueue：LogBuffer实体，缓存写入的Log
      *  Log：外部接口，可以调整Log等级
      */
+    static const int HASH = 5;
+
     class Log final
     {
-        typedef std::shared_ptr<LogBufferQueue> LogBufferQueuePtr;
-        typedef std::unordered_map<int,LogBufferQueuePtr> HashBuckets;
-        friend void log(pid_t,const char*,const char*,int,LogLevel,Log&);
-        
+        typedef std::vector<LogBufferQueue*> HashBuckets;
+
         public:
             explicit Log();
             Log(const Log&) = delete;
@@ -41,46 +42,37 @@ namespace unet
             Log(Log&&);
             ~Log();
             
-            bool operator==(const Log& log){return u_buckets.begin()->first == log.u_buckets.begin()->first && u_buckets.size() == log.u_buckets.size();};
+            bool operator==(const Log& log){return u_buckets.begin() == log.u_buckets.begin() && u_buckets.size() == log.u_buckets.size();};
 
             void setLogLevel(LogLevel level){u_logLevel = level;};
             LogLevel level() const{return u_logLevel;};
-            void addWorkThread(int);
-            void deleteWorkThread(int);
             void start();
             void stop();
             bool isStart() const{return u_start;};
+            void log(unsigned long,const char*,const char*,int,LogLevel);
+            int size() const{return u_buckets.size();};
 
         private:
             bool u_start;
             LogLevel u_logLevel;
-            LogFormat u_format;
-            HashBuckets u_buckets;
+            LogFormat u_format; /*格式化Log格式*/
+            HashBuckets u_buckets;  /*为了细化工作线程写日志的锁粒度*/
     };
     
+        static Log LOG; 
     /*注意，将来在这块填充TcpServer的全局静态Log*/
-    void log(pid_t,const char*,const char*,int,LogLevel,Log&);
-    
+        void Logg(unsigned long,const char*,const char*,int,LogLevel);
+        void LogStart();
+        void LogStop();
+        void SetLogLevel(LogLevel);
 
-#define LOG_TRACE(tid,str) if(Logger::u_logLevel <= TRACE) \
-    log(tid,str,__FILE__,__LINE__,TRACE)
+#define LOG_TRACE(tid,str) Logg(tid,str,__FILE__,__LINE__,TRACE)
+#define LOG_DEBUG(tid,str) Logg(tid,str,__FILE__,__LINE__,DEBUG)
+#define LOG_INFO(tid,str) Logg(tid,str,__FILE__,__LINE__,INFO)
+#define LOG_WARN(tid,str) Logg(tid,str,__FILE__,__LINE__,WARN)
+#define LOG_ERROR(tid,str) Logg(tid,str,__FILE__,__LINE__,ERROR)
+#define LOG_FATAL(tid,str) Logg(tid,str,__FILE__,__LINE__,FATAL)
 
-#define LOG_DEBUG(tid,str) if(Logger::u_logLevel <= DEBUG) \
-    log(tid,str,__FILE__,__LINE__,DEBUG)
-
-#define LOG_INFO(tid,str) if(Logger::u_logLevel <= INFO) \
-    log(tid,str,__FILE__,__LINE__,INFO)
-
-#define LOG_WARN(tid,str) if(Logger::u_logLevel <= WARN) \
-    log(tid,str,__FILE__,__LINE__,WARN)
-
-#define LOG_ERROR(tid,str) if(Logger::u_logLevel <= ERROR) \
-    log(tid,str,__FILE__,__LINE__,ERROR)
-
-#define LOG_FATAL(tid,str) if(Logger::u_logLevel <= FATAL) \
-    log(tid,str,__FILE__,__LINE__,FATAL)
 }
-
-
 
 #endif

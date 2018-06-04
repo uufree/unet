@@ -6,13 +6,12 @@
  ************************************************************************/
 
 #include"SocketEvent.h"
-#include"Type.h"
 #include"TcpConnection.h"
 
 namespace unet
 {
     //SocketEvent    
-    SocketEvent::SocketEvent(int fd,int type) :
+    SocketEvent::SocketEvent(int fd,EventType type) :
         u_fd(fd),
         u_type(type)
     {};
@@ -33,7 +32,7 @@ namespace unet
     }
     
     //ListenSocketEvent
-    ListenSocketEvent::ListenSocketEvent(int fd,int type) : 
+    ListenSocketEvent::ListenSocketEvent(int fd,EventType type) : 
         SocketEvent(fd,type)
     {};
     
@@ -57,7 +56,7 @@ namespace unet
     
     void ListenSocketEvent::handleEvent(int event)
     {
-        if(u_type & U_LISTEN_SOCKET)
+        if(u_type == U_LISTEN_SOCKET)
         {
             if(event & U_EXCEPTION)
             {
@@ -79,12 +78,12 @@ namespace unet
     }
     
     //ConnectSocketEvent
-    ConnectSocketEvent::ConnectSocketEvent(int fd,int type) :
+    ConnectSocketEvent::ConnectSocketEvent(int fd,EventType type) :
         SocketEvent(fd,type),
         u_conWPtr()
     {};
     
-    ConnectSocketEvent::ConnectSocketEvent(int fd,int type,const TcpConnectionPtr& ptr) :
+    ConnectSocketEvent::ConnectSocketEvent(int fd,EventType type,const TcpConnectionPtr& ptr) :
         SocketEvent(fd,type),
         u_conWPtr(ptr)
     {};
@@ -107,7 +106,7 @@ namespace unet
 
     void ConnectSocketEvent::handleEvent(int event)
     {
-        if(u_type & U_CONNECT_SOCKET)
+        if(u_type == U_CONNECT_SOCKET)
         {
             TcpConnectionPtr ptr = u_conWPtr.lock();
             if(!ptr)

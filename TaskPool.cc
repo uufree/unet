@@ -66,15 +66,22 @@ namespace unet
         {
             if(!u_start)
                 continue;
+            {
+                base::MutexLockGuard guard(u_mutex);
+                while(u_eventList.empty())
+                    u_cond.wait();
+                std::swap(eventList,u_eventList);
+            }
 
-            base::MutexLockGuard guard(u_mutex);
-            while(u_eventList.empty())
-                u_cond.wait();
-            
-            std::swap(eventList,u_eventList);
             for(auto iter=eventList.begin();iter!=eventList.end();++iter)
                 (*iter)->handleEvent();
             eventList.clear();
         }
+    }
+
+    void TaskPool::addInTaskEvent(EventPtrList& list)
+    {
+        base::MutexLockGuard guard(u_mutex);
+        std::swap(list,u_eventList); 
     }
 }

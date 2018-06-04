@@ -6,7 +6,7 @@
  ************************************************************************/
 
 #include"LogFile.h"
-#include"Alloc.h"
+#include<fcntl.h>
 
 namespace unet
 {
@@ -22,27 +22,7 @@ namespace unet
         u_fileName(),
         u_fullPath(),
         u_format()
-    {
-        u_filePath = ::getenv("PWD"); 
-
-        /*注意在main函数中，使用::putenv(name=argv[0])填充NAME*/
-        u_processName = ::getenv("NAME");
-        
-        char temp[64];
-        memset(temp,'\0',64);
-        u_hostName = ::gethostname(temp,64);
-        u_hostName = temp;
-        u_fileName = u_format.formatLogFile(u_processName.c_str(),u_hostName.c_str(),u_processNum);
-        u_fullPath = u_filePath + "/" + u_fileName;
-
-        u_fd = ::open(u_fullPath.c_str(),O_RDWR|O_CREAT|O_APPEND);
-        if(u_fd < 0)
-        {
-            perror("open log file error!\n");
-            unet::handleError(errno);
-        }
-        u_open = true;
-    }
+    {};
 
     LogFile::LogFile(LogFile&& log) :
         u_fd(::dup(log.u_fd)),
@@ -95,11 +75,43 @@ namespace unet
     LogFile::~LogFile()
     {
         if(u_open)
-            ::close(u_fd);
+            close();
     }
     
-    void LogFile::writen(LogBuffer* buffer)
+    void LogFile::open()
     {
+        u_filePath = ::getenv("PWD"); 
+        
+        /*注意在main函数中，使用::putenv(name=argv[0])填充NAME*/
+        u_processName = ::getenv("NAME");
+        
+        char temp[64];
+        memset(temp,'\0',64);
+        u_hostName = ::gethostname(temp,64);
+        u_hostName = temp;
+        u_fileName = u_format.formatLogFile(u_processName.c_str(),u_hostName.c_str(),u_processNum);
+        u_fullPath = u_filePath + "/" + u_fileName;
+        
+        umask(0);
+        u_fd = ::open(u_fullPath.c_str(),O_RDWR|O_CREAT|O_APPEND,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        if(u_fd < 0)
+        {
+            perror("open log file error!\n");
+            unet::handleError(errno);
+        }
+        u_open = true;
+    }
+    
+    void LogFile::close()
+    {
+        if(u_open)
+            ::close(u_fd);
+        u_open = true;
+    }
+
+    void LogFile::writen(base::LogBuffer* buffer)
+    {
+        /*向Log Buffer中写数据*/
         int size = buffer->u_data - buffer->u_buf;
         int ws = unet::writen(u_fd,buffer->u_buf,size);
         
@@ -108,7 +120,8 @@ namespace unet
             perror("log write error!");
             unet::handleError(errno);
         }
-    
+        
+        /*如果数据超过了1G，需要在内部对Log File进行更换*/
         u_size -= size;
         if(u_size > 0)
             return;

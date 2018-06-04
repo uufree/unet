@@ -11,6 +11,8 @@
 #include<memory>
 #include<functional>
 
+#include"Type.h"
+
 namespace unet
 {
     class TcpConnection;
@@ -35,7 +37,7 @@ namespace unet
              *          U_CONNECT_SOCKET：Connect Socket
              *          U_LISTEN_SOCKET：Listen Socket
              */
-            explicit SocketEvent(int _fd,int _type);
+            explicit SocketEvent(int,EventType);
             SocketEvent(const SocketEvent&) = delete;
             SocketEvent& operator=(const SocketEvent&) = delete;
             SocketEvent(SocketEvent&&);
@@ -53,13 +55,13 @@ namespace unet
 
         protected:
             int u_fd;
-            int u_type;
+            EventType u_type;
     };
     
     class ListenSocketEvent final : public SocketEvent
     {
         public:
-            explicit ListenSocketEvent(int fd,int type);
+            explicit ListenSocketEvent(int fd,EventType type);
             ListenSocketEvent(const ListenSocketEvent&) = delete;
             ListenSocketEvent& operator=(const ListenSocketEvent&) = delete;
             ListenSocketEvent(ListenSocketEvent&&);
@@ -89,8 +91,8 @@ namespace unet
     class ConnectSocketEvent final : public SocketEvent
     {
         public:
-            explicit ConnectSocketEvent(int fd,int type);
-            ConnectSocketEvent(int fd,int type,const TcpConnectionPtr& ptr);
+            explicit ConnectSocketEvent(int fd,EventType type);
+            ConnectSocketEvent(int fd,EventType type,const TcpConnectionPtr& ptr);
             ConnectSocketEvent(const ConnectSocketEvent&) = delete;
             ConnectSocketEvent& operator=(const ConnectSocketEvent&) = delete;
             ConnectSocketEvent(ConnectSocketEvent&&);
