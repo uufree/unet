@@ -117,7 +117,7 @@ namespace unet
                 ptr->handleClose();
                 return;
             }
-
+            
             if(event & U_READ)
                 ptr->handleRead();
             if(event & U_WRITE)

@@ -64,13 +64,16 @@ namespace unet
             u_event.u_timer->handleEvent();
         else if(u_type == U_SIGNAL)
             u_event.u_signal->handleEvent();
-        
-        if(u_resetCallBack)
-            u_resetCallBack(u_fd);
-        else
+       
+        if(!(u_revent & U_EXCEPTION))
         {
-            perror("There is no register resetCallBack!\n");
-            unet::handleError(errno);
+            if(u_resetCallBack)
+                u_resetCallBack(u_fd);
+            else
+            {
+                perror("There is no register resetCallBack!\n");
+                unet::handleError(errno);
+            }
         }
         u_revent = 0;
     }
@@ -103,5 +106,11 @@ namespace unet
     {
         if(u_type == U_TIMER)
             u_event.u_timer->stop();
+    }
+
+    void Event::addTimerWithLock(std::shared_ptr<Timer> ptr)
+    {
+        if(u_type == U_TIMER)
+            u_event.u_timer->addTimerWithLock(ptr);
     }
 }

@@ -24,10 +24,10 @@ int main(int argc,char** argv)
     std::cout << "Client ConnectFD: " << confd.getFd() << std::endl;
    
     Buffer buffer(confd.getFd());
-    confd.setNonBlockAndCloseOnExec();
+//    confd.setNonBlockAndCloseOnExec();
     
     buffer.setBlock();
-    buffer.setNonBlock();
+//    buffer.setNonBlock();
 
     char* buf = new char[4096];
     memset(buf,'u',4096);

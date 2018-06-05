@@ -20,9 +20,6 @@
 #include"SignalEvent.h"
 #include"SocketEvent.h"
 
-#include<functional>
-#include<memory>
-
 /*event的ONT SHOT还没有处理*/
 
 namespace unet
@@ -32,6 +29,7 @@ namespace unet
         typedef std::shared_ptr<base::Buffer> BufferPtr;
         typedef std::function<void(BufferPtr)> ReadCallBack;
         typedef std::function<void(BufferPtr)> WriteCallBack;
+        typedef std::function<void()> TimerEvent;
 
         public:
             explicit TcpServer(base::InetAddress& serverAddr,int size = 4);
@@ -46,15 +44,16 @@ namespace unet
             void start();
             void stop();
             bool isStart() const{return u_start;};
-             
+            void addTimerEvent(bool repeat,double repeatTime,const TimerEvent&);
+
         private:
             void SaveListen(int);
             void EraseListen(int);
             void SaveConnect(int);
-            void EraseConnect(int);
             void SeparationEvent();
             void ResetEvent(int);
             void AccepterHandleRead(){u_accepter.handleRead();};
+            void EraseConnect(int);
 
         private:
             bool u_start;
@@ -69,10 +68,10 @@ namespace unet
             int u_taskSize;
 
             /*Timer和Signal属于必须暴露的事件，不能由EventMap统一管理*/
-            static std::shared_ptr<Event> u_timerEventPtr;
+            std::shared_ptr<Event> u_timerEventPtr;
 //            static std::shared_ptr<SignalEvent> u_signalEventPtr; 
             std::vector<std::shared_ptr<Event>> u_eventPtrList;
-
+            
             ReadCallBack u_readCallBack;
             WriteCallBack u_writeCallBack;
     };

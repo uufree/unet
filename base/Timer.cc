@@ -6,7 +6,7 @@
  ************************************************************************/
 
 #include"Timer.h"
-#include"../TimerEvent.h"
+#include"../Event.h"
 
 #include<time.h>
 #include<sys/time.h>
@@ -56,6 +56,15 @@ namespace unet
         u_timeCallBack(callback),
         u_timers(ptr)
     {};
+    
+    Timer::Timer(bool repeat,double repeatTime) :
+        u_start(false),
+        u_time(base::Time()),
+        u_repeat(repeat),
+        u_repeatTime(repeatTime),
+        u_timeCallBack(),
+        u_timers()
+    {};
 
     Timer::Timer(Timer&& lhs) :
         u_start(false),
@@ -95,9 +104,9 @@ namespace unet
 
     void Timer::start()
     {
-        std::shared_ptr<unet::TimerEvent> ptr = u_timers.lock();
+        std::shared_ptr<unet::Event> ptr = u_timers.lock();
         if(ptr)
-            ptr->addTimerWithLock(shared_from_this());        
+            ptr->addTimerWithLock(shared_from_this());
     }
     
     /*为什么不通过调整repeat属性来关闭Timer？

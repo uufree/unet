@@ -45,7 +45,7 @@ namespace unet
      * 2.调用用户的逻辑处理函数
      */
     void TcpConnection::handleRead()
-    { 
+    {
         /*读到0，就意味着连接被关闭*/
         int size = u_buffer->readInSocket();
         if(size == 0)

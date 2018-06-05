@@ -11,6 +11,7 @@
 #include<list>
 #include"Alloc.h"
 
+#include<iostream>
 /*2018.05.31 测试完成*/
 
 namespace unet
@@ -19,6 +20,7 @@ namespace unet
     {
         static const int USR_BUFFER_INIT_LENGTH = 4;
         static const int USR_BUFFER_FULL = USR_BUFFER_INIT_LENGTH*USR_BUF_SIZE;
+        static const int EXTRA_BUFFER_SIZE = 65536;    
 
         class Buffer final
         {

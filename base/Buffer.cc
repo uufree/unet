@@ -13,7 +13,7 @@ namespace unet
     namespace base
     {
         Buffer::Buffer(int fd) :
-            u_block(false),
+            u_block(true),
             u_fd(fd),
             u_readFreeSize(0),
             u_writeFreeSize(0),
@@ -130,23 +130,24 @@ namespace unet
             if(readLength <= 0)
                 return -1;
             
-            char extraBuffer[65536];
-            ++readLength;
+            /*堆栈空间不能混用吗？为什么一直提示bad address*/
+//            char extraBuffer[EXTRA_BUFFER_SIZE];
+//            ++readLength;
             
             struct iovec iv[readLength];
-            size_t oldLength = 0;
-            for(int i=0;i<readLength-1;i++)
+            int oldLength = 0;
+            for(int i=0;i<readLength;i++)
             {
                 oldLength += (*iter)->u_length;
                 iv[i].iov_base = (*iter)->u_data;
                 iv[i].iov_len = (*iter)->u_length;
                 ++iter;
             }
-            iv[readLength].iov_base = extraBuffer;
-            iv[readLength].iov_len = 65536;
+//            iv[readLength].iov_base = extraBuffer;
+//            iv[readLength].iov_len = EXTRA_BUFFER_SIZE;
 
             /*根据Socket类型，从Socket中以不同的方式读取数据*/
-            size_t readBytes = 0;
+            int readBytes = 0;
             int returnValue = 1;
             if(!u_block)
             {
@@ -157,6 +158,8 @@ namespace unet
                     {
                         if(errno == EAGAIN || errno == EWOULDBLOCK)
                             break;
+                        else
+                            handleError(errno);
                     }
                     else if(ret == 0)
                     {
@@ -166,9 +169,18 @@ namespace unet
                     else
                         readBytes += ret;
                 }
+                std::cout << "read bytes: " << readBytes << std::endl; 
             }
             else
+            {
                 readBytes = ::readv(u_fd,iv,readLength);
+                std::cout << "read bytes: " << readBytes << std::endl;
+                if(readBytes < 0)
+                {
+                    perror("block read error!\n");
+                    unet::handleError(errno);
+                }
+            }
             
             /*此时的Buffer中已经存在数据，需要相应的调整Buffer的指针位置与标志*/
             /*规范一个Buffer调整的步骤：
@@ -343,9 +355,9 @@ namespace unet
         {
             if(u_fd < 0)
                 return -1;
-            if(u_writeFreeSize == USR_BUF_SIZE)
-                return -1;
-           
+            if(u_writeFreeSize == USR_BUFFER_FULL)
+                return 0;
+            
             /*找到第一个Not Full的Buffer*/
             int writeLength = 0;
             for(auto iter=u_writeList.begin();iter!=u_writeList.end();++iter)

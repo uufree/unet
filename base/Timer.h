@@ -43,20 +43,21 @@ namespace unet
         bool operator<(const Time& a,const Time& b);
     }
         
-    class TimerEvent;
+    class Event;
     class Timer final : public std::enable_shared_from_this<Timer> 
     {
         public:
             typedef std::function<void()> TimeCallBack;
-            typedef std::weak_ptr<TimerEvent> TimerEventWPtr;
-            typedef std::shared_ptr<TimerEvent> TimerEventPtr;
+            typedef std::weak_ptr<Event> TimerEventWPtr;
+            typedef std::shared_ptr<Event> TimerEventPtr;
             typedef std::shared_ptr<Timer> TimerPtr;
             typedef std::weak_ptr<Timer> TimerWPtr;
 
         public:
-            explicit Timer(base::Time time,bool repeat,double repeatTime,const TimerEventPtr&  ptr);
-            explicit Timer(bool repeat,double repeatTime,const TimerEventPtr&);
-            explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback,const TimerEventPtr&);
+            explicit Timer(base::Time time,bool repeat,double repeatTime,const TimerEventPtr&  ptr = NULL);
+            explicit Timer(bool repeat,double repeatTime,const TimerEventPtr& = NULL);
+            explicit Timer(bool repeat,double repeatTime,const TimeCallBack& callback,const TimerEventPtr& ptr = NULL);
+            explicit Timer(bool repeat,double repeatTime);
             Timer(const Timer& lhs) = delete;
             Timer(Timer&& lhs);
             Timer& operator=(const Timer& lhs) = delete;

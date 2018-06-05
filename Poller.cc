@@ -118,22 +118,10 @@ namespace unet
             base::MutexLockGuard guard(u_admutex);
             u_deleteEventList.push_back(fd);
         }
-        
-        {
-            base::MutexLockGuard guard(u_mutex);
-            auto miter = u_stopMap.find(fd);
-            if(miter != u_stopMap.end())
-                u_stopMap.erase(miter);
-            
-            miter = u_stopMap.find(-fd);
-            if(miter != u_stopMap.end())
-                u_stopMap.erase(miter);
-        }
-
     }
     
     void Poller::deleteEventCore()
-    {
+    {        
         {
             base::MutexLockGuard guard(u_admutex);
             int fd = -1;
@@ -145,13 +133,30 @@ namespace unet
                 auto iter = u_set.find(fd);
                 if(iter == u_set.end())
                     continue;
-                for(auto iter=u_eventList.begin();iter!=u_eventList.end();++iter)
-                    if(iter->fd == fd)
-                        u_eventList.erase(iter);
+                for(auto viter=u_eventList.begin();viter!=u_eventList.end();++viter)
+                {
+                    if(viter->fd == fd && viter != u_eventList.end())
+                    {
+                        u_eventList.erase(viter);
+                        break;
+                    }
+                }
                 u_set.erase(iter);
                 --u_wfds;
+            
+                {
+                    base::MutexLockGuard guard(u_mutex);
+                    auto miter = u_stopMap.find(fd);
+                    if(miter != u_stopMap.end())
+                        u_stopMap.erase(miter);
+            
+                    miter = u_stopMap.find(-fd);
+                    if(miter != u_stopMap.end())
+                        u_stopMap.erase(miter);
+                }
             }
-        }
+        }   
+        
     }
 
     void Poller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
@@ -177,10 +182,9 @@ namespace unet
 
         deleteEventCore();
         addEventCore();
-        std::cout << "Poll Size: " << u_eventList.size() << std::endl;
         if(u_eventList.size() > 0)
             u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),POLL_TIMEOUT);
-
+        
         if(u_rfds < 0)
         {
             perror("poll error!\n");
@@ -201,7 +205,17 @@ namespace unet
             iter->revents = 0;
             if(revent)
             {
-                std::shared_ptr<Event> ptr = eventMap.find((*iter).fd);
+                std::cout << "================" << std::endl;
+                std::cout << "event fd: " << iter->fd << std::endl;
+                if(revent & U_READ)
+                    std::cout << "read event    ";
+                if(revent & U_WRITE)
+                    std::cout << "write event    ";
+                if(revent & U_EXCEPTION)
+                    std::cout << "exception event    ";
+                std::cout << std::endl;
+                std::cout << "==============" << std::endl;
+                std::shared_ptr<Event> ptr = eventMap.find(iter->fd);
                 if(ptr)
                 {
                     ptr->setREvent(revent);

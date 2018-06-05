@@ -221,9 +221,7 @@ namespace unet
         int Socket::setNonBlockAndCloseOnExec()
         {
             int flag = ::fcntl(u_socketfd,F_GETFL,0);
-            flag |= O_NONBLOCK;
-            flag |= FD_CLOEXEC;
-            int n = ::fcntl(u_socketfd,F_SETFL,flag);
+            int n = ::fcntl(u_socketfd,F_SETFL,flag|O_NONBLOCK|FD_CLOEXEC);
 
             if(n == -1)
                 unet::handleError(errno);

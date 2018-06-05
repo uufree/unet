@@ -13,6 +13,7 @@
 
 #include"TcpConnection.h"
 #include"Type.h"
+#include"base/Timer.h"
 
 /*
  * 再三思索，还是决定暂时不把SignalEvent加入事件处理框架，原因如下：
@@ -87,6 +88,7 @@ namespace unet
             
             void startTimerEvent();
             void stopTimerEvent();
+            void addTimerWithLock(std::shared_ptr<Timer>);
 
         private:
             int u_fd;  //socketfd or timerfd   

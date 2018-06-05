@@ -48,18 +48,18 @@ int main(int argc,char** argv)
     std::cout << "Client ConnectFD: " << confd.getFd() << std::endl;
     
     char* buf = new char[128];
-    while(1)
+    for(int i=0;i<3;i++)
     {
         memset(buf,'c',128);
         int ssize = confd.write(buf,128); 
         std::cout << "client send: " << ssize << std::endl;
         memset(buf,'\0',128);
 
-
+/*
         int rsize = confd.read(buf,128);
         std::cout << "client recv: " << rsize << std::endl;
         std::cout << "buf: " << buf << std::endl;
-        
+*/        
         sleep(1);
     }
     

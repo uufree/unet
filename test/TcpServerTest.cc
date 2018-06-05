@@ -15,7 +15,6 @@ void handleReadCallBack(TcpConnection::BufferPtr buffer)
 {
     if(buffer->readUsedSize() < 128)
         return;
-    std::cout << "handleReadCallBack!" << std::endl;
     char* buf = new char[128];
     memset(buf,'\0',128);
     buffer->readInBuffer(buf,128);
@@ -41,9 +40,9 @@ int main(int argc,char** argv)
     InetAddress serverAddr(7777);
     TcpServer server(serverAddr);
     server.setReadCallBack(std::bind(&handleReadCallBack,std::placeholders::_1));
-//    server.setWriteCallBack(std::bind(&handleReadCallBack,std::placeholders::_1));
-    server.start();
-    
+    server.setWriteCallBack(std::bind(&handleReadCallBack,std::placeholders::_1));
+    server.start(); 
+
     while(1);
     return 0;
 }

@@ -16,6 +16,8 @@
 
 namespace unet
 {
+    static const int SELECT_TIMEOUT = 20000;
+
     class Selecter final : public EventDemultiplexer
     {
         public:
@@ -26,21 +28,30 @@ namespace unet
             Selecter& operator=(Selecter&&);
             ~Selecter() override;
             
-            bool operator==(const Selecter& select)const {return maxfd==select.maxfd;};
+            bool operator==(const Selecter& select)const {return u_maxfd==select.u_maxfd;};
 
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
             void resetEvent(int) override;
+        
+        private:
+            void addEventCore();
+            void eraseEventCore();
 
         private:
             fd_set u_readSet,u_writeSet,u_exceptionSet;
             fd_set u_readSetSave,u_writeSetSave,u_exceptionSetSave;
-            int maxfd;
+            int u_maxfd;
             std::set<int> u_set;
+            struct timeval* u_timeout;
 
             base::MutexLock u_mutex;
             std::map<int,int> u_stopMap;/*fd,event*/
+
+            base::MutexLock u_admutex;
+            std::vector<std::pair<int,int>> u_addList;
+            std::vector<int> u_eraseList;
     };
 }
 

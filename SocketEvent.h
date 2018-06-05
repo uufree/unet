@@ -13,6 +13,8 @@
 
 #include"Type.h"
 
+#include<iostream>
+
 namespace unet
 {
     class TcpConnection;

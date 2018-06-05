@@ -37,6 +37,7 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/Accepter.cc.o: /home/uuchen/uPro
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Accepter.cc.o: /home/uuchen/uProject/unet/base/InetAddress.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Accepter.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Accepter.cc.o: /home/uuchen/uProject/unet/base/Socket.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/Accepter.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProject/unet/EPoller.cc
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProject/unet/EPoller.h
@@ -51,6 +52,7 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProj
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProject/unet/base/InetAddress.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProject/unet/base/Socket.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/EPoller.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Event.cc.o: /home/uuchen/uProject/unet/Event.cc
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Event.cc.o: /home/uuchen/uProject/unet/Event.h
@@ -85,6 +87,7 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/EventMap.cc.o: /home/uuchen/uPro
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EventMap.cc.o: /home/uuchen/uProject/unet/base/InetAddress.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EventMap.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/EventMap.cc.o: /home/uuchen/uProject/unet/base/Socket.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/EventMap.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProject/unet/Event.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProject/unet/EventDemultiplexer.h
@@ -99,6 +102,7 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProje
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProject/unet/base/InetAddress.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProject/unet/base/Socket.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/Poller.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uProject/unet/Event.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uProject/unet/EventDemultiplexer.h
@@ -113,6 +117,7 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uPro
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uProject/unet/base/InetAddress.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uProject/unet/base/Socket.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/Selecter.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 
 CMakeFiles/server.dir/home/uuchen/uProject/unet/SignalEvent.cc.o: /home/uuchen/uProject/unet/SignalEvent.cc
 CMakeFiles/server.dir/home/uuchen/uProject/unet/SignalEvent.cc.o: /home/uuchen/uProject/unet/SignalEvent.h
@@ -143,6 +148,7 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/TaskPool.cc.o: /home/uuchen/uPro
 CMakeFiles/server.dir/home/uuchen/uProject/unet/TaskPool.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/TaskPool.cc.o: /home/uuchen/uProject/unet/base/Socket.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/TaskPool.cc.o: /home/uuchen/uProject/unet/base/Thread.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/TaskPool.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 
 CMakeFiles/server.dir/home/uuchen/uProject/unet/TcpConnection.cc.o: /home/uuchen/uProject/unet/TcpConnection.cc
 CMakeFiles/server.dir/home/uuchen/uProject/unet/TcpConnection.cc.o: /home/uuchen/uProject/unet/TcpConnection.h
@@ -244,10 +250,15 @@ CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Thread.cc.o: /home/uuchen/u
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Thread.cc.o: /home/uuchen/uProject/unet/base/Thread.cc
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Thread.cc.o: /home/uuchen/uProject/unet/base/Thread.h
 
-CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/TimerEvent.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/Event.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/TcpConnection.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/Type.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Alloc.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Buffer.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Global.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/InetAddress.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Mutex.h
+CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Socket.h
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Timer.cc
 CMakeFiles/server.dir/home/uuchen/uProject/unet/base/Timer.cc.o: /home/uuchen/uProject/unet/base/Timer.h
 

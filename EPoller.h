@@ -23,6 +23,8 @@
 
 namespace unet
 {
+    static const int EPOLL_MAX_WATCH = 65536 * 4;
+    static const int EPOLL_TIMEOUT = 200;
     class EPoller final : public EventDemultiplexer
     {
         public:
@@ -45,6 +47,8 @@ namespace unet
 
         private:
             uint32_t switchTo(int);
+            void addEventCore();
+            void delEventCore();
 
         private:
             int u_epollfd;
@@ -54,6 +58,10 @@ namespace unet
 
             base::MutexLock u_mutex;
             std::set<int> u_stopSet;
+
+            base::MutexLock u_admutex;
+            std::vector<std::pair<int,int>> u_addList;
+            std::vector<int> u_eraseList;
     };
 }
 

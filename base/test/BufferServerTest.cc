@@ -28,11 +28,11 @@ int main(int argc,char** argv)
     std::cout << "Server ConnectFD: " << confd << std::endl;
     
     Socket confds(confd);
-    confds.setNonBlockAndCloseOnExec();
+//    confds.setNonBlockAndCloseOnExec();
     Buffer buffer(confd);
     
     buffer.setBlock();
-    buffer.setNonBlock();
+//    buffer.setNonBlock();
 
     char* buf = new char[4096];
     memset(buf,'s',4096);
