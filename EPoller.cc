@@ -151,8 +151,6 @@ namespace unet
             else
                 event->events = switchTo(pair.second);
             
-            std::cout << "epollfd: " << u_epollfd << std::endl;
-            std::cout << "event fd: " << pair.first << std::endl;
             if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,pair.first,event) < 0)
             {
                 perror("epoll add error!\n");
@@ -161,14 +159,17 @@ namespace unet
         }
     }
 
-    void EPoller::delEvent(int fd)
+    void EPoller::delEvent(int)
     {
+/*        
         base::MutexLockGuard guard(u_admutex);
         u_eraseList.push_back(fd);
+*/    
     }
     
     void EPoller::delEventCore()
     {
+/*        
         base::MutexLockGuard guard(u_admutex);
         while(!u_eraseList.empty())
         {
@@ -178,6 +179,7 @@ namespace unet
             auto iter = u_eventMap.find(fd);
             if(iter == u_eventMap.end())
                 continue;
+            
             if(::epoll_ctl(u_epollfd,EPOLL_CTL_DEL,fd,NULL) < 0)
             {
                 perror("epoll del error!\n");
@@ -199,6 +201,7 @@ namespace unet
             u_eventMap.erase(iter);
             --u_wfds;
         }
+*/    
     }
 
     void EPoller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
@@ -213,7 +216,7 @@ namespace unet
                     if(event == NULL)
                         continue;
                     
-                    if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,*iter,event) < 0)
+                    if(::epoll_ctl(u_epollfd,EPOLL_CTL_MOD,*iter,event) < 0)
                     {
                         perror("epoll add error!\n");
                         unet::handleError(errno);
