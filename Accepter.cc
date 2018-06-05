@@ -16,7 +16,6 @@ namespace unet
         u_serverAddr(serverAddr),
         u_listenfd(base::Socket(base::LISTEN))
     {
-        std::cout << "Listenfd: " << u_listenfd.getFd() << std::endl;
         u_listenfd.bind(serverAddr);
         u_listenfd.listen();
     }
@@ -50,13 +49,14 @@ namespace unet
     
     int Accepter::startListen()
     {
-
+        /*事件处理回调没有注册的直接退出*/
         if(u_listen)
             return 0;
         if(!u_saveListenCallBack || !u_eraseListenCallBack || 
                 !u_saveConnectCallBack)
             return -1;
         
+        /*将自身注册进事件处理框架*/
         if(!u_listen)
             u_saveListenCallBack(u_listenfd.getFd());
         u_listen = true;
@@ -72,6 +72,7 @@ namespace unet
                 !u_saveConnectCallBack)
             return -1;
         
+        /*取消注册*/
         u_eraseListenCallBack(u_listenfd.getFd());
         u_listen = false;
         return 0;
@@ -81,7 +82,8 @@ namespace unet
     {
         if(!u_listen)
             return;
-
+        
+        /*从accept中读取socket之后，使用回调将数据保存在TcpServer*/
         int confd = u_listenfd.accept();
         if(confd <= 0)
             return;

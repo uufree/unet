@@ -15,7 +15,7 @@
 #include"Type.h"
 
 /*2018.06.02 测试完成*/
-
+/*统一管理EventMap*/
 namespace unet
 {
     class Event;

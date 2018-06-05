@@ -74,7 +74,6 @@ namespace unet
                  *Returned Value:
                  *       None
                  */
-
                 int setSendBuf(int);    
                 int setRecvBuf(int);
                 int getSendBuf() const;
@@ -120,7 +119,7 @@ namespace unet
 
             private:
                 bool u_open;
-                SocketType u_type;
+                SocketType u_type;  /*CONNECT或者LISTEN*/
                 unsigned char u_bit;
                 mutable int u_socketfd;
                 static const int MSS = 1460;

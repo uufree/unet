@@ -79,10 +79,7 @@ namespace unet
         LogBufferQueue* ptr = u_buckets[tid % 5];
 
         if(ptr != NULL)
-        {
             ptr->append(u_format.formatLog(tid,level,message,file,line));
-            std::cout << "log2" << std::endl;
-        }
     }
 
     void Logg(unsigned long tid,const char* message,const char* file,int line,LogLevel level){LOG.log(tid,message,file,line,level);};

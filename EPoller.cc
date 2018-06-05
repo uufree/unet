@@ -25,13 +25,12 @@ namespace unet
         u_addList(),
         u_eraseList()
     {
-        std::cout << "epollfd: " << u_epollfd << std::endl;
         if(u_epollfd < 0)
         {
             perror("epollfd create error!\n");
             unet::handleError(errno);
         }
-        u_activeList.reserve(EPOLL_MAX_WATCH);
+        u_activeList.reserve(EPOLL_MAX_WATCH);/*为临时队列分配空间*/
     }
 
     EPoller::EPoller(EPoller&& epoller) : 
@@ -99,6 +98,7 @@ namespace unet
             perror("close epollfd error!\n");
             unet::handleError(errno);
         }
+        /*逐步清理epoll_event中的数据*/
         for(auto iter=u_eventMap.begin();iter!=u_eventMap.end();++iter)
             delete iter->second;
     }
@@ -119,21 +119,25 @@ namespace unet
             sysEvent |= EPOLLET;
         return sysEvent;
     }
-
+    
+    /*异步的添加事件*/
     void EPoller::addEvent(int fd,int wevent)
     {
         base::MutexLockGuard guard(u_admutex);
         u_addList.push_back({fd,wevent});
     }
     
+    /*逐个将add的事件添加到epollfd中*/
     void EPoller::addEventCore()
     {
         base::MutexLockGuard guard(u_admutex);
         while(!u_addList.empty())
         {
+            /*vector从尾部操作比较好*/
             auto pair = u_addList.back();
             u_addList.pop_back();
-
+            
+            /*判断这个事件是否出现在事件中*/
             auto iter = u_eventMap.find(pair.first);
             struct epoll_event* event = NULL;
             if((iter != u_eventMap.end()))
@@ -151,6 +155,7 @@ namespace unet
             else
                 event->events = switchTo(pair.second);
             
+            /*将事件添加到epollfd中*/
             if(::epoll_ctl(u_epollfd,EPOLL_CTL_ADD,pair.first,event) < 0)
             {
                 perror("epoll add error!\n");
@@ -158,7 +163,8 @@ namespace unet
             }
         }
     }
-
+    
+    /*由于设置了ONESHOT选项，del操作会保存，也不知道是不是已经真的从内核中移除了*/
     void EPoller::delEvent(int)
     {
 /*        
@@ -203,9 +209,11 @@ namespace unet
         }
 */    
     }
-
+    
+    /*用于分离事件的统一的接口*/
     void EPoller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        /*由于设计问题，重新关注当前的事件*/
         {
             base::MutexLockGuard guard(u_mutex);
             for(auto iter=u_stopSet.begin();iter!=u_stopSet.end();++iter)
@@ -227,24 +235,27 @@ namespace unet
             }
         }
         
+        /*在epoll_wait之前重新添加与删除事件*/
         addEventCore();
         delEventCore();
-
-        u_activeList.clear();
+            
+        u_activeList.clear();/*清理临时列表*/
         u_rfds = ::epoll_wait(u_epollfd,&*u_activeList.begin(),EPOLL_MAX_WATCH,EPOLL_TIMEOUT);
-        std::cout << "u_rfds: " << u_rfds << std::endl;
+        
         if(u_rfds < 0)
         {
             perror("epoll_wait error!\n");
             unet::handleError(errno);
         }
-
+        
+        /*没有事件发生的话直接退出*/
         if(u_rfds == 0)
             return;
         
         int revent = 0;
         for(int i=0;i<u_rfds;++i)
         {
+            /*将sys event重新转化为usr event*/
             revent = 0;
             if((u_activeList[i].events & EPOLLERR) || (u_activeList[i].events & EPOLLHUP) || (u_activeList[i].events & EPOLLRDHUP))
                 revent |= U_EXCEPTION;
@@ -252,7 +263,8 @@ namespace unet
                 revent |= U_READ;
             if(u_activeList[i].events & EPOLLOUT)
                 revent |= U_WRITE;
-
+    
+            /*使用了一个小技巧，将暂时不需要关注的事件置为负号*/
             {
                 base::MutexLockGuard guard(u_mutex);
                 u_stopSet.insert(-u_activeList[i].data.fd);
@@ -260,16 +272,8 @@ namespace unet
 
             if(revent)
             {
-                std::cout << "event fd: " << u_activeList[i].data.fd << std::endl;
-                if(revent & U_READ)
-                    std::cout << "read    ";
-                if(revent & U_WRITE)
-                    std::cout << "write    ";
-                if(revent & U_EXCEPTION)
-                    std::cout << "exception    ";
-                std::cout << std::endl;
-
                 std::shared_ptr<Event> ptr = eventMap.find(u_activeList[i].data.fd);
+                /*将事件添加到事件处理队列*/
                 if(ptr)
                 {
                     ptr->setREvent(revent);
@@ -279,6 +283,7 @@ namespace unet
         }
     }
     
+    /*重置事件，异步过程*/
     void EPoller::resetEvent(int fd)
     {
         base::MutexLockGuard guard(u_mutex);
@@ -286,6 +291,7 @@ namespace unet
         if(iter == u_stopSet.end())
             return;
         
+        /*将负号置为正的，在稍后重置完成*/
         u_stopSet.insert(fd);
         u_stopSet.erase(iter);
     }

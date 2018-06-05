@@ -9,6 +9,7 @@
 #include"error.h"
 #include<dirent.h>
 
+/*非核心部件，封装着玩玩的*/
 namespace unet
 {
     namespace base

@@ -48,7 +48,8 @@ namespace unet
     {
         init();
     }
-
+    
+    /*不知道这样用锁是否正确，与std::move是否正确*/
     Allocator::Allocator(Allocator&& alloc) :
         u_logMutex(),
         u_usrMutex()
@@ -90,7 +91,9 @@ namespace unet
         }
         return *this;
     }
-
+    
+    /*回收内存时，使用Alloc::中的函数进行缓存回收*/
+    /*析构期间不敢用锁保护状态*/
     Allocator::~Allocator()
     {
         LogBuffer* logTemp = NULL;
@@ -110,6 +113,7 @@ namespace unet
         }
     }
     
+    /*初始化期间同样，不能使用锁保护状态*/
     void Allocator::init()
     {
         LogBuffer* logTemp = NULL;
@@ -129,11 +133,13 @@ namespace unet
     
     LogBuffer* Allocator::allocLogBuffer()
     {
+        /*not-thread safety*/
         if(u_logBufferList.empty())
             expandLogBuffer();
         
         LogBuffer* res = NULL;
         
+        /*正常的缓存分配*/
         {
             base::MutexLockGuard guard(u_logMutex);
             res = u_logBufferList.front();
@@ -150,15 +156,19 @@ namespace unet
 
         return res;
     }
-
+    
+    /*设置标志，回收缓存*/
     void Allocator::deallocLogBuffer(LogBuffer* buf)
     {
         BUFFER_DEL_INUSE(buf);
-        base::MutexLockGuard guard(u_logMutex);
-        u_logBufferList.push_back(buf);
-        ++u_logListSize;
+        {
+            base::MutexLockGuard guard(u_logMutex);
+            u_logBufferList.push_back(buf);
+            ++u_logListSize;
+        }
     }
     
+    /*与分配LogBuffer的过程类似，不在赘述*/
     UsrBuffer* Allocator::allocUsrBuffer()
     {
         if(u_usrBufferList.empty())
@@ -189,7 +199,8 @@ namespace unet
         u_usrBufferList.push_back(buf);
         ++u_usrListSize;
     }
-
+    
+    /*将维护的缓冲区扩再次扩充一个INIT的大小，×2式的扩充有点浪费*/
     void Allocator::expandLogBuffer()
     {
         std::list<LogBuffer*> logBufferList;
@@ -243,7 +254,11 @@ namespace unet
 {
     namespace base
     {
-        //alloc log buffer
+        /*写Log Buffer的步骤：
+         * 1.测试flag是否正常
+         * 2.将数据copy进去
+         * 3.调整buffer中的指针与剩余空间
+         * 4.调整标志*/
         int writeInLogBuffer(LogBuffer* buffer,const void* str,int length)
         {
             if(str == NULL || length <=0 || length >= 200)
@@ -264,7 +279,8 @@ namespace unet
             BUFFER_SET_DIRTY(buffer);
             return 0;
         }
-    
+        
+        /*使用阻塞写，将Buffer中的数据写入File*/
         int writeLogBufferInFile(LogBuffer* buffer,int fd)
         {
             if(buffer == NULL || fd < 0)

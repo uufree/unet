@@ -29,8 +29,6 @@ namespace unet
         /*只保存两种类型，需要的时候对状态进行转换即可*/
         static const int WRITE = O_RDWR|O_APPEND|O_CREAT;
         static const int READ = O_RDWR;
-//        static const int CLEAR_WRITE = O_RDWR|O_TRUNC|O_APPEND|O_CREAT;
-//        static const int NEW_WRITE = O_RDWR|O_CREAT|O_APPEND; 
 
         static const mode_t USER_RW = S_IRUSR | S_IWUSR;
         static const mode_t USER_RWX = USER_RW | S_IXUSR;

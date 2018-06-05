@@ -90,6 +90,7 @@ namespace unet
         }
     }
     
+    /*Buffer->file的回写线程*/
     void LogBufferQueue::WriteBackThread()
     {
         std::list<base::LogBuffer*> logBufferList;

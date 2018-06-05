@@ -76,8 +76,10 @@ namespace unet
             void setWEvent(int event) {u_wevent = event;};
             void setREvent(int event) {u_revent = event;}; 
             
+            /*三种事件共用*/
             void handleEvent();
-            
+           
+            /*listen 专用*/
             void setListenCloseCallBack(const ListenCloseCallBack& cb);
             void setListenReadCallBack(const ListenReadCallBack& cb);
             void setTcpConnectionPtr(const std::shared_ptr<TcpConnection>&);
@@ -86,6 +88,7 @@ namespace unet
             void setResetEventCallBack(const ResetEventCallBack& cb)
             {u_resetCallBack = cb;};
             
+            /*timer专用*/
             void startTimerEvent();
             void stopTimerEvent();
             void addTimerWithLock(std::shared_ptr<Timer>);
@@ -102,7 +105,8 @@ namespace unet
                 SignalEvent* u_signal;
                 TimerEvent* u_timer;
             } u_event;
-
+            
+            /*由Event负责重置事件*/
             ResetEventCallBack u_resetCallBack;
     };
 };

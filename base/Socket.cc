@@ -11,6 +11,7 @@ namespace unet
 {
     namespace base
     {
+        /*客户创建Connect或者服务端创建Listen时使用*/
         Socket::Socket(SocketType type) noexcept :
             u_open(false),
             u_type(type),
@@ -80,6 +81,7 @@ namespace unet
         };
         
         
+        /*重用地址，服务端必备*/
         int Socket::setReuseAddr()
         {
             int m = 1;
@@ -157,6 +159,7 @@ namespace unet
             return send;
         }
         
+        /*选择关闭Socket的方式，选用RST可以快速清理废弃资源*/
         int Socket::setCloseRST()
         {
             struct linger lin;
@@ -169,7 +172,8 @@ namespace unet
             setLingerBit();
             return 0;
         }
-
+        
+        /*延迟关闭Socket*/
         int Socket::setCloseDelay(int delay)
         {
             struct linger lin;
@@ -183,6 +187,7 @@ namespace unet
             return 0;
         }
         
+        /*正常关闭Socket*/
         int Socket::setCloseNormal()
         {
             struct linger lin;
@@ -206,7 +211,8 @@ namespace unet
             setKeepAliveBit();
             return 0;
         }
-
+        
+        /*关闭延迟算法，连接中可以出现小的数据包，即时通信使用*/
         int Socket::setNodelay()
         {
             int m = 1;
@@ -217,7 +223,8 @@ namespace unet
             setNoDelayBit();
             return 0;
         }
-
+        
+        /*非阻塞与Fork Close使用*/
         int Socket::setNonBlockAndCloseOnExec()
         {
             int flag = ::fcntl(u_socketfd,F_GETFL,0);
@@ -229,6 +236,7 @@ namespace unet
             return 0;
         }
         
+        /*删除Non-Block*/
         int Socket::delNonBlockAndCloseOnExec()
         {
             int flag = ::fcntl(u_socketfd,F_GETFL,0);
@@ -240,7 +248,8 @@ namespace unet
             delNonBlockAndCloseOnExecBit();
             return 0;
         }
-
+        
+        /*以下时通用的Socket函数*/
         int Socket::socket(int family,int type,int protocol)
         {
             int n = ::socket(family,type,protocol);

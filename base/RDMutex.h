@@ -17,6 +17,7 @@ namespace unet
     namespace base
     {
         /*RDLock存在三种状态*/
+        /*读写锁的抽象很漂亮，不过我不用*/
         class RDMutexLock final
         {
             friend bool operator==(const RDMutexLock&,const RDMutexLock&);

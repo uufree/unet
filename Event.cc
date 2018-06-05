@@ -18,6 +18,7 @@ namespace unet
         u_wevent(0),
         u_revent(0)
     {
+        /*根据Type重置事件，并根据type设置观察事件*/
         if(u_type == U_CONNECT_SOCKET)
         {
             u_event.u_socket = new ConnectSocketEvent(fd,type);
@@ -54,6 +55,7 @@ namespace unet
             delete u_event.u_signal; 
     };
     
+    /*根据type处理事件*/
     void Event::handleEvent()
     {
         if(u_type == U_LISTEN_SOCKET)

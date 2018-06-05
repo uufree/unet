@@ -17,7 +17,8 @@
 namespace unet
 {
     class Event;
-
+    
+    /*处理Listen Socket，纳入事件处理框架*/
     class Accepter final
     {
         typedef std::shared_ptr<Event> EventPtr;
@@ -49,12 +50,15 @@ namespace unet
             void handleRead();
 
         private:
-            bool u_listen;
-            base::InetAddress u_serverAddr;
-            base::Socket u_listenfd;
+            bool u_listen;  /*是否处于listen*/
+            base::InetAddress u_serverAddr; /*server address*/
+            base::Socket u_listenfd;    /*listen socket*/
 
-            SaveConnectCallBack u_saveConnectCallBack;
+            /*获取一个连接之后，将连接保存在Server中的统一回调*/
+            SaveConnectCallBack u_saveConnectCallBack;  
+            /*将Listen Event注册到事件处理框架的回调*/
             SaveListenCallBack u_saveListenCallBack;
+            /*将Listen Event从事件处理框架中删除*/
             EraseListenCallBack u_eraseListenCallBack;
     };
 }

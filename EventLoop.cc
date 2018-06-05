@@ -47,7 +47,6 @@ namespace unet
             perror("There is no registered u_callBack!\n");
             return;
         }
-        
 
         while(u_start)
             u_callBack();

@@ -9,6 +9,7 @@
 
 namespace unet
 {
+    /*你敢信，这就是我的异常处理机制....*/
     void handleError(int saveErrno)
     {
         char buf[256];
@@ -17,6 +18,7 @@ namespace unet
         exit(1);
     }
     
+    /*UNP和CSAPP上出现的阻塞读与阻塞写*/
     int readn(int fd,char* cptr,size_t nbytes)
     {
         int nleft,nread;
@@ -66,6 +68,7 @@ namespace unet
         return writesize;
     }
     
+    /*UNXI上出现的进程后台化函数*/
     void daemonize()
     {
         pid_t pid = fork();

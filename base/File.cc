@@ -8,6 +8,7 @@
 #include"File.h"
 #include<iostream>
 
+/*非核心不见，建议使用C++标准流*/
 namespace unet
 {
     namespace base

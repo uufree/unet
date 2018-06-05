@@ -30,7 +30,8 @@ namespace unet
 
             int watchFds() const{return u_wfds;};
             int activeFds() const{return u_rfds;};
-
+            
+            /*四个抽象出来的接口*/
             virtual void addEvent(int,int){};
             virtual void delEvent(int){};
             virtual void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&){};

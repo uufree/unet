@@ -22,6 +22,11 @@ namespace unet
         static const int USR_BUFFER_FULL = USR_BUFFER_INIT_LENGTH*USR_BUF_SIZE;
         static const int EXTRA_BUFFER_SIZE = 65536;    
 
+        /*每个Buffer中维护两个队列：
+         * 1.读队列，长度为4，可以扩充
+         * 2.写队列，长度为4，可以扩充
+         * Buffer与Alloc中维护的缓冲区相互配合，缓存数据
+         * */
         class Buffer final
         {
             public:
@@ -40,10 +45,12 @@ namespace unet
                 bool writeEmpty() const{return u_writeFreeSize == 0;};
                 void setBlock(){u_block = true;};
                 void setNonBlock(){u_block = false;};
-                
+               
+                /*写缓冲区中已使用的数据*/
                 size_t readUsedSize() const 
                 {return u_readList.size() == USR_BUFFER_INIT_LENGTH ? USR_BUFFER_FULL-u_readFreeSize : u_readList.size()*USR_BUF_SIZE-u_readFreeSize;};
                 
+                /*读缓冲区中已使用的数据*/
                 size_t writeUsedSize() const 
                 {return u_writeList.size() == USR_BUFFER_INIT_LENGTH ? USR_BUFFER_FULL-u_writeFreeSize : u_writeList.size()*USR_BUF_SIZE-u_writeFreeSize;};
 
@@ -63,7 +70,7 @@ namespace unet
 //                void recvFile(const char* filename,size_t namelen);
 
             private:
-                bool u_block;
+                bool u_block;   /*缓冲区不维护Socket的状态，需要标记Socket的状态*/
                 int u_fd;
                 size_t u_readFreeSize;  
                 size_t u_writeFreeSize; 
@@ -80,9 +87,13 @@ namespace unet
                  * 2.用户向Buffer中写数据：选取一个Not Full的Buffer，写数据  
                  */
                 std::list<UsrBuffer*> u_readList;
+                /*读数据时，不能保证数据一定从当前缓冲区的起始位置开始，需要暂时
+                 * 的标记读数据的位置*/
                 char* u_readStart;
 
                 std::list<UsrBuffer*> u_writeList;
+                /*同样，写数据时不能保证从当前缓冲区的起始位置开始写，暂时缓存起
+                 * 始位置*/
                 char* u_writeStart;
         };
     }

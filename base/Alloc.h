@@ -15,33 +15,36 @@
 #include"Global.h"
 #include"Mutex.h"
 
-
+/*Log Buffer与Usr Buffer的初始大小*/
 #define LOG_INIT_SIZE 32
 #define USR_INIT_SIZE 1024
 
 /*2018.05.30 测试完成*/
 /*在单线程，多线程下均工作良好，无内存泄露*/
 
+/*整页的使用内存*/
 static const int LOG_BUF_SIZE = 4096*100-24;     
 static const int USR_BUF_SIZE = 4096-24;    
 
+/*Buffer的几种标志*/
 #define U_BUFFER_FREE 0x01   //in pool   
 #define U_BUFFER_INUSE 0x02  //in use
 #define U_BUFFER_FULL 0x04   //is full
 #define U_BUFFER_DIRTY 0x08  //is dirty but not full
 
-/*2018.05.30 测试完成*/
-
 namespace unet
 {
     namespace base
     {
+        /*模仿STL的内存管理策略，不过只缓存LogBuffer与UsrBuffer*/
+        /*struct的设计参考TCP/IP协议栈中的mbuf*/
+        /*本来向自己维护一个双向链表，不过在生产环境中还是老实点*/
         struct UsrBuffer
         {
-            char* u_data;
-            size_t u_length;
-            int u_flag;
-            char u_buf[USR_BUF_SIZE];
+            char* u_data;   /*指向当前数据的结尾，之前的数据都是已经缓存好的*/
+            size_t u_length;    /*空闲的空间*/
+            int u_flag;     /*当前的标志*/
+            char u_buf[USR_BUF_SIZE];   /*真正用户缓存的数据*/
         };
         
         struct LogBuffer
@@ -125,6 +128,8 @@ namespace unet
     namespace base
     {/*base start*/
 
+        /*一级内存分配器，就是简单的malloc调用，只分配内存不初始化*/
+        /*连异常处理程序都省了*/
     class SimpleAllocator final
     {
         public:
@@ -164,8 +169,8 @@ namespace unet
 
         private:
             void init();
-            void expandLogBuffer();
-            void shrinkLogBuffer(){};
+            void expandLogBuffer(); /*缓存不够时进行扩充*/
+            void shrinkLogBuffer(){};   /*暂时不考虑缩减的情况*/
             void expandUsrBuffer();
             void shrinkUsrBuffer(){};
 
@@ -180,7 +185,8 @@ namespace unet
 
     }/*base end*/
 
-    /*allo namespace*/ 
+    /*allo namespace*/
+    /*使用一个静态的对象以及一个内部名称空间进行保护,对于内存的分配只调用C接口*/
     namespace alloc
     {
         static class base::Allocator allocator;

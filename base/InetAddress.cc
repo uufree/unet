@@ -7,6 +7,7 @@
 
 #include"InetAddress.h"
 
+/*封装的也比较“实用”，具体的细节内容后续继续封装*/
 namespace unet
 {
     namespace base

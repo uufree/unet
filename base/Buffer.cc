@@ -133,7 +133,9 @@ namespace unet
             /*堆栈空间不能混用吗？为什么一直提示bad address*/
 //            char extraBuffer[EXTRA_BUFFER_SIZE];
 //            ++readLength;
-            
+           
+            /*开始填充iv缓冲区，以为是从socket中读取数据，无需考虑首部指针，只需
+             * 要将当前buffer->u_data当做起始就可以了*/
             struct iovec iv[readLength];
             int oldLength = 0;
             for(int i=0;i<readLength;i++)
@@ -151,6 +153,7 @@ namespace unet
             int returnValue = 1;
             if(!u_block)
             {
+                /*非阻塞读取数据的过程，默认格式*/
                 while(1)
                 {
                     int ret = ::readv(u_fd,iv,readLength);
@@ -169,12 +172,11 @@ namespace unet
                     else
                         readBytes += ret;
                 }
-                std::cout << "read bytes: " << readBytes << std::endl; 
             }
             else
             {
+                /*阻塞读取数据的过程，异常处理做的不好*/
                 readBytes = ::readv(u_fd,iv,readLength);
-                std::cout << "read bytes: " << readBytes << std::endl;
                 if(readBytes < 0)
                 {
                     perror("block read error!\n");
@@ -189,7 +191,7 @@ namespace unet
              * 3.调整Buffer的标志
              */
 
-            /*使用了extra中的数据，需要向readlist中添加buffer */
+            /*使用了extra中的数据，需要向readlist中添加buffer*/
             if(readBytes > oldLength)
             {
                 int extraSize = 65536 - oldLength;
@@ -226,6 +228,7 @@ namespace unet
                 }
                 else
                 {
+                    /*这个Buffer中只填充了一部分，调整位置退出即可*/
                     /*调整buffer中指针的位置*/
                     (*startIter)->u_data += reads;
                     (*startIter)->u_length = (*startIter)->u_length - reads;
@@ -245,15 +248,17 @@ namespace unet
             
             u_readFreeSize -= readBytes;
             
+            /*记录是否读到了0*/
             if(returnValue == 0)
                 return 0;
             return readBytes;
         }
         
-        /*将buffer中的数据copy给Usr*/
-        /*会莫名其妙的多copy出来三个字节*/
+        /*将buffer中的数据copy给Usr，从Buffer List的首部开始copy，需要考虑首部
+         * 指针*/
         int Buffer::readInBuffer(char* bufs,size_t size)
         {
+            /*测试标记是否正常*/
             if(u_fd < 0)
                 return -1;
             if(u_readFreeSize == USR_BUFFER_FULL)
@@ -270,10 +275,13 @@ namespace unet
             {
                 /*数据的copy是从readlist的首部开始的*/
                 temp = u_readList.front();
-                
+               
+                /*如果当前的首部没有数据，可以直接退出*/
                 if(BUFFER_TEST_FREE(temp))
                     break;
-
+                
+                /*如果当前的首部指针存在，计算可以从当前首部中copy的数据*/
+                /*否则的话，将首部调整为Buffer的起始位置，并计算copy数据量*/
                 if(u_readStart)
                     tempSize = temp->u_data - u_readStart;
                 else
@@ -350,7 +358,8 @@ namespace unet
             u_readFreeSize += copySize;
             return copySize;
         }
-
+        
+        /*向Socket中写数据*/
         int Buffer::writeInSocket()
         {
             if(u_fd < 0)
@@ -364,7 +373,7 @@ namespace unet
                 if(BUFFER_TEST_DIRTY((*iter)))
                     ++writeLength;
             
-            /*根据目前Buffer中的标志位，获取可以输出的Socket长度*/
+            /*根据目前Buffer中的标志位，获取可以输出的Socket长度，并填充iv*/
             struct iovec iv[writeLength];
             auto iter=u_writeList.begin();
             for(int i=0;i<writeLength;i++)
@@ -374,6 +383,8 @@ namespace unet
                 ++iter;
             }
 
+            /*向Socket中写数据要从Buffer的首部开始写，需要考虑首部指针*/
+            /*如果首部指针存在的话，需要重新填充数据*/
             if(u_writeStart)
             {
                 iv[0].iov_base = u_writeStart;
@@ -383,14 +394,18 @@ namespace unet
             /*向Socket中写数据*/
             int writeBytes = ::writev(u_fd,iv,writeLength);
             if(writeBytes < 0)
-                return -1;
+            {
+                perror("writev error!");
+                unet::handleError(errno);
+            }
             
-            /*数据已经写入完成，需要根据写入的数据量调整buffer的位置*/
+            /*数据已经写入完成，需要根据写入的数据量调整Buffer中指针的位置*/
             UsrBuffer* temp = NULL;
             int writes = writeBytes;
             int tempSize = 0;
             for(int i=0;i<writeLength;i++)
             {
+                /*计算首部中的已用空间，就是写出数据量的大小*/
                 temp = u_writeList.front();
                 if(u_writeStart)
                     tempSize = temp->u_data - u_writeStart;
@@ -403,6 +418,7 @@ namespace unet
                 /*如果这个Buffer中的数据已经全部发送*/
                 if(writeBytes >= tempSize)
                 {
+                    /*将这个Buffer中的指针位置进行调整，插入队尾*/
                     u_writeList.pop_front();
                     temp->u_data = temp->u_buf;
                     temp->u_length = USR_BUF_SIZE;
@@ -410,19 +426,21 @@ namespace unet
                     writeBytes -= tempSize;
                     u_writeStart = NULL;
                     
+                    /*修改Buffer中的位置*/
                     if(!BUFFER_TEST_FREE(temp))
                         BUFFER_SET_FREE(temp);
                     if(BUFFER_TEST_DIRTY(temp))
                         BUFFER_DEL_DIRTY(temp);
                     if(BUFFER_TEST_FULL(temp))
                         BUFFER_DEL_FULL(temp);
-
+                    
+                    /*写完之后可以直接退出*/
                     if(writeBytes == 0)
                         break;
                 }       
                 else
                 {
-                    /*这个Buffer中的一部分被发送*/
+                    /*这个Buffer中的一部分被发送,调整位置与标志，直接退出*/
                     u_writeStart = temp->u_buf + writeBytes;
                     temp->u_length += writeBytes;
                     writeBytes -= writeBytes;
@@ -433,15 +451,19 @@ namespace unet
                         BUFFER_SET_DIRTY(temp);
                     if(BUFFER_TEST_FULL(temp))
                         BUFFER_DEL_FULL(temp);
+
+                    break;
                 }
             }
             
             u_writeFreeSize += writes;
             return writes;
         }
-
+        
+        /*应用层将数据写入Buffer*/
         int Buffer::writeInBuffer(const char* str,size_t size)
         {
+            /*调整标志*/
             if(str == NULL || size == 0)
                 return -1;
             if(u_fd  < 0)
@@ -449,7 +471,7 @@ namespace unet
             if(u_writeFreeSize == 0)
                 return -1;
             
-            /*在list中寻找一个Free或者Dirty&！Full的buffer*/
+            /*在list中寻找一个Free或者Dirty&！Full的buffer作为起始写入位置*/
             std::list<UsrBuffer*>::iterator iter = u_writeList.begin();
             for(;iter!=u_writeList.end();++iter)
                 if((!BUFFER_TEST_FULL((*iter)) && BUFFER_TEST_DIRTY((*iter)))|| 
@@ -474,6 +496,7 @@ namespace unet
                 /*当前的Buffer可以被写满*/
                 if(size >= tempSize)
                 {
+                    /*写入数据并调整数据位置与标志*/
                     memcpy((*iter)->u_data,str,tempSize);
                     str += tempSize;
                     writeSize += tempSize;
@@ -494,6 +517,7 @@ namespace unet
                 }
                 else
                 {
+                    /*部分写入，写完可以直接退出*/
                     memcpy((*iter)->u_data,str,size);
                     (*iter)->u_data = (*iter)->u_buf + size;
                     (*iter)->u_length = USR_BUF_SIZE - size;
@@ -510,15 +534,6 @@ namespace unet
                     break;
                 }
             }   
-
-            int dirty = 0;
-            for(auto iter=u_writeList.begin();iter!=u_writeList.end();++iter)
-            {
-                if(BUFFER_TEST_DIRTY((*iter)))
-                    ++dirty;
-                else
-                    break;
-            }
 
             u_writeFreeSize -= writeSize;
             return writeSize;

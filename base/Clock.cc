@@ -12,7 +12,7 @@ namespace unet
 {
     namespace base
     {
-
+    /*将string字符串中的数据根据需求进行分割*/
     void Clock::split(const std::string& lhs,const std::string& rhs,std::vector<std::string>& vecStr)
     {
         vecStr.clear();
@@ -54,7 +54,8 @@ namespace unet
 
         return *this;
     }
-
+        
+    /*更新系统中的时间*/
     void Clock::update()
     {
         time_t time_ = time(NULL);

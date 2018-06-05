@@ -205,16 +205,6 @@ namespace unet
             iter->revents = 0;
             if(revent)
             {
-                std::cout << "================" << std::endl;
-                std::cout << "event fd: " << iter->fd << std::endl;
-                if(revent & U_READ)
-                    std::cout << "read event    ";
-                if(revent & U_WRITE)
-                    std::cout << "write event    ";
-                if(revent & U_EXCEPTION)
-                    std::cout << "exception event    ";
-                std::cout << std::endl;
-                std::cout << "==============" << std::endl;
                 std::shared_ptr<Event> ptr = eventMap.find(iter->fd);
                 if(ptr)
                 {

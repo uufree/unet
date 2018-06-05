@@ -7,6 +7,7 @@
 
 #include"Condition.h"
 
+/*不忍直视，太简陋了*/
 namespace unet
 {
     namespace base

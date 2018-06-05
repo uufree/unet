@@ -12,10 +12,10 @@
 #include<vector>
 #include<utility>
 
-#include<iostream>
-
 #include"base/Thread.h"
 
+/*2018.06.03 测试完成*/
+/*事件分离线程，根据需求将事件分离*/
 namespace unet
 {
     class EventLoop final
@@ -45,7 +45,7 @@ namespace unet
         private:
             bool u_start;
             base::Thread u_thread;       
-            SeparationEventCallBack u_callBack;
+            SeparationEventCallBack u_callBack; /*启用事件分离线程*/
     };
 }
 

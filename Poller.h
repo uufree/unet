@@ -13,11 +13,11 @@
 #include<set>
 #include<map>
 
-#include<iostream>
+/*Poller中出现close事件时出现exception事件*/
 
 namespace unet
 {
-    static const int POLL_TIMEOUT = 200;    /*Poll的阻塞时间为200ms*/
+    static const int POLL_TIMEOUT = 20;    /*Poll的阻塞时间为20ms*/
 
     class Poller final : public EventDemultiplexer
     {
