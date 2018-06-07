@@ -59,7 +59,8 @@ namespace unet
         u_stopMap.clear();
         u_set.clear();
     };
-    
+   
+    /*usr event->sys event*/
     int Poller::switchEvent(int usrEvent)
     {
         int sysEvent = 0;
@@ -87,7 +88,8 @@ namespace unet
             u_addEventList.push_back(pfd);
         }
     }
-
+    
+    /*在每一次主循环前都会统计add event与erase event的数量*/
     void Poller::addEventCore()
     {
         base::MutexLockGuard guard(u_admutex);
@@ -111,7 +113,8 @@ namespace unet
             u_addEventList.pop_back();
         }
     }
-
+    
+    /*异步的删除事件*/
     void Poller::delEvent(int fd)
     {
         {
@@ -125,6 +128,7 @@ namespace unet
         {
             base::MutexLockGuard guard(u_admutex);
             int fd = -1;
+            /*逐步的遍历删除事件列表*/
             while(!u_deleteEventList.empty())
             {
                 fd = u_deleteEventList.back();
@@ -133,6 +137,7 @@ namespace unet
                 auto iter = u_set.find(fd);
                 if(iter == u_set.end())
                     continue;
+                /*在event list中删除事件*/
                 for(auto viter=u_eventList.begin();viter!=u_eventList.end();++viter)
                 {
                     if(viter->fd == fd && viter != u_eventList.end())
@@ -141,9 +146,11 @@ namespace unet
                         break;
                     }
                 }
+                /*调整统计量*/
                 u_set.erase(iter);
                 --u_wfds;
             
+                /*从暂停列表中删除事件*/
                 {
                     base::MutexLockGuard guard(u_mutex);
                     auto miter = u_stopMap.find(fd);
@@ -161,6 +168,7 @@ namespace unet
 
     void Poller::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        /*重置暂停列表中的事件*/
         {
             base::MutexLockGuard guard(u_mutex);
             for(auto iter=u_stopMap.begin();iter!=u_stopMap.end();++iter)
@@ -180,8 +188,10 @@ namespace unet
             }
         }
 
+        /*处理添加与删除的事件*/
         deleteEventCore();
         addEventCore();
+        
         if(u_eventList.size() > 0)
             u_rfds = ::poll(&*u_eventList.begin(),u_eventList.size(),POLL_TIMEOUT);
         
@@ -190,10 +200,12 @@ namespace unet
             perror("poll error!\n");
             unet::handleError(errno);
         }
-
+    
+        /*处理发生的事件*/
         int revent = 0;
         for(auto iter=u_eventList.begin();iter!=u_eventList.end();++iter)
         {
+            /*sys->usr*/
             revent = 0;
             if((iter->revents & POLLRDHUP) || (iter->revents & POLLERR) || (iter->revents & POLLHUP) || (iter->revents & POLLNVAL))
                 revent |= U_EXCEPTION;
@@ -202,6 +214,7 @@ namespace unet
             if(iter->revents & POLLOUT)
                 revent |= U_WRITE;
             
+            /*将发生的事件添加到事件处理列表并将发生的事件置0*/
             iter->revents = 0;
             if(revent)
             {
@@ -223,6 +236,7 @@ namespace unet
         }
     }
 
+    /*重置事件时，删除-fd，添加+fd*/
     void Poller::resetEvent(int fd)
     {
         base::MutexLockGuard guard(u_mutex);

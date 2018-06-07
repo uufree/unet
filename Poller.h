@@ -30,25 +30,27 @@ namespace unet
             ~Poller() override;
             
             bool operator==(const Poller& poll){return u_eventList.begin() == poll.u_eventList.begin();};
-
+            
+            /*抽象出来的统一的接口*/
             void addEvent(int,int) override;
             void delEvent(int) override;
             void poll(const EventMap&,std::vector<std::shared_ptr<Event>>&) override;
             void resetEvent(int) override; 
         private:
+            /*因为设计问题，需要异步的关闭事件*/
             int switchEvent(int usrEvent);
             void addEventCore();
             void deleteEventCore();
 
         private:
-            std::vector<struct pollfd> u_eventList;
-            std::set<int> u_set;
+            std::vector<struct pollfd> u_eventList; /*pollfd数组*/
+            std::set<int> u_set;    /*已添加的fd的统计*/
             
             base::MutexLock u_mutex;
-            std::map<int,int> u_stopMap;
+            std::map<int,int> u_stopMap;    /*重置事件使用*/
             
             base::MutexLock u_admutex;
-            std::vector<struct pollfd> u_addEventList;
+            std::vector<struct pollfd> u_addEventList;  /*异步的添加与删除事件*/
             std::vector<int> u_deleteEventList;
     };
 }

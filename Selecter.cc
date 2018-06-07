@@ -102,12 +102,14 @@ namespace unet
     Selecter::~Selecter()
     {}
     
+    /*异步的将关注的事件添加到关注列表*/
     void Selecter::addEvent(int fd,int wevent)
     {
         base::MutexLockGuard guard(u_admutex);
         u_addList.push_back({fd,wevent});
     }
     
+    /*在Pool loop中主动的清空异步线程中的事件，将需要观察的事件添加到观察列表中*/
     void Selecter::addEventCore()
     {
         base::MutexLockGuard guard(u_admutex);
@@ -140,17 +142,20 @@ namespace unet
                 FD_SET(iter.first,&u_readSetSave);
             }
             
+            /*根据需要，调整maxfd*/
             if(iter.first > u_maxfd)
                 u_maxfd = iter.first;
         }
     }
-
+    
+    /*异步的删除事件*/
     void Selecter::delEvent(int fd)
     {
         base::MutexLockGuard guard(u_admutex);
         u_eraseList.push_back(fd);
     }
     
+    /*在Pool loop中主动地删除异步列表中想要删除的事件*/
     void Selecter::eraseEventCore()
     {
         base::MutexLockGuard guard(u_admutex);
@@ -194,6 +199,7 @@ namespace unet
 
     void Selecter::poll(const EventMap& eventMap,std::vector<std::shared_ptr<Event>>& eventList)
     {
+        /*重新将停止列表中的事件添加到关注列表中*/
         {
             base::MutexLockGuard guard(u_mutex);
             int revent = 0;
@@ -226,11 +232,12 @@ namespace unet
             }
         }
         
+        /*主动地添加与删除事件*/
         addEventCore();
         eraseEventCore();
         
         u_rfds = ::select(u_maxfd+1,&u_readSet,&u_writeSet,&u_exceptionSet,u_timeout);
-        u_timeout->tv_usec = SELECT_TIMEOUT;
+        u_timeout->tv_usec = SELECT_TIMEOUT;/*select会清空填充的延迟时间*/
         
         if(u_rfds < 0)
         {
@@ -239,6 +246,7 @@ namespace unet
             return;
         }
         
+        /*因为select会清空关注列表，重新填充关注列表*/
         if(u_rfds == 0)
         {
             u_readSet = u_readSetSave;
@@ -267,6 +275,7 @@ namespace unet
                     eventList.push_back(ptr);
                 }
                 
+                /*将关注事件fd变为-fd，然后清空关注的事件，等待重置*/
                 {
                     base::MutexLockGuard guard(u_mutex);
                     u_stopMap.insert({-(*iter),revent});
@@ -286,6 +295,7 @@ namespace unet
         u_exceptionSet = u_exceptionSetSave;
     }
     
+    /*重置事件，删除-fd，重新添加+fd*/
     void Selecter::resetEvent(int fd)
     {
         base::MutexLockGuard guard(u_mutex);
