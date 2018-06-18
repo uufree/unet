@@ -80,13 +80,15 @@ namespace unet
             static int u_readSignalfd;     //pipe[0]
             static int u_writeSignalfd;    //pipe[1]
         
-            QuitCallBack u_quitCallBack;
+            QuitCallBack u_quitCallBack;/*根据用户规定的信号设置可能出现的回调*/
             StopCallBack u_stopCallBack;
             RestartCallBack u_restartCallBack;
             ReadConfigCallBack u_readConfigCallBack;
     };
     
-    void sendSignal(int sig);
+
+    void sendSignal(int sig);   /*全局函数，可以在工作线程中向主线程中发送信号*/
+    /*从而根据需求动态的调整资源*/
 }
 
 #endif

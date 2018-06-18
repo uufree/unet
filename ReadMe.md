@@ -1,30 +1,43 @@
 # unet
-- 一个基于muduo源码风格，Reactor模式的现代C++网络库（非阻塞),事件驱动的业务模型。
+- 一个非阻塞多线程网络编程框架的简易实现,整体使用事件进行驱动。
 - 提供单线程server，多线程server，多线程异步server，多线程异步client等版本，可以根据不同的需求满足开发需求。
-## 重构ing~
- - 想法：组件分离，组件分层。
- - 目的：组件在确保线程安全的情况下通过不同的回调函数适应新的需求。
- - 思路：
-    - 最底层的系统调用封装，留下约定的接口以及充分的接口描述，以待后续更改。
-    - 组件与STL容器结合，分为在这一层考虑线程安全。仅留下最简单的输入输出接口。
-    - 考虑应用需求，构建成型组件。用回调函数增加成型组件的灵活性。
-## 重构进度
-    基本构件已经封装完成，并且完成Server的静态编译过程，编译所使用的文件覆盖所有层次的构件 
+- 本次是第三次重构，修改了事件处理的方式
 
 ## unet的大体架构：
  - 底层：
     - 描述：封装最底层的系统调用，大多数使用RAII手法管理资源
     - 规划：随着编程经验的增加，可以在保留接口不变的情况下修改内部资源
-    - 构件组成：Buffer,Condition,Directory,File,InetAddress,Mutex,Socket,Thread
+    - 构件组成：
+        - Alloc:创建一个内存池，用以维护LogBuffer与UserbBuffer，在Log或者TcpConnection需要内存时，无需陷入系统调用
+        - Buffer:维护UsrBuffer，在初始时，将4个UsrBuffer使用链表连接起来，使用readv与writev的方式来操作缓冲区，减少在Buffer需要扩张时的数据copy
+        - Condition:封装条件变量，存在即初始化
+        - InetAddress:封装IPV4地址与IPV6地址（暂时没用到）
+        - RDMutex,Mutex,SpinLock:使用存在即初始化，离开即析构的方式封装三种类型的锁
+        - Thread:线程对象，与Qt中的线程对象的使用基本类似。在细节上，使用cannel控制线程的生命周期，要求线程不可分离。
+        - Timer:定时器事件的底层对象，使用Timer封装事件，启动时即加入定时器处理框架
+        - ThreadPool:
  - 中间层：
-    - 描述：根据设计模式设计的框架构件，可复用
-    - 规划：随着设计模式理论不断增长
-    - 构件组成：Channel，Epoller，EventLoop，TcpConnection
+    - 描述：根据框架需求，设计一些处理框架需求的对象，每种对象都有自己独立的作用，核心上：只处理数据，不保存数据
+    - 规划：根据框架需求，逐渐增加
+    - 构件组成：
+        - EventDemultiplexer:I/O多路复用器，统一下述的三种类型的事件检测方式。维护四个统一的接口：add，erase，reset，poll
+        - Selecter,EPoller,Poller:根据各个I/O多路复用的方式维护自己的数据
+        - Event:将Signal，Socket，Timer三种事件使用union的方式统一起来，将Event交由TaskPool线程进行处理
+        - SignalEvent:在unet中，我们将信号事件作为全局事件进行处理，使用pipe，将主线程阻塞在read上，信号发生时由主线程进行处理。可以处理系统信号和用户自定义信号
+        - SocketEvent:将Listen Socket与Connection Socket统一起来
+        - TimerEvent:全局唯一的定时器事件框架，使用timerfd与优先级队列通知定时器到期
+        - TaskPool:底层使用ThreadPool维护一个任务处理队列，处理EventList中的Event对象
+        - TcpConnection:描述一个Tcp连接对象，不维护状态，TcpConnection在获取Connet Fd时已经处理已连接状态
+        - EventLoop:事件分离线程，将事件分离出来，交由TaskPool进行处理
  - 分离层：
     - 描述：分离中间层，对数据与操作数据的对象进行分离，使用STL管理数据，使数据的流动可控制。
     - 规划：为随后数据结构与算法层面的优化指明方向
-    - 构件组成：ChannelMap，EventList，TaskPool，TcpConnectionMap
- - 应用层（关系层）：
+    - 构件组成:
+        - EventMap:保存全局的EventMap，只有一份，保存在TcpServer中
+        - TcpConnectionMap:保存全局的TcpConnetion，只存在一份，保存在TcpServer中
+ - 应用层：
     - 描述：使用上述构件集成出适应业务的模型，在应用层设计构件之间的关联回调
     - 规划：自由组合，自由组合，自由组合
-    - 构件组成：AsyncTcpServer
+    - 构件组成：
+        - TcpServer:使用上述层次的构件维护一个TcpServer对象，在使用时，只需向TcpServer注册读写处理事件即可
+        - Accepter:全局唯一的Accepter对象，处理Listen Socket事件，纳入事件处理框架
