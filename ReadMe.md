@@ -1,6 +1,5 @@
 # unet
 - 一个非阻塞多线程网络编程框架的简易实现,整体使用事件进行驱动。
-- 提供单线程server，多线程server，多线程异步server，多线程异步client等版本，可以根据不同的需求满足开发需求。
 - 本次是第三次重构，修改了事件处理的方式
 
 ## unet的大体架构：
@@ -41,3 +40,17 @@
     - 构件组成：
         - TcpServer:使用上述层次的构件维护一个TcpServer对象，在使用时，只需向TcpServer注册读写处理事件即可
         - Accepter:全局唯一的Accepter对象，处理Listen Socket事件，纳入事件处理框架
+
+## 对于Log设计的思考：
+ 在多线程Log中，一条Log写入文件中需要两次加锁：多线程向后台Buffer中写Log时，加锁一次；使用Timer到期或者Buffer已满的情况下，将Buffer中的数据写入LogFile，加锁一次。虽然说临界代码段很短，基本可以不考虑锁带来的开销。但是，有没有只加锁一次的方式呢？我们在unet中尝试使用一些激进的方式取消锁带来的开销：为每个线程维护一个Buffer，这样减少了一次加锁，但是多线程的Buffer写入LogFile时会造成LogFile中事件不同步的问题。
+
+## 本次重构反思：
+### 正面：
+ - 统一了事件源与事件处理的方式
+ - 在信号事件的处理上加上了自己的思考，扩展信号处理的方式，使的主线程可以接收子线程中的自定义信号，实时的调整框架资源
+ - 在Socket选项上维护了：SO-REUSEADDR,SO-RCVBUF,SO-SNDBUF,SO-RCVLOWAT,SO-SNDLOWAT,SO-LINGER,SO-KEEPALIVE,TCP-NODELAY,O-NONBLOCK,FD-CLOSEXEC选项
+ - 在Signal中维护了：SIGHUP,SIGPIPE,SIGURG,SIGCHLD,SIGTERM,SIGINT,SIGKILL以及用户自定义的一些信号   
+
+### 反面：
+ - 事件处理方式存在缺陷：在成熟的网络编程框架中，one thread per loop是成熟的做法，libevent与muduo都是如此，将I/O事件固定在一个线程中。但是在unet的设计上，因为资源的统一管理，I/O事件发生之后封装成Event对象，在逻辑线程中一并进行处理，这样做适用于ET模式，在LT中会造成事件的频繁触发。因此为了维护三种事件检测方式的统一性，引入的reset方法：在每次检测到事件之后，为了防止事件的再次触发，从事件分发器中取消检测这个事件，从而造成了事假处理的低效。在下次重构时，将统一管理的资源分成n等分，每分资源交由一个线程单独管理，从而将I/O事件均匀的分布到所有线程中去，避免每次在不同的线程中处理I/O事件。这个问题属于设计上的失误。
+ - 依旧没有引入成熟的异常处理机制，在C语言的errno与C++ try-catch-throw中无法抉择
