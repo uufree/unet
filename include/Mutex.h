@@ -24,7 +24,7 @@ namespace unet
     {   
         /*对线程锁这个资源使用RAII方法进行封装，即存在即初始化*/
         /*为了保证mutex可以与Cond配合使用，将mutex声明为mutable的*/
-        class MutexLock final
+        class MutexLock final 
         {
             public:
                 explicit MutexLock();
